@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="https://via.placeholder.com/120x120/1a365d/ffffff?text=CF" alt="CodeForge Logo" width="120" height="120">
+  <img src="https://via.placeholder.com/120x120/1a365d/ffffff?text=CF" alt="Aralify Logo" width="120" height="120">
 </p>
 
-<h1 align="center">CodeForge</h1>
+<h1 align="center">Aralify</h1>
 
 <p align="center">
   <strong>Learn to code through interactive challenges — at your own pace, your own difficulty.</strong>
@@ -28,9 +28,9 @@
 
 ## 🚀 About
 
-CodeForge is a next-generation interactive programming education platform. Unlike traditional linear courses, every lesson offers **Easy**, **Medium**, and **Hard** difficulty tiers — letting learners progress at their own pace while being rewarded for mastering harder content.
+Aralify is a next-generation interactive programming education platform. Unlike traditional linear courses, every lesson offers **Easy**, **Medium**, and **Hard** difficulty tiers — letting learners progress at their own pace while being rewarded for mastering harder content.
 
-**Why CodeForge?**
+**Why Aralify?**
 
 - 🎯 **Flexible Difficulty** — Pass any tier to progress. Return for harder challenges anytime.
 - 💻 **Real Code Execution** — Write code that actually runs, not just theory.
@@ -116,8 +116,8 @@ CodeForge is a next-generation interactive programming education platform. Unlik
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/codeforge.git
-   cd codeforge
+   git clone https://github.com/your-username/Aralify.git
+   cd Aralify
    ```
 
 2. **Install dependencies**
@@ -171,7 +171,7 @@ CodeForge is a next-generation interactive programming education platform. Unlik
 ## 📁 Project Structure
 
 ```
-codeforge/
+Aralify/
 ├── apps/
 │   ├── web/                 # Next.js web application
 │   │   ├── app/             # App router pages
@@ -277,7 +277,7 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
 </p>
 
 <p align="center">
-  <a href="https://codeforge.app">Website</a> •
-  <a href="https://twitter.com/codeforgeapp">Twitter</a> •
-  <a href="https://discord.gg/codeforge">Discord</a>
+  <a href="https://Aralify.app">Website</a> •
+  <a href="https://twitter.com/Aralifyapp">Twitter</a> •
+  <a href="https://discord.gg/Aralify">Discord</a>
 </p>
