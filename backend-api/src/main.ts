@@ -4,6 +4,7 @@ import {
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ZodValidationPipe } from 'nestjs-zod';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -11,6 +12,9 @@ async function bootstrap() {
     AppModule,
     new FastifyAdapter(),
   );
+
+  // Global validation pipe
+  app.useGlobalPipes(new ZodValidationPipe());
 
   app.enableCors({
     origin: true,
