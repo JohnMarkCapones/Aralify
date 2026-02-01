@@ -15,9 +15,9 @@ export class AppController {
   }
 
   @Get('health')
-  @ApiOperation({ summary: 'Health check endpoint' })
-  @ApiResponse({ status: 200, description: 'Returns health status' })
-  healthCheck(): { status: string; timestamp: string } {
+  @ApiOperation({ summary: 'Health check endpoint with database status' })
+  @ApiResponse({ status: 200, description: 'Returns health status including database connection' })
+  async healthCheck() {
     return this.appService.healthCheck();
   }
 }

@@ -1,0 +1,740 @@
+================================================================================
+ARALIFY - COMPLETE DATABASE SCHEMA
+================================================================================
+
+Version: 1.0
+Database: PostgreSQL (Supabase)
+ORM: Prisma
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+
+1. Users & Authentication
+2. Courses & Content
+3. Progress Tracking
+4. Quizzes & Challenges
+5. Gamification
+6. Social Features
+7. Comments
+8. Leaderboards
+9. Notifications
+10. Settings
+
+================================================================================
+1. USERS & AUTHENTICATION
+================================================================================
+
+TABLE: users
+--------------------------------------------------------------------------------
+Column              Type            Constraints          Description
+--------------------------------------------------------------------------------
+id                  String          PK, cuid()           Unique identifier
+email               String          UNIQUE, NOT NULL     User email
+username            String          UNIQUE, NOT NULL     Username (3-20 chars)
+password_hash       String          NULL                 Bcrypt hashed password
+display_name        String          NOT NULL             Display name (max 50)
+avatar_url          String          NULL                 Profile picture URL
+bio                 String          NULL                 User bio (max 500)
+locale              String          DEFAULT 'en'         Language preference
+timezone            String          DEFAULT 'UTC'        User timezone
+xp_total            Int             DEFAULT 0            Total XP earned
+level               Int             DEFAULT 1            User level
+streak_current      Int             DEFAULT 0            Current streak days
+streak_longest      Int             DEFAULT 0            Longest streak ever
+role                UserRole        DEFAULT 'USER'       User role
+is_verified         Boolean         DEFAULT false        Email verified
+last_login_at       DateTime        NULL                 Last login timestamp
+created_at          DateTime        DEFAULT now()        Account created
+updated_at          DateTime        AUTO                 Last updated
+--------------------------------------------------------------------------------
+
+ENUM: UserRole
+- USER
+- MODERATOR
+- ADMIN
+
+--------------------------------------------------------------------------------
+
+TABLE: user_sessions
+--------------------------------------------------------------------------------
+Column              Type            Constraints          Description
+--------------------------------------------------------------------------------
+id                  String          PK, cuid()           Session ID
+user_id             String          FK -> users.id       User reference
+token               String          UNIQUE               JWT refresh token
+device_info         String          NULL                 Device information
+ip_address          String          NULL                 IP address
+expires_at          DateTime        NOT NULL             Token expiry
+created_at          DateTime        DEFAULT now()        Session created
+--------------------------------------------------------------------------------
+
+TABLE: password_reset_tokens
+--------------------------------------------------------------------------------
+Column              Type            Constraints          Description
+--------------------------------------------------------------------------------
+id                  String          PK, cuid()           Token ID
+user_id             String          FK -> users.id       User reference
+token               String          UNIQUE               Reset token
+expires_at          DateTime        NOT NULL             Token expiry (1 hour)
+used_at             DateTime        NULL                 When token was used
+created_at          DateTime        DEFAULT now()        Token created
+--------------------------------------------------------------------------------
+
+TABLE: oauth_accounts
+--------------------------------------------------------------------------------
+Column              Type            Constraints          Description
+--------------------------------------------------------------------------------
+id                  String          PK, cuid()           Account ID
+user_id             String          FK -> users.id       User reference
+provider            String          NOT NULL             google/github/facebook
+provider_id         String          NOT NULL             Provider's user ID
+access_token        String          NULL                 OAuth access token
+refresh_token       String          NULL                 OAuth refresh token
+created_at          DateTime        DEFAULT now()        Linked at
+--------------------------------------------------------------------------------
+UNIQUE: (user_id, provider)
+
+================================================================================
+2. COURSES & CONTENT
+================================================================================
+
+TABLE: courses
+--------------------------------------------------------------------------------
+Column              Type            Constraints          Description
+--------------------------------------------------------------------------------
+id                  String          PK, cuid()           Course ID
+slug                String          UNIQUE, NOT NULL     URL-friendly slug
+language            String          NOT NULL             Programming language
+title_en            String          NOT NULL             English title
+title_fil           String          NULL                 Filipino title
+description_en      String          NOT NULL             English description
+description_fil     String          NULL                 Filipino description
+icon_url            String          NULL                 Course icon URL
+color               String          NULL                 Hex color code
+order_index         Int             DEFAULT 0            Display order
+estimated_hours     Int             DEFAULT 0            Estimated completion time
+is_published        Boolean         DEFAULT false        Visibility
+created_at          DateTime        DEFAULT now()        Created timestamp
+updated_at          DateTime        AUTO                 Updated timestamp
+--------------------------------------------------------------------------------
+
+TABLE: levels
+--------------------------------------------------------------------------------
+Column              Type            Constraints          Description
+--------------------------------------------------------------------------------
+id                  String          PK, cuid()           Level ID
+course_id           String          FK -> courses.id     Parent course
+slug                String          NOT NULL             URL-friendly slug
+title_en            String          NOT NULL             English title
+title_fil           String          NULL                 Filipino title
+description_en      String          NULL                 English description
+description_fil     String          NULL                 Filipino description
+order_index         Int             DEFAULT 0            Order within course
+is_published        Boolean         DEFAULT false        Visibility
+created_at          DateTime        DEFAULT now()        Created timestamp
+updated_at          DateTime        AUTO                 Updated timestamp
+--------------------------------------------------------------------------------
+UNIQUE: (course_id, slug)
+
+TABLE: lessons
+--------------------------------------------------------------------------------
+Column              Type            Constraints          Description
+--------------------------------------------------------------------------------
+id                  String          PK, cuid()           Lesson ID
+level_id            String          FK -> levels.id      Parent level
+difficulty          Difficulty      NOT NULL             EASY/MEDIUM/HARD
+title_en            String          NOT NULL             English title
+title_fil           String          NULL                 Filipino title
+content             JSON            NOT NULL             Structured content
+xp_reward           Int             NOT NULL             Base XP reward
+time_limit_seconds  Int             NULL                 Optional time limit
+estimated_time_mins Int             DEFAULT 10           Estimated duration
+order_index         Int             DEFAULT 0            Order within level
+is_published        Boolean         DEFAULT false        Visibility
+created_at          DateTime        DEFAULT now()        Created timestamp
+updated_at          DateTime        AUTO                 Updated timestamp
+--------------------------------------------------------------------------------
+UNIQUE: (level_id, difficulty)
+
+ENUM: Difficulty
+- EASY      (1x XP multiplier)
+- MEDIUM    (2x XP multiplier)
+- HARD      (3x XP multiplier)
+
+================================================================================
+3. PROGRESS TRACKING
+================================================================================
+
+TABLE: user_course_progress
+--------------------------------------------------------------------------------
+Column              Type            Constraints          Description
+--------------------------------------------------------------------------------
+id                  String          PK, cuid()           Progress ID
+user_id             String          FK -> users.id       User reference
+course_id           String          FK -> courses.id     Course reference
+completion_pct      Float           DEFAULT 0            Completion percentage
+mastery_pct         Float           DEFAULT 0            Mastery percentage
+total_xp_earned     Int             DEFAULT 0            XP earned in course
+time_spent_seconds  Int             DEFAULT 0            Total time spent
+started_at          DateTime        DEFAULT now()        When started
+completed_at        DateTime        NULL                 When completed
+last_activity_at    DateTime        DEFAULT now()        Last activity
+--------------------------------------------------------------------------------
+UNIQUE: (user_id, course_id)
+
+TABLE: user_level_unlocks
+--------------------------------------------------------------------------------
+Column              Type            Constraints          Description
+--------------------------------------------------------------------------------
+id                  String          PK, cuid()           Unlock ID
+user_id             String          FK -> users.id       User reference
+level_id            String          FK -> levels.id      Level reference
+unlocked_at         DateTime        DEFAULT now()        When unlocked
+--------------------------------------------------------------------------------
+UNIQUE: (user_id, level_id)
+
+TABLE: user_lesson_progress
+--------------------------------------------------------------------------------
+Column              Type            Constraints          Description
+--------------------------------------------------------------------------------
+id                  String          PK, cuid()           Progress ID
+user_id             String          FK -> users.id       User reference
+lesson_id           String          FK -> lessons.id     Lesson reference
+status              LessonStatus    DEFAULT NOT_STARTED  Progress status
+score               Int             NULL                 Score (0-100)
+xp_earned           Int             DEFAULT 0            XP earned
+time_spent_seconds  Int             DEFAULT 0            Time spent
+started_at          DateTime        NULL                 When started
+completed_at        DateTime        NULL                 When completed
+--------------------------------------------------------------------------------
+UNIQUE: (user_id, lesson_id)
+
+ENUM: LessonStatus
+- NOT_STARTED
+- IN_PROGRESS
+- COMPLETED
+
+================================================================================
+4. QUIZZES & CHALLENGES
+================================================================================
+
+TABLE: quizzes
+--------------------------------------------------------------------------------
+Column              Type            Constraints          Description
+--------------------------------------------------------------------------------
+id                  String          PK, cuid()           Quiz ID
+lesson_id           String          FK -> lessons.id     Parent lesson
+question_type       QuestionType    NOT NULL             Type of question
+question_en         String          NOT NULL             English question
+question_fil        String          NULL                 Filipino question
+options             JSON            NULL                 Multiple choice options
+correct_answer      JSON            NOT NULL             Correct answer(s)
+explanation_en      String          NULL                 English explanation
+explanation_fil     String          NULL                 Filipino explanation
+hints               JSON            NULL                 Array of hints
+order_index         Int             DEFAULT 0            Order in lesson
+created_at          DateTime        DEFAULT now()        Created timestamp
+updated_at          DateTime        AUTO                 Updated timestamp
+--------------------------------------------------------------------------------
+
+ENUM: QuestionType
+- MULTIPLE_CHOICE
+- TRUE_FALSE
+- FILL_BLANK
+- CODE_OUTPUT
+- MATCH_PAIRS
+
+TABLE: quiz_attempts
+--------------------------------------------------------------------------------
+Column              Type            Constraints          Description
+--------------------------------------------------------------------------------
+id                  String          PK, cuid()           Attempt ID
+user_id             String          FK -> users.id       User reference
+quiz_id             String          FK -> quizzes.id     Quiz reference
+answer              JSON            NOT NULL             User's answer
+is_correct          Boolean         NOT NULL             Was answer correct
+score               Int             NOT NULL             Score (0-100)
+time_taken_seconds  Int             NOT NULL             Time to answer
+hints_used          Int             DEFAULT 0            Number of hints used
+created_at          DateTime        DEFAULT now()        Attempt timestamp
+--------------------------------------------------------------------------------
+
+TABLE: code_challenges
+--------------------------------------------------------------------------------
+Column              Type            Constraints          Description
+--------------------------------------------------------------------------------
+id                  String          PK, cuid()           Challenge ID
+lesson_id           String          FK -> lessons.id     Parent lesson
+title_en            String          NOT NULL             English title
+title_fil           String          NULL                 Filipino title
+description_en      String          NOT NULL             English description
+description_fil     String          NULL                 Filipino description
+starter_code        String          NOT NULL             Initial code template
+solution_code       String          NOT NULL             Model solution
+language            String          NOT NULL             Programming language
+test_cases          JSON            NOT NULL             Array of test cases
+hints               JSON            NULL                 Array of hints
+time_limit_seconds  Int             NULL                 Execution time limit
+order_index         Int             DEFAULT 0            Order in lesson
+created_at          DateTime        DEFAULT now()        Created timestamp
+updated_at          DateTime        AUTO                 Updated timestamp
+--------------------------------------------------------------------------------
+
+TABLE: challenge_submissions
+--------------------------------------------------------------------------------
+Column              Type            Constraints          Description
+--------------------------------------------------------------------------------
+id                  String          PK, cuid()           Submission ID
+user_id             String          FK -> users.id       User reference
+challenge_id        String          FK -> code_chal...   Challenge reference
+code                String          NOT NULL             Submitted code
+language            String          NOT NULL             Language used
+status              SubmissionStatus NOT NULL            Submission status
+tests_passed        Int             DEFAULT 0            Tests passed count
+tests_total         Int             NOT NULL             Total tests
+execution_time_ms   Int             NULL                 Execution time
+memory_used_bytes   Int             NULL                 Memory used
+stdout              String          NULL                 Standard output
+stderr              String          NULL                 Error output
+xp_earned           Int             DEFAULT 0            XP awarded
+hints_used          Int             DEFAULT 0            Hints used
+created_at          DateTime        DEFAULT now()        Submission time
+--------------------------------------------------------------------------------
+
+ENUM: SubmissionStatus
+- PENDING
+- RUNNING
+- ACCEPTED
+- WRONG_ANSWER
+- TIME_LIMIT
+- RUNTIME_ERROR
+- COMPILE_ERROR
+
+================================================================================
+5. GAMIFICATION
+================================================================================
+
+TABLE: xp_transactions
+--------------------------------------------------------------------------------
+Column              Type            Constraints          Description
+--------------------------------------------------------------------------------
+id                  String          PK, cuid()           Transaction ID
+user_id             String          FK -> users.id       User reference
+amount              Int             NOT NULL             XP amount (+/-)
+source_type         XpSourceType    NOT NULL             Source of XP
+source_id           String          NULL                 Related entity ID
+description         String          NULL                 Description
+multiplier          Float           DEFAULT 1.0          XP multiplier applied
+created_at          DateTime        DEFAULT now()        Transaction time
+--------------------------------------------------------------------------------
+
+ENUM: XpSourceType
+- LESSON_COMPLETE
+- QUIZ_CORRECT
+- CHALLENGE_COMPLETE
+- STREAK_BONUS
+- ACHIEVEMENT
+- DAILY_LOGIN
+- LEVEL_UP
+
+TABLE: achievements
+--------------------------------------------------------------------------------
+Column              Type            Constraints          Description
+--------------------------------------------------------------------------------
+id                  String          PK, cuid()           Achievement ID
+slug                String          UNIQUE, NOT NULL     Unique identifier
+name_en             String          NOT NULL             English name
+name_fil            String          NULL                 Filipino name
+description_en      String          NOT NULL             English description
+description_fil     String          NULL                 Filipino description
+icon_url            String          NOT NULL             Achievement icon
+category            String          NOT NULL             Category grouping
+xp_reward           Int             DEFAULT 0            XP reward
+criteria            JSON            NOT NULL             Unlock criteria
+is_secret           Boolean         DEFAULT false        Hidden until earned
+created_at          DateTime        DEFAULT now()        Created timestamp
+--------------------------------------------------------------------------------
+
+TABLE: user_achievements
+--------------------------------------------------------------------------------
+Column              Type            Constraints          Description
+--------------------------------------------------------------------------------
+id                  String          PK, cuid()           Record ID
+user_id             String          FK -> users.id       User reference
+achievement_id      String          FK -> achievements   Achievement reference
+earned_at           DateTime        DEFAULT now()        When earned
+--------------------------------------------------------------------------------
+UNIQUE: (user_id, achievement_id)
+
+TABLE: badges
+--------------------------------------------------------------------------------
+Column              Type            Constraints          Description
+--------------------------------------------------------------------------------
+id                  String          PK, cuid()           Badge ID
+slug                String          UNIQUE, NOT NULL     Unique identifier
+name_en             String          NOT NULL             English name
+name_fil            String          NULL                 Filipino name
+description_en      String          NOT NULL             English description
+description_fil     String          NULL                 Filipino description
+icon_url            String          NOT NULL             Badge icon
+rarity              BadgeRarity     NOT NULL             Rarity level
+criteria            JSON            NOT NULL             Unlock criteria
+created_at          DateTime        DEFAULT now()        Created timestamp
+--------------------------------------------------------------------------------
+
+ENUM: BadgeRarity
+- COMMON
+- UNCOMMON
+- RARE
+- EPIC
+- LEGENDARY
+
+TABLE: user_badges
+--------------------------------------------------------------------------------
+Column              Type            Constraints          Description
+--------------------------------------------------------------------------------
+id                  String          PK, cuid()           Record ID
+user_id             String          FK -> users.id       User reference
+badge_id            String          FK -> badges.id      Badge reference
+earned_at           DateTime        DEFAULT now()        When earned
+is_displayed        Boolean         DEFAULT false        Show on profile
+display_order       Int             DEFAULT 0            Display position
+--------------------------------------------------------------------------------
+UNIQUE: (user_id, badge_id)
+
+TABLE: streak_history
+--------------------------------------------------------------------------------
+Column              Type            Constraints          Description
+--------------------------------------------------------------------------------
+id                  String          PK, cuid()           Record ID
+user_id             String          FK -> users.id       User reference
+date                Date            NOT NULL             Activity date
+activity_count      Int             DEFAULT 1            Activities that day
+xp_earned           Int             DEFAULT 0            XP earned that day
+streak_day          Int             NOT NULL             Day number in streak
+--------------------------------------------------------------------------------
+UNIQUE: (user_id, date)
+
+================================================================================
+6. SOCIAL FEATURES
+================================================================================
+
+TABLE: follows
+--------------------------------------------------------------------------------
+Column              Type            Constraints          Description
+--------------------------------------------------------------------------------
+id                  String          PK, cuid()           Follow ID
+follower_id         String          FK -> users.id       Who is following
+following_id        String          FK -> users.id       Who is being followed
+created_at          DateTime        DEFAULT now()        When followed
+--------------------------------------------------------------------------------
+UNIQUE: (follower_id, following_id)
+
+TABLE: activities
+--------------------------------------------------------------------------------
+Column              Type            Constraints          Description
+--------------------------------------------------------------------------------
+id                  String          PK, cuid()           Activity ID
+user_id             String          FK -> users.id       User reference
+activity_type       ActivityType    NOT NULL             Type of activity
+entity_type         String          NULL                 Related entity type
+entity_id           String          NULL                 Related entity ID
+metadata            JSON            NULL                 Additional data
+is_public           Boolean         DEFAULT true         Visible to followers
+created_at          DateTime        DEFAULT now()        Activity timestamp
+--------------------------------------------------------------------------------
+
+ENUM: ActivityType
+- COURSE_STARTED
+- COURSE_COMPLETED
+- LESSON_COMPLETED
+- LEVEL_UNLOCKED
+- ACHIEVEMENT_EARNED
+- BADGE_EARNED
+- STREAK_MILESTONE
+- LEVEL_UP
+
+================================================================================
+7. COMMENTS
+================================================================================
+
+TABLE: comments
+--------------------------------------------------------------------------------
+Column              Type            Constraints          Description
+--------------------------------------------------------------------------------
+id                  String          PK, cuid()           Comment ID
+user_id             String          FK -> users.id       Author
+lesson_id           String          FK -> lessons.id     Parent lesson
+parent_id           String          FK -> comments.id    Parent comment (reply)
+content             String          NOT NULL             Comment text (max 1000)
+is_edited           Boolean         DEFAULT false        Was edited
+is_hidden           Boolean         DEFAULT false        Hidden by moderator
+is_pinned           Boolean         DEFAULT false        Pinned by admin
+created_at          DateTime        DEFAULT now()        Posted timestamp
+updated_at          DateTime        AUTO                 Edited timestamp
+--------------------------------------------------------------------------------
+
+TABLE: comment_likes
+--------------------------------------------------------------------------------
+Column              Type            Constraints          Description
+--------------------------------------------------------------------------------
+id                  String          PK, cuid()           Like ID
+user_id             String          FK -> users.id       Who liked
+comment_id          String          FK -> comments.id    Which comment
+created_at          DateTime        DEFAULT now()        When liked
+--------------------------------------------------------------------------------
+UNIQUE: (user_id, comment_id)
+
+TABLE: comment_reports
+--------------------------------------------------------------------------------
+Column              Type            Constraints          Description
+--------------------------------------------------------------------------------
+id                  String          PK, cuid()           Report ID
+user_id             String          FK -> users.id       Who reported
+comment_id          String          FK -> comments.id    Which comment
+reason              ReportReason    NOT NULL             Reason for report
+details             String          NULL                 Additional details
+status              ReportStatus    DEFAULT PENDING      Review status
+reviewed_by         String          FK -> users.id       Moderator who reviewed
+reviewed_at         DateTime        NULL                 When reviewed
+created_at          DateTime        DEFAULT now()        Report timestamp
+--------------------------------------------------------------------------------
+
+ENUM: ReportReason
+- SPAM
+- HARASSMENT
+- INAPPROPRIATE
+- OTHER
+
+ENUM: ReportStatus
+- PENDING
+- REVIEWED
+- DISMISSED
+- ACTION_TAKEN
+
+================================================================================
+8. LEADERBOARDS
+================================================================================
+
+TABLE: leaderboard_snapshots
+--------------------------------------------------------------------------------
+Column              Type            Constraints          Description
+--------------------------------------------------------------------------------
+id                  String          PK, cuid()           Snapshot ID
+leaderboard_type    LeaderboardType NOT NULL             Type of leaderboard
+period_start        DateTime        NOT NULL             Period start date
+period_end          DateTime        NOT NULL             Period end date
+rankings            JSON            NOT NULL             Array of rankings
+created_at          DateTime        DEFAULT now()        Snapshot timestamp
+--------------------------------------------------------------------------------
+
+ENUM: LeaderboardType
+- GLOBAL_ALLTIME
+- GLOBAL_WEEKLY
+- GLOBAL_MONTHLY
+- COURSE_SPECIFIC
+
+================================================================================
+9. NOTIFICATIONS
+================================================================================
+
+TABLE: notifications
+--------------------------------------------------------------------------------
+Column              Type            Constraints          Description
+--------------------------------------------------------------------------------
+id                  String          PK, cuid()           Notification ID
+user_id             String          FK -> users.id       Recipient
+type                NotificationType NOT NULL            Notification type
+title               String          NOT NULL             Notification title
+message             String          NOT NULL             Notification message
+data                JSON            NULL                 Additional data
+is_read             Boolean         DEFAULT false        Read status
+read_at             DateTime        NULL                 When read
+created_at          DateTime        DEFAULT now()        Created timestamp
+--------------------------------------------------------------------------------
+
+ENUM: NotificationType
+- ACHIEVEMENT_EARNED
+- BADGE_EARNED
+- LEVEL_UP
+- STREAK_REMINDER
+- STREAK_BROKEN
+- NEW_FOLLOWER
+- COMMENT_REPLY
+- COMMENT_LIKE
+- COURSE_UPDATE
+- SYSTEM
+
+TABLE: push_subscriptions
+--------------------------------------------------------------------------------
+Column              Type            Constraints          Description
+--------------------------------------------------------------------------------
+id                  String          PK, cuid()           Subscription ID
+user_id             String          FK -> users.id       User reference
+device_token        String          NOT NULL             FCM/APNS token
+device_type         DeviceType      NOT NULL             ios/android
+device_id           String          NULL                 Device identifier
+is_active           Boolean         DEFAULT true         Active status
+created_at          DateTime        DEFAULT now()        Subscribed timestamp
+updated_at          DateTime        AUTO                 Updated timestamp
+--------------------------------------------------------------------------------
+
+ENUM: DeviceType
+- IOS
+- ANDROID
+
+================================================================================
+10. SETTINGS
+================================================================================
+
+TABLE: user_settings
+--------------------------------------------------------------------------------
+Column              Type            Constraints          Description
+--------------------------------------------------------------------------------
+id                  String          PK, cuid()           Settings ID
+user_id             String          FK -> users.id       User reference (unique)
+theme               String          DEFAULT 'auto'       light/dark/auto
+code_editor_theme   String          DEFAULT 'vs-dark'    Editor theme
+font_size           Int             DEFAULT 14           Editor font size
+daily_goal_minutes  Int             DEFAULT 30           Daily learning goal
+difficulty_pref     Difficulty      DEFAULT MEDIUM       Preferred difficulty
+created_at          DateTime        DEFAULT now()        Created timestamp
+updated_at          DateTime        AUTO                 Updated timestamp
+--------------------------------------------------------------------------------
+UNIQUE: user_id
+
+TABLE: notification_settings
+--------------------------------------------------------------------------------
+Column              Type            Constraints          Description
+--------------------------------------------------------------------------------
+id                  String          PK, cuid()           Settings ID
+user_id             String          FK -> users.id       User reference (unique)
+email_enabled       Boolean         DEFAULT true         Email notifications
+push_enabled        Boolean         DEFAULT true         Push notifications
+streak_reminders    Boolean         DEFAULT true         Streak reminders
+achievement_notifs  Boolean         DEFAULT true         Achievement alerts
+social_notifs       Boolean         DEFAULT true         Social notifications
+comment_replies     Boolean         DEFAULT true         Reply notifications
+new_followers       Boolean         DEFAULT true         Follower notifications
+created_at          DateTime        DEFAULT now()        Created timestamp
+updated_at          DateTime        AUTO                 Updated timestamp
+--------------------------------------------------------------------------------
+UNIQUE: user_id
+
+TABLE: privacy_settings
+--------------------------------------------------------------------------------
+Column              Type            Constraints          Description
+--------------------------------------------------------------------------------
+id                  String          PK, cuid()           Settings ID
+user_id             String          FK -> users.id       User reference (unique)
+profile_visibility  Visibility      DEFAULT PUBLIC       Profile visibility
+show_progress       Boolean         DEFAULT true         Show progress publicly
+show_activity       Boolean         DEFAULT true         Show activity feed
+allow_messages      MessagePerm     DEFAULT EVERYONE     Who can message
+created_at          DateTime        DEFAULT now()        Created timestamp
+updated_at          DateTime        AUTO                 Updated timestamp
+--------------------------------------------------------------------------------
+UNIQUE: user_id
+
+ENUM: Visibility
+- PUBLIC
+- FRIENDS
+- PRIVATE
+
+ENUM: MessagePerm
+- EVERYONE
+- FRIENDS
+- NONE
+
+================================================================================
+RELATIONSHIPS SUMMARY
+================================================================================
+
+users
+  ├── user_sessions (1:N)
+  ├── password_reset_tokens (1:N)
+  ├── oauth_accounts (1:N)
+  ├── user_course_progress (1:N)
+  ├── user_level_unlocks (1:N)
+  ├── user_lesson_progress (1:N)
+  ├── quiz_attempts (1:N)
+  ├── challenge_submissions (1:N)
+  ├── xp_transactions (1:N)
+  ├── user_achievements (1:N)
+  ├── user_badges (1:N)
+  ├── streak_history (1:N)
+  ├── follows (1:N as follower)
+  ├── follows (1:N as following)
+  ├── activities (1:N)
+  ├── comments (1:N)
+  ├── comment_likes (1:N)
+  ├── comment_reports (1:N)
+  ├── notifications (1:N)
+  ├── push_subscriptions (1:N)
+  ├── user_settings (1:1)
+  ├── notification_settings (1:1)
+  └── privacy_settings (1:1)
+
+courses
+  ├── levels (1:N)
+  └── user_course_progress (1:N)
+
+levels
+  ├── lessons (1:N)
+  └── user_level_unlocks (1:N)
+
+lessons
+  ├── user_lesson_progress (1:N)
+  ├── quizzes (1:N)
+  ├── code_challenges (1:N)
+  └── comments (1:N)
+
+quizzes
+  └── quiz_attempts (1:N)
+
+code_challenges
+  └── challenge_submissions (1:N)
+
+achievements
+  └── user_achievements (1:N)
+
+badges
+  └── user_badges (1:N)
+
+comments
+  ├── comments (1:N as replies)
+  ├── comment_likes (1:N)
+  └── comment_reports (1:N)
+
+================================================================================
+CASCADE DELETE RULES
+================================================================================
+
+ON DELETE CASCADE:
+- User deleted → All user-related records deleted
+- Course deleted → Levels, Progress deleted
+- Level deleted → Lessons, Unlocks deleted
+- Lesson deleted → Quizzes, Challenges, Progress, Comments deleted
+- Comment deleted → Replies, Likes, Reports deleted
+
+================================================================================
+INDEXES (Beyond Primary/Unique Keys)
+================================================================================
+
+- users: (email), (username)
+- courses: (slug), (language, is_published)
+- levels: (course_id, order_index)
+- lessons: (level_id, difficulty)
+- user_course_progress: (user_id), (course_id)
+- user_lesson_progress: (user_id), (lesson_id), (status)
+- xp_transactions: (user_id, created_at)
+- activities: (user_id, created_at), (is_public, created_at)
+- comments: (lesson_id, created_at), (user_id)
+- notifications: (user_id, is_read, created_at)
+- follows: (follower_id), (following_id)
+- streak_history: (user_id, date)
+
+================================================================================
+END OF SCHEMA
+================================================================================

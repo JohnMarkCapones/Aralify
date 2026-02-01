@@ -11,13 +11,716 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// Example User model - expand as needed
+// ============================================================================
+// 1. USERS & AUTHENTICATION
+// ============================================================================
+
 model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  username      String    @unique
+  passwordHash  String?   @map("password_hash")
+  displayName   String    @map("display_name")
+  avatarUrl     String?   @map("avatar_url")
+  bio           String?
+  locale        String    @default("en")
+  timezone      String    @default("UTC")
+  xpTotal       Int       @default(0) @map("xp_total")
+  level         Int       @default(1)
+  streakCurrent Int       @default(0) @map("streak_current")
+  streakLongest Int       @default(0) @map("streak_longest")
+  role          UserRole  @default(USER)
+  isVerified    Boolean   @default(false) @map("is_verified")
+  lastLoginAt   DateTime? @map("last_login_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  sessions             UserSession[]
+  passwordResetTokens  PasswordResetToken[]
+  oauthAccounts        OAuthAccount[]
+  courseProgress       UserCourseProgress[]
+  levelUnlocks         UserLevelUnlock[]
+  lessonProgress       UserLessonProgress[]
+  quizAttempts         QuizAttempt[]
+  challengeSubmissions ChallengeSubmission[]
+  xpTransactions       XpTransaction[]
+  achievements         UserAchievement[]
+  badges               UserBadge[]
+  streakHistory        StreakHistory[]
+  followers            Follow[]              @relation("following")
+  following            Follow[]              @relation("follower")
+  activities           Activity[]
+  comments             Comment[]
+  commentLikes         CommentLike[]
+  commentReports       CommentReport[]       @relation("reporter")
+  reviewedReports      CommentReport[]       @relation("reviewer")
+  notifications        Notification[]
+  pushSubscriptions    PushSubscription[]
+  settings             UserSettings?
+  notificationSettings NotificationSettings?
+  privacySettings      PrivacySettings?
+
+  @@map("users")
+}
+
+enum UserRole {
+  USER
+  MODERATOR
+  ADMIN
+}
+
+model UserSession {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  token      String   @unique
+  deviceInfo String?  @map("device_info")
+  ipAddress  String?  @map("ip_address")
+  expiresAt  DateTime @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_sessions")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String    @map("user_id")
+  token     String    @unique
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("password_reset_tokens")
+}
+
+model OAuthAccount {
+  id           String  @id @default(cuid())
+  userId       String  @map("user_id")
+  provider     String
+  providerId   String  @map("provider_id")
+  accessToken  String? @map("access_token")
+  refreshToken String? @map("refresh_token")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider])
+  @@map("oauth_accounts")
+}
+
+// ============================================================================
+// 2. COURSES & CONTENT
+// ============================================================================
+
+model Course {
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  language       String
+  titleEn        String   @map("title_en")
+  titleFil       String?  @map("title_fil")
+  descriptionEn  String   @map("description_en")
+  descriptionFil String?  @map("description_fil")
+  iconUrl        String?  @map("icon_url")
+  color          String?
+  orderIndex     Int      @default(0) @map("order_index")
+  estimatedHours Int      @default(0) @map("estimated_hours")
+  isPublished    Boolean  @default(false) @map("is_published")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  levels       Level[]
+  userProgress UserCourseProgress[]
+
+  @@map("courses")
+}
+
+model Level {
+  id             String   @id @default(cuid())
+  courseId       String   @map("course_id")
+  slug           String
+  titleEn        String   @map("title_en")
+  titleFil       String?  @map("title_fil")
+  descriptionEn  String?  @map("description_en")
+  descriptionFil String?  @map("description_fil")
+  orderIndex     Int      @default(0) @map("order_index")
+  isPublished    Boolean  @default(false) @map("is_published")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  course      Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons     Lesson[]
+  userUnlocks UserLevelUnlock[]
+
+  @@unique([courseId, slug])
+  @@map("levels")
+}
+
+model Lesson {
+  id                   String     @id @default(cuid())
+  levelId              String     @map("level_id")
+  difficulty           Difficulty
+  titleEn              String     @map("title_en")
+  titleFil             String?    @map("title_fil")
+  content              Json
+  xpReward             Int        @map("xp_reward")
+  timeLimitSeconds     Int?       @map("time_limit_seconds")
+  estimatedTimeMinutes Int        @default(10) @map("estimated_time_minutes")
+  orderIndex           Int        @default(0) @map("order_index")
+  isPublished          Boolean    @default(false) @map("is_published")
+  createdAt            DateTime   @default(now()) @map("created_at")
+  updatedAt            DateTime   @updatedAt @map("updated_at")
+
+  level           Level                @relation(fields: [levelId], references: [id], onDelete: Cascade)
+  userProgress    UserLessonProgress[]
+  quizzes         Quiz[]
+  codeChallenges  CodeChallenge[]
+  comments        Comment[]
+
+  @@unique([levelId, difficulty])
+  @@map("lessons")
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+// ============================================================================
+// 3. PROGRESS TRACKING
+// ============================================================================
+
+model UserCourseProgress {
+  id                   String    @id @default(cuid())
+  userId               String    @map("user_id")
+  courseId             String    @map("course_id")
+  completionPercentage Float     @default(0) @map("completion_percentage")
+  masteryPercentage    Float     @default(0) @map("mastery_percentage")
+  totalXpEarned        Int       @default(0) @map("total_xp_earned")
+  timeSpentSeconds     Int       @default(0) @map("time_spent_seconds")
+  startedAt            DateTime  @default(now()) @map("started_at")
+  completedAt          DateTime? @map("completed_at")
+  lastActivityAt       DateTime  @default(now()) @map("last_activity_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@map("user_course_progress")
+}
+
+model UserLevelUnlock {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  levelId    String   @map("level_id")
+  unlockedAt DateTime @default(now()) @map("unlocked_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  level Level @relation(fields: [levelId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, levelId])
+  @@map("user_level_unlocks")
+}
+
+model UserLessonProgress {
+  id               String       @id @default(cuid())
+  userId           String       @map("user_id")
+  lessonId         String       @map("lesson_id")
+  status           LessonStatus @default(NOT_STARTED)
+  score            Int?
+  xpEarned         Int          @default(0) @map("xp_earned")
+  timeSpentSeconds Int          @default(0) @map("time_spent_seconds")
+  startedAt        DateTime?    @map("started_at")
+  completedAt      DateTime?    @map("completed_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+  @@map("user_lesson_progress")
+}
+
+enum LessonStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+// ============================================================================
+// 4. QUIZZES & CHALLENGES
+// ============================================================================
+
+model Quiz {
+  id             String       @id @default(cuid())
+  lessonId       String       @map("lesson_id")
+  questionType   QuestionType @map("question_type")
+  questionEn     String       @map("question_en")
+  questionFil    String?      @map("question_fil")
+  options        Json?
+  correctAnswer  Json         @map("correct_answer")
+  explanationEn  String?      @map("explanation_en")
+  explanationFil String?      @map("explanation_fil")
+  hints          Json?
+  orderIndex     Int          @default(0) @map("order_index")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  lesson   Lesson        @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  attempts QuizAttempt[]
+
+  @@map("quizzes")
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  FILL_BLANK
+  CODE_OUTPUT
+  MATCH_PAIRS
+}
+
+model QuizAttempt {
+  id               String   @id @default(cuid())
+  userId           String   @map("user_id")
+  quizId           String   @map("quiz_id")
+  answer           Json
+  isCorrect        Boolean  @map("is_correct")
+  score            Int
+  timeTakenSeconds Int      @map("time_taken_seconds")
+  hintsUsed        Int      @default(0) @map("hints_used")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@map("quiz_attempts")
+}
+
+model CodeChallenge {
+  id               String   @id @default(cuid())
+  lessonId         String   @map("lesson_id")
+  titleEn          String   @map("title_en")
+  titleFil         String?  @map("title_fil")
+  descriptionEn    String   @map("description_en")
+  descriptionFil   String?  @map("description_fil")
+  starterCode      String   @map("starter_code")
+  solutionCode     String   @map("solution_code")
+  language         String
+  testCases        Json     @map("test_cases")
+  hints            Json?
+  timeLimitSeconds Int?     @map("time_limit_seconds")
+  orderIndex       Int      @default(0) @map("order_index")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  lesson      Lesson                @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  submissions ChallengeSubmission[]
+
+  @@map("code_challenges")
+}
+
+model ChallengeSubmission {
+  id              String           @id @default(cuid())
+  userId          String           @map("user_id")
+  challengeId     String           @map("challenge_id")
+  code            String
+  language        String
+  status          SubmissionStatus
+  testsPassed     Int              @default(0) @map("tests_passed")
+  testsTotal      Int              @map("tests_total")
+  executionTimeMs Int?             @map("execution_time_ms")
+  memoryUsedBytes Int?             @map("memory_used_bytes")
+  stdout          String?
+  stderr          String?
+  xpEarned        Int              @default(0) @map("xp_earned")
+  hintsUsed       Int              @default(0) @map("hints_used")
+  createdAt       DateTime         @default(now()) @map("created_at")
+
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challenge CodeChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+
+  @@map("challenge_submissions")
+}
+
+enum SubmissionStatus {
+  PENDING
+  RUNNING
+  ACCEPTED
+  WRONG_ANSWER
+  TIME_LIMIT
+  RUNTIME_ERROR
+  COMPILE_ERROR
+}
+
+// ============================================================================
+// 5. GAMIFICATION
+// ============================================================================
+
+model XpTransaction {
+  id          String       @id @default(cuid())
+  userId      String       @map("user_id")
+  amount      Int
+  sourceType  XpSourceType @map("source_type")
+  sourceId    String?      @map("source_id")
+  description String?
+  multiplier  Float        @default(1.0)
+  createdAt   DateTime     @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("xp_transactions")
+}
+
+enum XpSourceType {
+  LESSON_COMPLETE
+  QUIZ_CORRECT
+  CHALLENGE_COMPLETE
+  STREAK_BONUS
+  ACHIEVEMENT
+  DAILY_LOGIN
+  LEVEL_UP
+}
+
+model Achievement {
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  nameEn         String   @map("name_en")
+  nameFil        String?  @map("name_fil")
+  descriptionEn  String   @map("description_en")
+  descriptionFil String?  @map("description_fil")
+  iconUrl        String   @map("icon_url")
+  category       String
+  xpReward       Int      @default(0) @map("xp_reward")
+  criteria       Json
+  isSecret       Boolean  @default(false) @map("is_secret")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  users UserAchievement[]
+
+  @@map("achievements")
+}
+
+model UserAchievement {
+  id            String   @id @default(cuid())
+  userId        String   @map("user_id")
+  achievementId String   @map("achievement_id")
+  earnedAt      DateTime @default(now()) @map("earned_at")
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@map("user_achievements")
+}
+
+model Badge {
+  id             String      @id @default(cuid())
+  slug           String      @unique
+  nameEn         String      @map("name_en")
+  nameFil        String?     @map("name_fil")
+  descriptionEn  String      @map("description_en")
+  descriptionFil String?     @map("description_fil")
+  iconUrl        String      @map("icon_url")
+  rarity         BadgeRarity
+  criteria       Json
+  createdAt      DateTime    @default(now()) @map("created_at")
+
+  users UserBadge[]
+
+  @@map("badges")
+}
+
+enum BadgeRarity {
+  COMMON
+  UNCOMMON
+  RARE
+  EPIC
+  LEGENDARY
+}
+
+model UserBadge {
+  id           String   @id @default(cuid())
+  userId       String   @map("user_id")
+  badgeId      String   @map("badge_id")
+  earnedAt     DateTime @default(now()) @map("earned_at")
+  isDisplayed  Boolean  @default(false) @map("is_displayed")
+  displayOrder Int      @default(0) @map("display_order")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+  @@map("user_badges")
+}
+
+model StreakHistory {
+  id            String   @id @default(cuid())
+  userId        String   @map("user_id")
+  date          DateTime @db.Date
+  activityCount Int      @default(1) @map("activity_count")
+  xpEarned      Int      @default(0) @map("xp_earned")
+  streakDay     Int      @map("streak_day")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@map("streak_history")
+}
+
+// ============================================================================
+// 6. SOCIAL FEATURES
+// ============================================================================
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String   @map("follower_id")
+  followingId String   @map("following_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  follower  User @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@map("follows")
+}
+
+model Activity {
+  id           String       @id @default(cuid())
+  userId       String       @map("user_id")
+  activityType ActivityType @map("activity_type")
+  entityType   String?      @map("entity_type")
+  entityId     String?      @map("entity_id")
+  metadata     Json?
+  isPublic     Boolean      @default(true) @map("is_public")
+  createdAt    DateTime     @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("activities")
+}
+
+enum ActivityType {
+  COURSE_STARTED
+  COURSE_COMPLETED
+  LESSON_COMPLETED
+  LEVEL_UNLOCKED
+  ACHIEVEMENT_EARNED
+  BADGE_EARNED
+  STREAK_MILESTONE
+  LEVEL_UP
+}
+
+// ============================================================================
+// 7. COMMENTS
+// ============================================================================
+
+model Comment {
   id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
+  userId    String   @map("user_id")
+  lessonId  String   @map("lesson_id")
+  parentId  String?  @map("parent_id")
+  content   String
+  isEdited  Boolean  @default(false) @map("is_edited")
+  isHidden  Boolean  @default(false) @map("is_hidden")
+  isPinned  Boolean  @default(false) @map("is_pinned")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@map("users")
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson  Lesson          @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  parent  Comment?        @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Comment[]       @relation("CommentReplies")
+  likes   CommentLike[]
+  reports CommentReport[]
+
+  @@map("comments")
+}
+
+model CommentLike {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  commentId String   @map("comment_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, commentId])
+  @@map("comment_likes")
+}
+
+model CommentReport {
+  id         String       @id @default(cuid())
+  userId     String       @map("user_id")
+  commentId  String       @map("comment_id")
+  reason     ReportReason
+  details    String?
+  status     ReportStatus @default(PENDING)
+  reviewedBy String?      @map("reviewed_by")
+  reviewedAt DateTime?    @map("reviewed_at")
+  createdAt  DateTime     @default(now()) @map("created_at")
+
+  user     User     @relation("reporter", fields: [userId], references: [id], onDelete: Cascade)
+  comment  Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  reviewer User?    @relation("reviewer", fields: [reviewedBy], references: [id])
+
+  @@map("comment_reports")
+}
+
+enum ReportReason {
+  SPAM
+  HARASSMENT
+  INAPPROPRIATE
+  OTHER
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  DISMISSED
+  ACTION_TAKEN
+}
+
+// ============================================================================
+// 8. LEADERBOARDS
+// ============================================================================
+
+model LeaderboardSnapshot {
+  id              String          @id @default(cuid())
+  leaderboardType LeaderboardType @map("leaderboard_type")
+  periodStart     DateTime        @map("period_start")
+  periodEnd       DateTime        @map("period_end")
+  rankings        Json
+  createdAt       DateTime        @default(now()) @map("created_at")
+
+  @@map("leaderboard_snapshots")
+}
+
+enum LeaderboardType {
+  GLOBAL_ALLTIME
+  GLOBAL_WEEKLY
+  GLOBAL_MONTHLY
+  COURSE_SPECIFIC
+}
+
+// ============================================================================
+// 9. NOTIFICATIONS
+// ============================================================================
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String           @map("user_id")
+  type      NotificationType
+  title     String
+  message   String
+  data      Json?
+  isRead    Boolean          @default(false) @map("is_read")
+  readAt    DateTime?        @map("read_at")
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+enum NotificationType {
+  ACHIEVEMENT_EARNED
+  BADGE_EARNED
+  LEVEL_UP
+  STREAK_REMINDER
+  STREAK_BROKEN
+  NEW_FOLLOWER
+  COMMENT_REPLY
+  COMMENT_LIKE
+  COURSE_UPDATE
+  SYSTEM
+}
+
+model PushSubscription {
+  id          String     @id @default(cuid())
+  userId      String     @map("user_id")
+  deviceToken String     @map("device_token")
+  deviceType  DeviceType @map("device_type")
+  deviceId    String?    @map("device_id")
+  isActive    Boolean    @default(true) @map("is_active")
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("push_subscriptions")
+}
+
+enum DeviceType {
+  IOS
+  ANDROID
+}
+
+// ============================================================================
+// 10. SETTINGS
+// ============================================================================
+
+model UserSettings {
+  id              String     @id @default(cuid())
+  userId          String     @unique @map("user_id")
+  theme           String     @default("auto")
+  codeEditorTheme String     @default("vs-dark") @map("code_editor_theme")
+  fontSize        Int        @default(14) @map("font_size")
+  dailyGoalMins   Int        @default(30) @map("daily_goal_mins")
+  difficultyPref  Difficulty @default(MEDIUM) @map("difficulty_pref")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_settings")
+}
+
+model NotificationSettings {
+  id                  String   @id @default(cuid())
+  userId              String   @unique @map("user_id")
+  emailEnabled        Boolean  @default(true) @map("email_enabled")
+  pushEnabled         Boolean  @default(true) @map("push_enabled")
+  streakReminders     Boolean  @default(true) @map("streak_reminders")
+  achievementNotifs   Boolean  @default(true) @map("achievement_notifs")
+  socialNotifs        Boolean  @default(true) @map("social_notifs")
+  commentReplies      Boolean  @default(true) @map("comment_replies")
+  newFollowers        Boolean  @default(true) @map("new_followers")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_settings")
+}
+
+model PrivacySettings {
+  id                String       @id @default(cuid())
+  userId            String       @unique @map("user_id")
+  profileVisibility Visibility   @default(PUBLIC) @map("profile_visibility")
+  showProgress      Boolean      @default(true) @map("show_progress")
+  showActivity      Boolean      @default(true) @map("show_activity")
+  allowMessages     MessagePerm  @default(EVERYONE) @map("allow_messages")
+  createdAt         DateTime     @default(now()) @map("created_at")
+  updatedAt         DateTime     @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("privacy_settings")
+}
+
+enum Visibility {
+  PUBLIC
+  FRIENDS
+  PRIVATE
+}
+
+enum MessagePerm {
+  EVERYONE
+  FRIENDS
+  NONE
 }
