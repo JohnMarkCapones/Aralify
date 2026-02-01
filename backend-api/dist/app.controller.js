@@ -20,7 +20,7 @@ let AppController = class AppController {
     getHello() {
         return this.appService.getHello();
     }
-    healthCheck() {
+    async healthCheck() {
         return this.appService.healthCheck();
     }
 };
@@ -35,11 +35,11 @@ __decorate([
 ], AppController.prototype, "getHello", null);
 __decorate([
     (0, common_1.Get)('health'),
-    (0, swagger_1.ApiOperation)({ summary: 'Health check endpoint' }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: 'Returns health status' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Health check endpoint with database status' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Returns health status including database connection' }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
-    __metadata("design:returntype", Object)
+    __metadata("design:returntype", Promise)
 ], AppController.prototype, "healthCheck", null);
 exports.AppController = AppController = __decorate([
     (0, swagger_1.ApiTags)('App'),
