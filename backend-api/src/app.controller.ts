@@ -20,7 +20,14 @@ export class AppController {
   @Public()
   @ApiOperation({ summary: 'Health check endpoint' })
   @ApiResponse({ status: 200, description: 'Returns health status' })
-  healthCheck(): { status: string; timestamp: string } {
+  async healthCheck(): Promise<{
+    status: string;
+    timestamp: string;
+    database: {
+      status: 'connected' | 'disconnected';
+      latency?: number;
+    };
+  }> {
     return this.appService.healthCheck();
   }
 }

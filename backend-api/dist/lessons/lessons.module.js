@@ -12,12 +12,13 @@ const lessons_controller_1 = require("./lessons.controller");
 const lessons_service_1 = require("./lessons.service");
 const lessons_repository_1 = require("./lessons.repository");
 const prisma_module_1 = require("../prisma/prisma.module");
+const gamification_module_1 = require("../gamification/gamification.module");
 let LessonsModule = class LessonsModule {
 };
 exports.LessonsModule = LessonsModule;
 exports.LessonsModule = LessonsModule = __decorate([
     (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule],
+        imports: [prisma_module_1.PrismaModule, gamification_module_1.GamificationModule],
         controllers: [lessons_controller_1.LessonsController],
         providers: [lessons_service_1.LessonsService, lessons_repository_1.LessonsRepository],
         exports: [lessons_service_1.LessonsService],

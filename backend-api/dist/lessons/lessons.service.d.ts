@@ -1,8 +1,11 @@
 import { LessonsRepository } from './lessons.repository';
 import { CompleteLessonDto, UnlockHintDto } from './dto';
+import { GamificationService } from '../gamification/services';
 export declare class LessonsService {
     private readonly lessonsRepository;
-    constructor(lessonsRepository: LessonsRepository);
+    private readonly gamificationService;
+    private readonly logger;
+    constructor(lessonsRepository: LessonsRepository, gamificationService: GamificationService);
     findById(id: string, userId?: string): Promise<{
         id: any;
         slug: any;
@@ -59,6 +62,7 @@ export declare class LessonsService {
             completedAt: any;
         };
         nextLevelId?: undefined;
+        gamification?: undefined;
     } | {
         success: boolean;
         lessonId: string;
@@ -74,6 +78,24 @@ export declare class LessonsService {
             timeSpentSeconds: any;
             completedAt: any;
         };
+        gamification: {
+            levelUp: boolean;
+            newLevel: number;
+            newTotalXp: number;
+            rankTitle: string;
+            streakUpdated: boolean;
+            currentStreak: number;
+            streakMilestone: {
+                days: number;
+                xpBonus: number;
+                name: string;
+            } | null;
+            newAchievements: {
+                slug: string;
+                title: string;
+                xpReward: number;
+            }[];
+        } | undefined;
     }>;
     getQuizzes(lessonId: string): Promise<{
         lessonId: string;

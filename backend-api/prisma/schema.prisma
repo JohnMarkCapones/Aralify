@@ -31,6 +31,7 @@ model User {
   level         Int       @default(1)
   streakCurrent Int       @default(0)
   streakLongest Int       @default(0)
+  lastDailyClaimAt DateTime?
 
   // OAuth
   googleId      String?   @unique
@@ -470,15 +471,18 @@ model Badge {
 }
 
 model UserBadge {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  badgeId   String
-  badge     Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badgeId      String
+  badge        Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
 
-  earnedAt  DateTime @default(now())
+  earnedAt     DateTime @default(now())
+  isDisplayed  Boolean  @default(false)
+  displayOrder Int?
 
   @@unique([userId, badgeId])
+  @@index([userId, isDisplayed])
   @@map("user_badges")
 }
 

@@ -6,8 +6,8 @@ export declare class LessonsRepository {
     findById(id: string): Promise<({
         level: {
             id: string;
-            slug: string;
             title: string;
+            slug: string;
             orderIndex: number;
             courseId: string;
         };
@@ -24,10 +24,10 @@ export declare class LessonsRepository {
             explanation: string | null;
         }[];
         challenges: {
-            description: string;
             id: string;
             createdAt: Date;
             updatedAt: Date;
+            description: string;
             title: string;
             lessonId: string;
             starterCode: string | null;
@@ -37,24 +37,24 @@ export declare class LessonsRepository {
             languageId: number;
         }[];
     } & {
-        content: import("@prisma/client/runtime/library").JsonValue | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        levelId: string;
-        slug: string;
+        content: import("@prisma/client/runtime/library").JsonValue | null;
         title: string;
+        isPublished: boolean;
+        slug: string;
+        orderIndex: number;
+        levelId: string;
         difficulty: import(".prisma/client").$Enums.Difficulty;
         xpReward: number;
-        orderIndex: number;
-        isPublished: boolean;
     }) | null>;
     findByIdWithProgress(id: string, userId: string): Promise<{
         lesson: {
             level: {
                 id: string;
-                slug: string;
                 title: string;
+                slug: string;
                 orderIndex: number;
                 courseId: string;
             };
@@ -71,10 +71,10 @@ export declare class LessonsRepository {
                 explanation: string | null;
             }[];
             challenges: {
-                description: string;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
+                description: string;
                 title: string;
                 lessonId: string;
                 starterCode: string | null;
@@ -84,29 +84,29 @@ export declare class LessonsRepository {
                 languageId: number;
             }[];
         } & {
-            content: import("@prisma/client/runtime/library").JsonValue | null;
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            levelId: string;
-            slug: string;
+            content: import("@prisma/client/runtime/library").JsonValue | null;
             title: string;
+            isPublished: boolean;
+            slug: string;
+            orderIndex: number;
+            levelId: string;
             difficulty: import(".prisma/client").$Enums.Difficulty;
             xpReward: number;
-            orderIndex: number;
-            isPublished: boolean;
         };
         progress: {
+            status: import(".prisma/client").$Enums.ProgressStatus;
             id: string;
             createdAt: Date;
             updatedAt: Date;
             userId: string;
-            status: import(".prisma/client").$Enums.ProgressStatus;
+            completedAt: Date | null;
             lessonId: string;
             score: number | null;
             xpEarned: number;
             timeSpent: number | null;
-            completedAt: Date | null;
         } | null;
     } | null>;
     findQuizzesByLessonId(lessonId: string): Promise<{
@@ -122,10 +122,10 @@ export declare class LessonsRepository {
         explanation: string | null;
     }[]>;
     findChallengesByLessonId(lessonId: string): Promise<{
-        description: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        description: string;
         title: string;
         lessonId: string;
         starterCode: string | null;
@@ -135,10 +135,10 @@ export declare class LessonsRepository {
         languageId: number;
     }[]>;
     getChallengeById(challengeId: string): Promise<{
-        description: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        description: string;
         title: string;
         lessonId: string;
         starterCode: string | null;
@@ -148,28 +148,28 @@ export declare class LessonsRepository {
         languageId: number;
     } | null>;
     getUserProgress(userId: string, lessonId: string): Promise<{
+        status: import(".prisma/client").$Enums.ProgressStatus;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
-        status: import(".prisma/client").$Enums.ProgressStatus;
+        completedAt: Date | null;
         lessonId: string;
         score: number | null;
         xpEarned: number;
         timeSpent: number | null;
-        completedAt: Date | null;
     } | null>;
     createUserProgress(userId: string, lessonId: string): Promise<{
+        status: import(".prisma/client").$Enums.ProgressStatus;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
-        status: import(".prisma/client").$Enums.ProgressStatus;
+        completedAt: Date | null;
         lessonId: string;
         score: number | null;
         xpEarned: number;
         timeSpent: number | null;
-        completedAt: Date | null;
     }>;
     upsertUserProgress(userId: string, lessonId: string, data: {
         status?: ProgressStatus;
@@ -178,27 +178,27 @@ export declare class LessonsRepository {
         timeSpent?: number;
         completedAt?: Date;
     }): Promise<{
+        status: import(".prisma/client").$Enums.ProgressStatus;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
-        status: import(".prisma/client").$Enums.ProgressStatus;
+        completedAt: Date | null;
         lessonId: string;
         score: number | null;
         xpEarned: number;
         timeSpent: number | null;
-        completedAt: Date | null;
     }>;
     isLevelUnlocked(userId: string, levelId: string): Promise<boolean>;
     getNextLevel(currentLevelId: string): Promise<{
-        description: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        slug: string;
+        description: string | null;
         title: string;
-        orderIndex: number;
         isPublished: boolean;
+        slug: string;
+        orderIndex: number;
         courseId: string;
     } | null>;
     unlockLevel(userId: string, levelId: string): Promise<{
@@ -217,13 +217,13 @@ export declare class LessonsRepository {
         updatedAt: Date;
         userId: string;
         courseId: string;
-        completedAt: Date | null;
-        timeSpentSeconds: number;
         completionPercentage: number;
         masteryPercentage: number;
         totalXpEarned: number;
+        timeSpentSeconds: number;
         startedAt: Date;
         lastActivityAt: Date | null;
+        completedAt: Date | null;
     } | null>;
     getUserHintUnlocks(userId: string, challengeId: string): Promise<{
         unlockedCount: number;

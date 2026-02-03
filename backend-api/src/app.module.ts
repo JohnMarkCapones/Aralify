@@ -7,6 +7,8 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { CoursesModule } from './courses/courses.module';
 import { LessonsModule } from './lessons/lessons.module';
+import { UsersModule } from './users/users.module';
+import { GamificationModule } from './gamification/gamification.module';
 import { JwtAuthGuard } from './auth/guards';
 
 @Module({
@@ -19,6 +21,8 @@ import { JwtAuthGuard } from './auth/guards';
     AuthModule,
     CoursesModule,
     LessonsModule,
+    UsersModule,
+    GamificationModule,
   ],
   controllers: [AppController],
   providers: [

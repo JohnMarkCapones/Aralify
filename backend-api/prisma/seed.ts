@@ -321,29 +321,43 @@ async function main() {
 
   const achievements = [
     // Completion achievements
-    { slug: 'first-lesson', title: 'First Steps', description: 'Complete your first lesson', category: 'completion', xpReward: 50, criteria: { type: 'lessons_completed', count: 1 } },
-    { slug: 'ten-lessons', title: 'Getting Started', description: 'Complete 10 lessons', category: 'completion', xpReward: 200, criteria: { type: 'lessons_completed', count: 10 } },
-    { slug: 'fifty-lessons', title: 'Dedicated Learner', description: 'Complete 50 lessons', category: 'completion', xpReward: 500, criteria: { type: 'lessons_completed', count: 50 } },
-    { slug: 'hundred-lessons', title: 'Centurion', description: 'Complete 100 lessons', category: 'completion', xpReward: 1000, criteria: { type: 'lessons_completed', count: 100 } },
+    { slug: 'first-lesson', title: 'First Steps', description: 'Complete your first lesson', category: 'completion', xpReward: 50, criteria: { type: 'lesson_count', count: 1 } },
+    { slug: 'ten-lessons', title: 'Getting Started', description: 'Complete 10 lessons', category: 'completion', xpReward: 200, criteria: { type: 'lesson_count', count: 10 } },
+    { slug: 'fifty-lessons', title: 'Dedicated Learner', description: 'Complete 50 lessons', category: 'completion', xpReward: 500, criteria: { type: 'lesson_count', count: 50 } },
+    { slug: 'hundred-lessons', title: 'Centurion', description: 'Complete 100 lessons', category: 'completion', xpReward: 1000, criteria: { type: 'lesson_count', count: 100 } },
+    { slug: 'first-course', title: 'Course Completed', description: 'Complete your first course', category: 'completion', xpReward: 500, criteria: { type: 'course_complete', count: 1 } },
 
     // Streak achievements
-    { slug: 'streak-3', title: 'On Fire', description: 'Maintain a 3-day streak', category: 'streak', xpReward: 100, criteria: { type: 'streak', count: 3 } },
-    { slug: 'streak-7', title: 'Week Warrior', description: 'Maintain a 7-day streak', category: 'streak', xpReward: 250, criteria: { type: 'streak', count: 7 } },
-    { slug: 'streak-30', title: 'Monthly Master', description: 'Maintain a 30-day streak', category: 'streak', xpReward: 1000, criteria: { type: 'streak', count: 30 } },
-    { slug: 'streak-100', title: 'Unstoppable', description: 'Maintain a 100-day streak', category: 'streak', xpReward: 5000, criteria: { type: 'streak', count: 100 }, isSecret: true },
+    { slug: 'streak-3', title: 'On Fire', description: 'Maintain a 3-day streak', category: 'streak', xpReward: 100, criteria: { type: 'streak', days: 3 } },
+    { slug: 'streak-7', title: 'Week Warrior', description: 'Maintain a 7-day streak', category: 'streak', xpReward: 250, criteria: { type: 'streak', days: 7 } },
+    { slug: 'streak-30', title: 'Monthly Master', description: 'Maintain a 30-day streak', category: 'streak', xpReward: 1000, criteria: { type: 'streak', days: 30 } },
+    { slug: 'streak-100', title: 'Unstoppable', description: 'Maintain a 100-day streak', category: 'streak', xpReward: 5000, criteria: { type: 'streak', days: 100 }, isSecret: true },
 
-    // Mastery achievements
-    { slug: 'first-hard', title: 'Challenge Accepted', description: 'Complete your first HARD lesson', category: 'mastery', xpReward: 150, criteria: { type: 'hard_lessons', count: 1 } },
-    { slug: 'python-master', title: 'Python Master', description: 'Complete all Python lessons', category: 'mastery', xpReward: 2000, criteria: { type: 'course_complete', course: 'python-fundamentals' } },
-    { slug: 'js-master', title: 'JavaScript Master', description: 'Complete all JavaScript lessons', category: 'mastery', xpReward: 2000, criteria: { type: 'course_complete', course: 'javascript-essentials' } },
+    // Mastery achievements (difficulty-based)
+    { slug: 'first-hard', title: 'Challenge Accepted', description: 'Complete your first HARD lesson', category: 'mastery', xpReward: 150, criteria: { type: 'lesson_difficulty', difficulty: 'HARD', count: 1 } },
+    { slug: 'ten-hard', title: 'Hardened', description: 'Complete 10 HARD lessons', category: 'mastery', xpReward: 500, criteria: { type: 'lesson_difficulty', difficulty: 'HARD', count: 10 } },
+    { slug: 'medium-master', title: 'Balance Keeper', description: 'Complete 25 MEDIUM lessons', category: 'mastery', xpReward: 300, criteria: { type: 'lesson_difficulty', difficulty: 'MEDIUM', count: 25 } },
 
     // XP achievements
-    { slug: 'xp-1000', title: 'Rising Star', description: 'Earn 1,000 XP', category: 'xp', xpReward: 100, criteria: { type: 'total_xp', count: 1000 } },
-    { slug: 'xp-10000', title: 'XP Hunter', description: 'Earn 10,000 XP', category: 'xp', xpReward: 500, criteria: { type: 'total_xp', count: 10000 } },
+    { slug: 'xp-1000', title: 'Rising Star', description: 'Earn 1,000 XP', category: 'xp', xpReward: 100, criteria: { type: 'xp_total', amount: 1000 } },
+    { slug: 'xp-10000', title: 'XP Hunter', description: 'Earn 10,000 XP', category: 'xp', xpReward: 500, criteria: { type: 'xp_total', amount: 10000 } },
+    { slug: 'xp-50000', title: 'XP Legend', description: 'Earn 50,000 XP', category: 'xp', xpReward: 2000, criteria: { type: 'xp_total', amount: 50000 }, isSecret: true },
+
+    // Level achievements
+    { slug: 'level-5', title: 'Apprentice', description: 'Reach level 5', category: 'level', xpReward: 100, criteria: { type: 'level', level: 5 } },
+    { slug: 'level-10', title: 'Developer', description: 'Reach level 10', category: 'level', xpReward: 200, criteria: { type: 'level', level: 10 } },
+    { slug: 'level-25', title: 'Senior Developer', description: 'Reach level 25', category: 'level', xpReward: 500, criteria: { type: 'level', level: 25 } },
+    { slug: 'level-50', title: 'Grandmaster', description: 'Reach level 50', category: 'level', xpReward: 2000, criteria: { type: 'level', level: 50 } },
 
     // Social achievements
-    { slug: 'first-comment', title: 'Socializer', description: 'Leave your first comment', category: 'social', xpReward: 50, criteria: { type: 'comments', count: 1 } },
-    { slug: 'first-follower', title: 'Influencer', description: 'Get your first follower', category: 'social', xpReward: 100, criteria: { type: 'followers', count: 1 } },
+    { slug: 'first-comment', title: 'Socializer', description: 'Leave your first comment', category: 'social', xpReward: 50, criteria: { type: 'social', action: 'comment', count: 1 } },
+    { slug: 'commenter', title: 'Active Commenter', description: 'Leave 10 comments', category: 'social', xpReward: 150, criteria: { type: 'social', action: 'comment', count: 10 } },
+    { slug: 'first-follower', title: 'Influencer', description: 'Get your first follower', category: 'social', xpReward: 100, criteria: { type: 'social', action: 'follower', count: 1 } },
+    { slug: 'popular', title: 'Popular', description: 'Get 10 followers', category: 'social', xpReward: 300, criteria: { type: 'social', action: 'follower', count: 10 } },
+
+    // Secret achievements
+    { slug: 'night-owl', title: 'Night Owl', description: 'Complete a lesson after midnight', category: 'secret', xpReward: 100, criteria: { type: 'lesson_count', count: 1 }, isSecret: true },
+    { slug: 'speed-demon', title: 'Speed Demon', description: 'Complete a lesson in under 2 minutes', category: 'secret', xpReward: 150, criteria: { type: 'lesson_count', count: 1 }, isSecret: true },
   ];
 
   for (const achievement of achievements) {

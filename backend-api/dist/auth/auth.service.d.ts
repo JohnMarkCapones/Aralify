@@ -12,17 +12,6 @@ export declare class AuthService {
     private createDefaultSettings;
     getUserById(userId: string): Promise<User | null>;
     getUserWithSettings(userId: string): Promise<({
-        settings: {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            userId: string;
-            theme: string;
-            codeEditorTheme: string;
-            fontSize: number;
-            dailyGoalMins: number;
-            difficultyPref: import(".prisma/client").$Enums.Difficulty;
-        } | null;
         notificationSettings: {
             id: string;
             createdAt: Date;
@@ -44,7 +33,19 @@ export declare class AuthService {
             showActivity: boolean;
             allowMessages: import(".prisma/client").$Enums.AllowMessages;
         } | null;
+        settings: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            theme: string;
+            codeEditorTheme: string;
+            fontSize: number;
+            dailyGoalMins: number;
+            difficultyPref: import(".prisma/client").$Enums.Difficulty;
+            userId: string;
+        } | null;
     } & {
+        level: number;
         id: string;
         email: string;
         username: string;
@@ -55,9 +56,9 @@ export declare class AuthService {
         locale: string | null;
         timezone: string | null;
         xpTotal: number;
-        level: number;
         streakCurrent: number;
         streakLongest: number;
+        lastDailyClaimAt: Date | null;
         googleId: string | null;
         githubId: string | null;
         facebookId: string | null;
@@ -77,20 +78,20 @@ export declare class AuthService {
     }): Promise<{
         id: string;
         createdAt: Date;
+        expiresAt: Date;
+        deviceInfo: string | null;
         userId: string;
         token: string;
-        deviceInfo: string | null;
         ipAddress: string | null;
-        expiresAt: Date;
     }>;
     getUserSessions(userId: string): Promise<{
         id: string;
         createdAt: Date;
+        expiresAt: Date;
+        deviceInfo: string | null;
         userId: string;
         token: string;
-        deviceInfo: string | null;
         ipAddress: string | null;
-        expiresAt: Date;
     }[]>;
     revokeSession(userId: string, sessionId: string): Promise<void>;
     revokeAllSessions(userId: string): Promise<void>;
