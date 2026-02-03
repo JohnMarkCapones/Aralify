@@ -11,99 +11,99 @@ export declare class CoursesRepository {
             levels: number;
         };
     } & {
+        description: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
-        title: string;
-        language: string;
-        isPublished: boolean;
         slug: string;
+        title: string;
+        orderIndex: number;
+        isPublished: boolean;
         titleEn: string | null;
         titleFil: string | null;
+        language: string;
         iconUrl: string | null;
         color: string | null;
-        orderIndex: number;
     })[]>;
     findBySlug(slug: string): Promise<({
         levels: ({
             lessons: {
+                content: import("@prisma/client/runtime/library").JsonValue | null;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
-                content: import("@prisma/client/runtime/library").JsonValue | null;
-                title: string;
-                isPublished: boolean;
-                slug: string;
-                orderIndex: number;
                 levelId: string;
+                slug: string;
+                title: string;
                 difficulty: import(".prisma/client").$Enums.Difficulty;
                 xpReward: number;
+                orderIndex: number;
+                isPublished: boolean;
             }[];
         } & {
+            description: string | null;
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            description: string | null;
-            title: string;
-            isPublished: boolean;
             slug: string;
+            title: string;
             orderIndex: number;
+            isPublished: boolean;
             courseId: string;
         })[];
     } & {
+        description: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
-        title: string;
-        language: string;
-        isPublished: boolean;
         slug: string;
+        title: string;
+        orderIndex: number;
+        isPublished: boolean;
         titleEn: string | null;
         titleFil: string | null;
+        language: string;
         iconUrl: string | null;
         color: string | null;
-        orderIndex: number;
     }) | null>;
     findById(id: string): Promise<{
+        description: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
-        title: string;
-        language: string;
-        isPublished: boolean;
         slug: string;
+        title: string;
+        orderIndex: number;
+        isPublished: boolean;
         titleEn: string | null;
         titleFil: string | null;
+        language: string;
         iconUrl: string | null;
         color: string | null;
-        orderIndex: number;
     } | null>;
     getLevels(courseId: string): Promise<({
         lessons: {
+            content: import("@prisma/client/runtime/library").JsonValue | null;
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            content: import("@prisma/client/runtime/library").JsonValue | null;
-            title: string;
-            isPublished: boolean;
-            slug: string;
-            orderIndex: number;
             levelId: string;
+            slug: string;
+            title: string;
             difficulty: import(".prisma/client").$Enums.Difficulty;
             xpReward: number;
+            orderIndex: number;
+            isPublished: boolean;
         }[];
     } & {
+        description: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
-        title: string;
-        isPublished: boolean;
         slug: string;
+        title: string;
         orderIndex: number;
+        isPublished: boolean;
         courseId: string;
     })[]>;
     getUserProgress(userId: string, courseId: string): Promise<{
@@ -112,13 +112,13 @@ export declare class CoursesRepository {
         updatedAt: Date;
         userId: string;
         courseId: string;
+        completedAt: Date | null;
+        timeSpentSeconds: number;
         completionPercentage: number;
         masteryPercentage: number;
         totalXpEarned: number;
-        timeSpentSeconds: number;
         startedAt: Date;
         lastActivityAt: Date | null;
-        completedAt: Date | null;
     } | null>;
     getUserLevelUnlocks(userId: string, courseId: string): Promise<{
         id: string;
@@ -128,29 +128,29 @@ export declare class CoursesRepository {
     }[]>;
     getUserLessonProgress(userId: string, courseId: string): Promise<({
         lesson: {
+            content: import("@prisma/client/runtime/library").JsonValue | null;
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            content: import("@prisma/client/runtime/library").JsonValue | null;
-            title: string;
-            isPublished: boolean;
-            slug: string;
-            orderIndex: number;
             levelId: string;
+            slug: string;
+            title: string;
             difficulty: import(".prisma/client").$Enums.Difficulty;
             xpReward: number;
+            orderIndex: number;
+            isPublished: boolean;
         };
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        status: import(".prisma/client").$Enums.ProgressStatus;
         userId: string;
-        completedAt: Date | null;
+        status: import(".prisma/client").$Enums.ProgressStatus;
         lessonId: string;
         score: number | null;
         xpEarned: number;
         timeSpent: number | null;
+        completedAt: Date | null;
     })[]>;
     createUserProgress(userId: string, courseId: string): Promise<{
         id: string;
@@ -158,13 +158,13 @@ export declare class CoursesRepository {
         updatedAt: Date;
         userId: string;
         courseId: string;
+        completedAt: Date | null;
+        timeSpentSeconds: number;
         completionPercentage: number;
         masteryPercentage: number;
         totalXpEarned: number;
-        timeSpentSeconds: number;
         startedAt: Date;
         lastActivityAt: Date | null;
-        completedAt: Date | null;
     }>;
     updateUserProgress(userId: string, courseId: string, data: {
         completionPercentage?: number;
@@ -179,13 +179,13 @@ export declare class CoursesRepository {
         updatedAt: Date;
         userId: string;
         courseId: string;
+        completedAt: Date | null;
+        timeSpentSeconds: number;
         completionPercentage: number;
         masteryPercentage: number;
         totalXpEarned: number;
-        timeSpentSeconds: number;
         startedAt: Date;
         lastActivityAt: Date | null;
-        completedAt: Date | null;
     }>;
     unlockFirstLevel(userId: string, courseId: string): Promise<{
         id: string;

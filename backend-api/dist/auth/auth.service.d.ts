@@ -12,6 +12,17 @@ export declare class AuthService {
     private createDefaultSettings;
     getUserById(userId: string): Promise<User | null>;
     getUserWithSettings(userId: string): Promise<({
+        settings: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            userId: string;
+            theme: string;
+            codeEditorTheme: string;
+            fontSize: number;
+            dailyGoalMins: number;
+            difficultyPref: import(".prisma/client").$Enums.Difficulty;
+        } | null;
         notificationSettings: {
             id: string;
             createdAt: Date;
@@ -32,17 +43,6 @@ export declare class AuthService {
             showProgress: boolean;
             showActivity: boolean;
             allowMessages: import(".prisma/client").$Enums.AllowMessages;
-        } | null;
-        settings: {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            theme: string;
-            codeEditorTheme: string;
-            fontSize: number;
-            dailyGoalMins: number;
-            difficultyPref: import(".prisma/client").$Enums.Difficulty;
-            userId: string;
         } | null;
     } & {
         id: string;
@@ -77,20 +77,20 @@ export declare class AuthService {
     }): Promise<{
         id: string;
         createdAt: Date;
-        expiresAt: Date;
-        deviceInfo: string | null;
         userId: string;
         token: string;
+        deviceInfo: string | null;
         ipAddress: string | null;
+        expiresAt: Date;
     }>;
     getUserSessions(userId: string): Promise<{
         id: string;
         createdAt: Date;
-        expiresAt: Date;
-        deviceInfo: string | null;
         userId: string;
         token: string;
+        deviceInfo: string | null;
         ipAddress: string | null;
+        expiresAt: Date;
     }[]>;
     revokeSession(userId: string, sessionId: string): Promise<void>;
     revokeAllSessions(userId: string): Promise<void>;
