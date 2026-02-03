@@ -4,10 +4,12 @@ export declare class UsersRepository {
     private readonly prisma;
     constructor(prisma: PrismaService);
     findById(id: string): Promise<{
-        level: number;
         id: string;
         email: string;
         username: string;
+        googleId: string | null;
+        githubId: string | null;
+        facebookId: string | null;
         passwordHash: string | null;
         displayName: string | null;
         avatarUrl: string | null;
@@ -15,12 +17,10 @@ export declare class UsersRepository {
         locale: string | null;
         timezone: string | null;
         xpTotal: number;
+        level: number;
         streakCurrent: number;
         streakLongest: number;
-        lastDailyClaimAt: Date | null;
-        googleId: string | null;
-        githubId: string | null;
-        facebookId: string | null;
+        streakFreezes: number;
         isVerified: boolean;
         isActive: boolean;
         role: import(".prisma/client").$Enums.UserRole;
@@ -30,10 +30,12 @@ export declare class UsersRepository {
         lastActiveAt: Date | null;
     } | null>;
     findByUsername(username: string): Promise<{
-        level: number;
         id: string;
         email: string;
         username: string;
+        googleId: string | null;
+        githubId: string | null;
+        facebookId: string | null;
         passwordHash: string | null;
         displayName: string | null;
         avatarUrl: string | null;
@@ -41,12 +43,10 @@ export declare class UsersRepository {
         locale: string | null;
         timezone: string | null;
         xpTotal: number;
+        level: number;
         streakCurrent: number;
         streakLongest: number;
-        lastDailyClaimAt: Date | null;
-        googleId: string | null;
-        githubId: string | null;
-        facebookId: string | null;
+        streakFreezes: number;
         isVerified: boolean;
         isActive: boolean;
         role: import(".prisma/client").$Enums.UserRole;
@@ -56,6 +56,17 @@ export declare class UsersRepository {
         lastActiveAt: Date | null;
     } | null>;
     findByIdWithSettings(id: string): Promise<({
+        settings: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            userId: string;
+            theme: string;
+            codeEditorTheme: string;
+            fontSize: number;
+            dailyGoalMins: number;
+            difficultyPref: import(".prisma/client").$Enums.Difficulty;
+        } | null;
         notificationSettings: {
             id: string;
             createdAt: Date;
@@ -77,22 +88,13 @@ export declare class UsersRepository {
             showActivity: boolean;
             allowMessages: import(".prisma/client").$Enums.AllowMessages;
         } | null;
-        settings: {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            theme: string;
-            codeEditorTheme: string;
-            fontSize: number;
-            dailyGoalMins: number;
-            difficultyPref: import(".prisma/client").$Enums.Difficulty;
-            userId: string;
-        } | null;
     } & {
-        level: number;
         id: string;
         email: string;
         username: string;
+        googleId: string | null;
+        githubId: string | null;
+        facebookId: string | null;
         passwordHash: string | null;
         displayName: string | null;
         avatarUrl: string | null;
@@ -100,12 +102,10 @@ export declare class UsersRepository {
         locale: string | null;
         timezone: string | null;
         xpTotal: number;
+        level: number;
         streakCurrent: number;
         streakLongest: number;
-        lastDailyClaimAt: Date | null;
-        googleId: string | null;
-        githubId: string | null;
-        facebookId: string | null;
+        streakFreezes: number;
         isVerified: boolean;
         isActive: boolean;
         role: import(".prisma/client").$Enums.UserRole;
@@ -115,6 +115,17 @@ export declare class UsersRepository {
         lastActiveAt: Date | null;
     }) | null>;
     findByUsernameWithSettings(username: string): Promise<({
+        settings: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            userId: string;
+            theme: string;
+            codeEditorTheme: string;
+            fontSize: number;
+            dailyGoalMins: number;
+            difficultyPref: import(".prisma/client").$Enums.Difficulty;
+        } | null;
         notificationSettings: {
             id: string;
             createdAt: Date;
@@ -136,22 +147,13 @@ export declare class UsersRepository {
             showActivity: boolean;
             allowMessages: import(".prisma/client").$Enums.AllowMessages;
         } | null;
-        settings: {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            theme: string;
-            codeEditorTheme: string;
-            fontSize: number;
-            dailyGoalMins: number;
-            difficultyPref: import(".prisma/client").$Enums.Difficulty;
-            userId: string;
-        } | null;
     } & {
-        level: number;
         id: string;
         email: string;
         username: string;
+        googleId: string | null;
+        githubId: string | null;
+        facebookId: string | null;
         passwordHash: string | null;
         displayName: string | null;
         avatarUrl: string | null;
@@ -159,12 +161,10 @@ export declare class UsersRepository {
         locale: string | null;
         timezone: string | null;
         xpTotal: number;
+        level: number;
         streakCurrent: number;
         streakLongest: number;
-        lastDailyClaimAt: Date | null;
-        googleId: string | null;
-        githubId: string | null;
-        facebookId: string | null;
+        streakFreezes: number;
         isVerified: boolean;
         isActive: boolean;
         role: import(".prisma/client").$Enums.UserRole;
@@ -179,10 +179,12 @@ export declare class UsersRepository {
         locale?: string;
         timezone?: string;
     }): Promise<{
-        level: number;
         id: string;
         email: string;
         username: string;
+        googleId: string | null;
+        githubId: string | null;
+        facebookId: string | null;
         passwordHash: string | null;
         displayName: string | null;
         avatarUrl: string | null;
@@ -190,12 +192,10 @@ export declare class UsersRepository {
         locale: string | null;
         timezone: string | null;
         xpTotal: number;
+        level: number;
         streakCurrent: number;
         streakLongest: number;
-        lastDailyClaimAt: Date | null;
-        googleId: string | null;
-        githubId: string | null;
-        facebookId: string | null;
+        streakFreezes: number;
         isVerified: boolean;
         isActive: boolean;
         role: import(".prisma/client").$Enums.UserRole;
@@ -215,12 +215,12 @@ export declare class UsersRepository {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
         theme: string;
         codeEditorTheme: string;
         fontSize: number;
         dailyGoalMins: number;
         difficultyPref: import(".prisma/client").$Enums.Difficulty;
-        userId: string;
     }>;
     updateNotificationSettings(userId: string, data: {
         emailEnabled?: boolean;

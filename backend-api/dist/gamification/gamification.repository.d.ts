@@ -18,10 +18,12 @@ export declare class GamificationRepository {
         xpTotal: number;
         level: number;
     }): Promise<{
-        level: number;
         id: string;
         email: string;
         username: string;
+        googleId: string | null;
+        githubId: string | null;
+        facebookId: string | null;
         passwordHash: string | null;
         displayName: string | null;
         avatarUrl: string | null;
@@ -29,12 +31,10 @@ export declare class GamificationRepository {
         locale: string | null;
         timezone: string | null;
         xpTotal: number;
+        level: number;
         streakCurrent: number;
         streakLongest: number;
-        lastDailyClaimAt: Date | null;
-        googleId: string | null;
-        githubId: string | null;
-        facebookId: string | null;
+        streakFreezes: number;
         isVerified: boolean;
         isActive: boolean;
         role: import(".prisma/client").$Enums.UserRole;
@@ -48,10 +48,12 @@ export declare class GamificationRepository {
         streakLongest?: number;
         lastActiveAt?: Date;
     }): Promise<{
-        level: number;
         id: string;
         email: string;
         username: string;
+        googleId: string | null;
+        githubId: string | null;
+        facebookId: string | null;
         passwordHash: string | null;
         displayName: string | null;
         avatarUrl: string | null;
@@ -59,12 +61,10 @@ export declare class GamificationRepository {
         locale: string | null;
         timezone: string | null;
         xpTotal: number;
+        level: number;
         streakCurrent: number;
         streakLongest: number;
-        lastDailyClaimAt: Date | null;
-        googleId: string | null;
-        githubId: string | null;
-        facebookId: string | null;
+        streakFreezes: number;
         isVerified: boolean;
         isActive: boolean;
         role: import(".prisma/client").$Enums.UserRole;
@@ -74,10 +74,12 @@ export declare class GamificationRepository {
         lastActiveAt: Date | null;
     }>;
     updateLastDailyClaim(userId: string): Promise<{
-        level: number;
         id: string;
         email: string;
         username: string;
+        googleId: string | null;
+        githubId: string | null;
+        facebookId: string | null;
         passwordHash: string | null;
         displayName: string | null;
         avatarUrl: string | null;
@@ -85,12 +87,10 @@ export declare class GamificationRepository {
         locale: string | null;
         timezone: string | null;
         xpTotal: number;
+        level: number;
         streakCurrent: number;
         streakLongest: number;
-        lastDailyClaimAt: Date | null;
-        googleId: string | null;
-        githubId: string | null;
-        facebookId: string | null;
+        streakFreezes: number;
         isVerified: boolean;
         isActive: boolean;
         role: import(".prisma/client").$Enums.UserRole;
@@ -106,13 +106,13 @@ export declare class GamificationRepository {
         sourceId?: string;
         description?: string;
     }): Promise<{
+        description: string | null;
         id: string;
         createdAt: Date;
-        description: string | null;
-        userId: string;
         amount: number;
         source: import(".prisma/client").$Enums.XpSource;
         sourceId: string | null;
+        userId: string;
     }>;
     getXpTransactions(userId: string, options?: {
         limit?: number;
@@ -122,13 +122,13 @@ export declare class GamificationRepository {
         endDate?: Date;
     }): Promise<{
         transactions: {
+            description: string | null;
             id: string;
             createdAt: Date;
-            description: string | null;
-            userId: string;
             amount: number;
             source: import(".prisma/client").$Enums.XpSource;
             sourceId: string | null;
+            userId: string;
         }[];
         total: number;
     }>;
@@ -138,12 +138,12 @@ export declare class GamificationRepository {
         count: number;
     }[]>;
     getAllAchievements(): Promise<{
+        description: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string;
-        title: string;
         slug: string;
+        title: string;
         iconUrl: string | null;
         xpReward: number;
         category: string;
@@ -152,12 +152,12 @@ export declare class GamificationRepository {
     }[]>;
     getUserAchievements(userId: string): Promise<({
         achievement: {
+            description: string;
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            description: string;
-            title: string;
             slug: string;
+            title: string;
             iconUrl: string | null;
             xpReward: number;
             category: string;
@@ -167,18 +167,18 @@ export declare class GamificationRepository {
     } & {
         id: string;
         userId: string;
-        unlockedAt: Date;
         achievementId: string;
+        unlockedAt: Date;
     })[]>;
     getUserAchievementIds(userId: string): Promise<string[]>;
     awardAchievement(userId: string, achievementId: string): Promise<{
         achievement: {
+            description: string;
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            description: string;
-            title: string;
             slug: string;
+            title: string;
             iconUrl: string | null;
             xpReward: number;
             category: string;
@@ -188,16 +188,16 @@ export declare class GamificationRepository {
     } & {
         id: string;
         userId: string;
-        unlockedAt: Date;
         achievementId: string;
+        unlockedAt: Date;
     }>;
     getAchievementBySlug(slug: string): Promise<{
+        description: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string;
-        title: string;
         slug: string;
+        title: string;
         iconUrl: string | null;
         xpReward: number;
         category: string;
@@ -213,12 +213,12 @@ export declare class GamificationRepository {
     setBadgeDisplayed(userId: string, badgeId: string, isDisplayed: boolean, displayOrder?: number): Promise<any>;
     awardBadge(userId: string, badgeId: string): Promise<{
         badge: {
+            description: string;
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            description: string;
-            title: string;
             slug: string;
+            title: string;
             iconUrl: string | null;
             rarity: string;
         };
@@ -227,16 +227,14 @@ export declare class GamificationRepository {
         userId: string;
         badgeId: string;
         earnedAt: Date;
-        isDisplayed: boolean;
-        displayOrder: number | null;
     }>;
     getBadgeBySlug(slug: string): Promise<{
+        description: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string;
-        title: string;
         slug: string;
+        title: string;
         iconUrl: string | null;
         rarity: string;
     } | null>;
@@ -284,10 +282,10 @@ export declare class GamificationRepository {
         type: ActivityType;
         data?: Record<string, unknown>;
     }): Promise<{
+        data: Prisma.JsonValue | null;
         id: string;
         createdAt: Date;
-        type: import(".prisma/client").$Enums.ActivityType;
-        data: Prisma.JsonValue | null;
         userId: string;
+        type: import(".prisma/client").$Enums.ActivityType;
     }>;
 }
