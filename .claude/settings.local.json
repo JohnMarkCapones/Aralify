@@ -6,7 +6,9 @@
       "Bash(npm init:*)",
       "Bash(npx prisma init)",
       "Bash(npx prisma generate:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(node -e:*)",
+      "Bash(timeout:*)"
     ]
   }
 }
