@@ -16,6 +16,8 @@ const prisma_module_1 = require("./prisma/prisma.module");
 const auth_module_1 = require("./auth/auth.module");
 const courses_module_1 = require("./courses/courses.module");
 const lessons_module_1 = require("./lessons/lessons.module");
+const users_module_1 = require("./users/users.module");
+const gamification_module_1 = require("./gamification/gamification.module");
 const guards_1 = require("./auth/guards");
 let AppModule = class AppModule {
 };
@@ -31,6 +33,8 @@ exports.AppModule = AppModule = __decorate([
             auth_module_1.AuthModule,
             courses_module_1.CoursesModule,
             lessons_module_1.LessonsModule,
+            users_module_1.UsersModule,
+            gamification_module_1.GamificationModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [

@@ -18,6 +18,7 @@ export declare class JwtStrategy extends JwtStrategy_base {
     private readonly logger;
     constructor(configService: ConfigService, authService: AuthService);
     validate(payload: JwtPayload): Promise<{
+        level: number;
         id: string;
         email: string;
         username: string;
@@ -28,9 +29,9 @@ export declare class JwtStrategy extends JwtStrategy_base {
         locale: string | null;
         timezone: string | null;
         xpTotal: number;
-        level: number;
         streakCurrent: number;
         streakLongest: number;
+        lastDailyClaimAt: Date | null;
         googleId: string | null;
         githubId: string | null;
         facebookId: string | null;

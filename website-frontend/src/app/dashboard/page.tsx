@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { LogoutButton } from './logout-button';
+import { CopyToken } from './copy-token';
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -113,6 +114,18 @@ export default async function DashboardPage() {
                   <hr className="my-2" />
                   <p className="text-xs text-gray-500">Check terminal logs for more details</p>
                 </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {token && (
+            <Card className="md:col-span-2 border-blue-500">
+              <CardHeader>
+                <CardTitle className="text-blue-500">API Token (for Swagger)</CardTitle>
+                <CardDescription>Use this token in Swagger UI to test authenticated endpoints</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <CopyToken token={token} />
               </CardContent>
             </Card>
           )}

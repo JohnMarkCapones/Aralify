@@ -8,19 +8,23 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var LessonsService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LessonsService = void 0;
 const common_1 = require("@nestjs/common");
 const client_1 = require("@prisma/client");
 const lessons_repository_1 = require("./lessons.repository");
+const services_1 = require("../gamification/services");
 const XP_MULTIPLIERS = {
     EASY: 1,
     MEDIUM: 2,
     HARD: 3,
 };
-let LessonsService = class LessonsService {
-    constructor(lessonsRepository) {
+let LessonsService = LessonsService_1 = class LessonsService {
+    constructor(lessonsRepository, gamificationService) {
         this.lessonsRepository = lessonsRepository;
+        this.gamificationService = gamificationService;
+        this.logger = new common_1.Logger(LessonsService_1.name);
     }
     async findById(id, userId) {
         if (userId) {
@@ -102,6 +106,13 @@ let LessonsService = class LessonsService {
             totalXpEarned: xpEarned,
             timeSpentSeconds: dto.timeSpentSeconds,
         });
+        let gamification;
+        try {
+            gamification = await this.gamificationService.onLessonComplete(userId, lessonId, xpEarned, lesson.difficulty, lesson.title);
+        }
+        catch (error) {
+            this.logger.error(`Gamification update failed for user ${userId}: ${error}`);
+        }
         return {
             success: true,
             lessonId,
@@ -111,6 +122,22 @@ let LessonsService = class LessonsService {
             levelUnlocked,
             nextLevelId,
             progress: this.formatProgress(progress),
+            gamification: gamification
+                ? {
+                    levelUp: gamification.xp.levelUp,
+                    newLevel: gamification.xp.newLevel,
+                    newTotalXp: gamification.xp.newTotal,
+                    rankTitle: gamification.xp.rankTitle,
+                    streakUpdated: gamification.streak.streakUpdated,
+                    currentStreak: gamification.streak.newStreak,
+                    streakMilestone: gamification.streak.milestoneReached,
+                    newAchievements: gamification.newAchievements.map((a) => ({
+                        slug: a.slug,
+                        title: a.title,
+                        xpReward: a.xpReward,
+                    })),
+                }
+                : undefined,
         };
     }
     async getQuizzes(lessonId) {
@@ -253,8 +280,9 @@ let LessonsService = class LessonsService {
     }
 };
 exports.LessonsService = LessonsService;
-exports.LessonsService = LessonsService = __decorate([
+exports.LessonsService = LessonsService = LessonsService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [lessons_repository_1.LessonsRepository])
+    __metadata("design:paramtypes", [lessons_repository_1.LessonsRepository,
+        services_1.GamificationService])
 ], LessonsService);
 //# sourceMappingURL=lessons.service.js.map

@@ -1,5 +1,6 @@
 import {
   Injectable,
+  Logger,
   NotFoundException,
   ForbiddenException,
   BadRequestException,
@@ -7,6 +8,7 @@ import {
 import { ProgressStatus } from '@prisma/client';
 import { LessonsRepository } from './lessons.repository';
 import { CompleteLessonDto, UnlockHintDto } from './dto';
+import { GamificationService } from '../gamification/services';
 
 // XP multipliers based on difficulty
 const XP_MULTIPLIERS: Record<string, number> = {
@@ -17,7 +19,12 @@ const XP_MULTIPLIERS: Record<string, number> = {
 
 @Injectable()
 export class LessonsService {
-  constructor(private readonly lessonsRepository: LessonsRepository) {}
+  private readonly logger = new Logger(LessonsService.name);
+
+  constructor(
+    private readonly lessonsRepository: LessonsRepository,
+    private readonly gamificationService: GamificationService,
+  ) {}
 
   async findById(id: string, userId?: string) {
     if (userId) {
@@ -158,10 +165,20 @@ export class LessonsService {
       },
     );
 
-    // TODO: Integrate with GamificationService.awardXp()
-    // TODO: Integrate with AchievementsService.evaluateForUser()
-    // TODO: Integrate with StreaksService.updateStreak()
-    // TODO: Integrate with ActivityService.createActivity()
+    // Gamification: award XP, update streak, evaluate achievements
+    let gamification;
+    try {
+      gamification = await this.gamificationService.onLessonComplete(
+        userId,
+        lessonId,
+        xpEarned,
+        lesson.difficulty,
+        lesson.title,
+      );
+    } catch (error) {
+      // Log but don't fail lesson completion if gamification errors
+      this.logger.error(`Gamification update failed for user ${userId}: ${error}`);
+    }
 
     return {
       success: true,
@@ -172,6 +189,22 @@ export class LessonsService {
       levelUnlocked,
       nextLevelId,
       progress: this.formatProgress(progress),
+      gamification: gamification
+        ? {
+            levelUp: gamification.xp.levelUp,
+            newLevel: gamification.xp.newLevel,
+            newTotalXp: gamification.xp.newTotal,
+            rankTitle: gamification.xp.rankTitle,
+            streakUpdated: gamification.streak.streakUpdated,
+            currentStreak: gamification.streak.newStreak,
+            streakMilestone: gamification.streak.milestoneReached,
+            newAchievements: gamification.newAchievements.map((a) => ({
+              slug: a.slug,
+              title: a.title,
+              xpReward: a.xpReward,
+            })),
+          }
+        : undefined,
     };
   }
 
