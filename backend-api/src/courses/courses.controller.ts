@@ -6,7 +6,9 @@ import {
   ApiParam,
   ApiBearerAuth,
 } from '@nestjs/swagger';
+import { User } from '@prisma/client';
 import { CoursesService } from './courses.service';
+import { Public, CurrentUser } from '../auth/decorators';
 import {
   CourseListItemDto,
   CourseDetailDto,
@@ -22,6 +24,7 @@ export class CoursesController {
   constructor(private readonly coursesService: CoursesService) {}
 
   @Get()
+  @Public()
   @ApiOperation({ summary: 'List all published courses' })
   @ApiResponse({
     status: 200,
@@ -36,6 +39,7 @@ export class CoursesController {
   }
 
   @Get(':slug')
+  @Public()
   @ApiOperation({ summary: 'Get detailed course information with all levels' })
   @ApiParam({ name: 'slug', example: 'python-basics' })
   @ApiResponse({
@@ -58,13 +62,15 @@ export class CoursesController {
     type: CourseProgressDto,
   })
   @ApiResponse({ status: 404, description: 'Course not found' })
-  async getProgress(@Param('slug') slug: string): Promise<CourseProgressDto> {
-    // TODO: Get userId from auth guard
-    const userId = 'temp-user-id';
-    return this.coursesService.getProgress(slug, userId);
+  async getProgress(
+    @Param('slug') slug: string,
+    @CurrentUser() user: User,
+  ): Promise<CourseProgressDto> {
+    return this.coursesService.getProgress(slug, user.id);
   }
 
   @Get(':slug/levels')
+  @Public()
   @ApiOperation({ summary: 'Get all levels for a specific course' })
   @ApiParam({ name: 'slug', example: 'python-basics' })
   @ApiResponse({
@@ -87,10 +93,11 @@ export class CoursesController {
     type: StartCourseResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Course not found' })
-  async startCourse(@Param('slug') slug: string): Promise<StartCourseResponseDto> {
-    // TODO: Get userId from auth guard
-    const userId = 'temp-user-id';
-    return this.coursesService.startCourse(slug, userId);
+  async startCourse(
+    @Param('slug') slug: string,
+    @CurrentUser() user: User,
+  ): Promise<StartCourseResponseDto> {
+    return this.coursesService.startCourse(slug, user.id);
   }
 
   @Get(':slug/certificate')
@@ -99,11 +106,15 @@ export class CoursesController {
   @ApiParam({ name: 'slug', example: 'python-basics' })
   @ApiResponse({ status: 200, description: 'Returns certificate URL' })
   @ApiResponse({ status: 404, description: 'Course not found or not completed' })
-  async getCertificate(@Param('slug') slug: string) {
+  async getCertificate(
+    @Param('slug') slug: string,
+    @CurrentUser() user: User,
+  ) {
     // TODO: Implement certificate generation
     return {
       message: 'Certificate generation not yet implemented',
       courseSlug: slug,
+      userId: user.id,
     };
   }
 }

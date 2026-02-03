@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class CoursesRepository {
@@ -11,7 +10,7 @@ export class CoursesRepository {
     isPublished?: boolean;
     orderBy?: 'popular' | 'newest' | 'alphabetical';
   }) {
-    const where: Prisma.CourseWhereInput = {};
+    const where: any = {};
 
     if (options?.language) {
       where.language = options.language;
@@ -21,7 +20,7 @@ export class CoursesRepository {
       where.isPublished = options.isPublished;
     }
 
-    let orderBy: Prisma.CourseOrderByWithRelationInput = { orderIndex: 'asc' };
+    let orderBy: any = { orderIndex: 'asc' };
 
     if (options?.orderBy === 'newest') {
       orderBy = { createdAt: 'desc' };
@@ -33,10 +32,6 @@ export class CoursesRepository {
       where,
       orderBy,
       include: {
-        levels: {
-          where: { isPublished: true },
-          orderBy: { orderIndex: 'asc' },
-        },
         _count: {
           select: { levels: true },
         },
@@ -49,12 +44,10 @@ export class CoursesRepository {
       where: { slug },
       include: {
         levels: {
-          where: { isPublished: true },
           orderBy: { orderIndex: 'asc' },
           include: {
             lessons: {
-              where: { isPublished: true },
-              orderBy: { difficulty: 'asc' },
+              orderBy: { orderIndex: 'asc' },
             },
           },
         },
@@ -70,15 +63,11 @@ export class CoursesRepository {
 
   async getLevels(courseId: string) {
     return this.prisma.level.findMany({
-      where: {
-        courseId,
-        isPublished: true,
-      },
+      where: { courseId },
       orderBy: { orderIndex: 'asc' },
       include: {
         lessons: {
-          where: { isPublished: true },
-          orderBy: { difficulty: 'asc' },
+          orderBy: { orderIndex: 'asc' },
         },
       },
     });
@@ -92,55 +81,12 @@ export class CoursesRepository {
     });
   }
 
-  async createUserProgress(userId: string, courseId: string) {
-    return this.prisma.userCourseProgress.create({
-      data: {
-        userId,
-        courseId,
-      },
-    });
-  }
-
-  async updateUserProgress(
-    userId: string,
-    courseId: string,
-    data: Prisma.UserCourseProgressUpdateInput,
-  ) {
-    return this.prisma.userCourseProgress.update({
-      where: {
-        userId_courseId: { userId, courseId },
-      },
-      data,
-    });
-  }
-
-  async unlockFirstLevel(userId: string, courseId: string) {
-    const firstLevel = await this.prisma.level.findFirst({
-      where: { courseId, isPublished: true },
-      orderBy: { orderIndex: 'asc' },
-    });
-
-    if (!firstLevel) return null;
-
-    return this.prisma.userLevelUnlock.upsert({
-      where: {
-        userId_levelId: { userId, levelId: firstLevel.id },
-      },
-      create: {
-        userId,
-        levelId: firstLevel.id,
-      },
-      update: {},
-    });
-  }
-
   async getUserLevelUnlocks(userId: string, courseId: string) {
     return this.prisma.userLevelUnlock.findMany({
       where: {
         userId,
         level: { courseId },
       },
-      include: { level: true },
     });
   }
 
@@ -153,10 +99,66 @@ export class CoursesRepository {
         },
       },
       include: {
-        lesson: {
-          include: { level: true },
-        },
+        lesson: true,
       },
     });
+  }
+
+  async createUserProgress(userId: string, courseId: string) {
+    return this.prisma.userCourseProgress.create({
+      data: {
+        userId,
+        courseId,
+        completionPercentage: 0,
+        masteryPercentage: 0,
+        totalXpEarned: 0,
+        timeSpentSeconds: 0,
+      },
+    });
+  }
+
+  async updateUserProgress(
+    userId: string,
+    courseId: string,
+    data: {
+      completionPercentage?: number;
+      masteryPercentage?: number;
+      totalXpEarned?: number;
+      timeSpentSeconds?: number;
+      lastActivityAt?: Date;
+      completedAt?: Date;
+    },
+  ) {
+    return this.prisma.userCourseProgress.update({
+      where: {
+        userId_courseId: { userId, courseId },
+      },
+      data: {
+        ...data,
+        lastActivityAt: new Date(),
+      },
+    });
+  }
+
+  async unlockFirstLevel(userId: string, courseId: string) {
+    const firstLevel = await this.prisma.level.findFirst({
+      where: { courseId },
+      orderBy: { orderIndex: 'asc' },
+    });
+
+    if (firstLevel) {
+      return this.prisma.userLevelUnlock.upsert({
+        where: {
+          userId_levelId: { userId, levelId: firstLevel.id },
+        },
+        update: {},
+        create: {
+          userId,
+          levelId: firstLevel.id,
+        },
+      });
+    }
+
+    return null;
   }
 }

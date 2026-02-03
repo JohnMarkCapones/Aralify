@@ -14,8 +14,10 @@ export declare class CourseListItemDto {
     estimatedHours: number;
     userProgress?: {
         completionPercentage: number;
+        masteryPercentage: number;
+        totalXpEarned: number;
         startedAt: Date;
-        lastActivityAt: Date;
+        lastActivityAt: Date | null;
     } | null;
 }
 export declare class LessonSummaryDto {

@@ -7,8 +7,12 @@
       "Bash(npx prisma init)",
       "Bash(npx prisma generate:*)",
       "Bash(npm run build:*)",
-      "Bash(node -e:*)",
-      "Bash(timeout:*)"
+      "Bash(npx prisma db pull:*)",
+      "Bash(node -e:*)"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "supabase"
+  ]
 }

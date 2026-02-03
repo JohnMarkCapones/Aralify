@@ -1,6 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AppService } from './app.service';
+import { Public } from './auth/decorators';
 
 @ApiTags('App')
 @Controller()
@@ -8,6 +9,7 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get()
+  @Public()
   @ApiOperation({ summary: 'Get API welcome message' })
   @ApiResponse({ status: 200, description: 'Returns welcome message' })
   getHello(): string {
@@ -15,9 +17,10 @@ export class AppController {
   }
 
   @Get('health')
-  @ApiOperation({ summary: 'Health check endpoint with database status' })
-  @ApiResponse({ status: 200, description: 'Returns health status including database connection' })
-  async healthCheck() {
+  @Public()
+  @ApiOperation({ summary: 'Health check endpoint' })
+  @ApiResponse({ status: 200, description: 'Returns health status' })
+  healthCheck(): { status: string; timestamp: string } {
     return this.appService.healthCheck();
   }
 }

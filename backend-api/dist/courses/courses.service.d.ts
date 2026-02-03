@@ -48,7 +48,7 @@ export declare class CoursesService {
             masteryPercentage: number;
             totalXpEarned: number;
             startedAt: Date;
-            lastActivityAt: Date;
+            lastActivityAt: Date | null;
         } | null;
         id: any;
         slug: any;
@@ -78,18 +78,7 @@ export declare class CoursesService {
         lessonsCompleted: number;
         totalXpEarned: number;
         timeSpentSeconds: number;
-        lastActivity: null;
-        levelProgress: never[];
-    } | {
-        courseId: string;
-        completionPercentage: number;
-        masteryPercentage: number;
-        levelsUnlocked: number;
-        levelsCompleted: number;
-        lessonsCompleted: number;
-        totalXpEarned: number;
-        timeSpentSeconds: number;
-        lastActivity: Date;
+        lastActivity: Date | null;
         levelProgress: {
             levelId: any;
             isUnlocked: boolean;

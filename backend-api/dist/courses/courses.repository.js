@@ -35,10 +35,6 @@ let CoursesRepository = class CoursesRepository {
             where,
             orderBy,
             include: {
-                levels: {
-                    where: { isPublished: true },
-                    orderBy: { orderIndex: 'asc' },
-                },
                 _count: {
                     select: { levels: true },
                 },
@@ -50,12 +46,10 @@ let CoursesRepository = class CoursesRepository {
             where: { slug },
             include: {
                 levels: {
-                    where: { isPublished: true },
                     orderBy: { orderIndex: 'asc' },
                     include: {
                         lessons: {
-                            where: { isPublished: true },
-                            orderBy: { difficulty: 'asc' },
+                            orderBy: { orderIndex: 'asc' },
                         },
                     },
                 },
@@ -69,15 +63,11 @@ let CoursesRepository = class CoursesRepository {
     }
     async getLevels(courseId) {
         return this.prisma.level.findMany({
-            where: {
-                courseId,
-                isPublished: true,
-            },
+            where: { courseId },
             orderBy: { orderIndex: 'asc' },
             include: {
                 lessons: {
-                    where: { isPublished: true },
-                    orderBy: { difficulty: 'asc' },
+                    orderBy: { orderIndex: 'asc' },
                 },
             },
         });
@@ -89,47 +79,12 @@ let CoursesRepository = class CoursesRepository {
             },
         });
     }
-    async createUserProgress(userId, courseId) {
-        return this.prisma.userCourseProgress.create({
-            data: {
-                userId,
-                courseId,
-            },
-        });
-    }
-    async updateUserProgress(userId, courseId, data) {
-        return this.prisma.userCourseProgress.update({
-            where: {
-                userId_courseId: { userId, courseId },
-            },
-            data,
-        });
-    }
-    async unlockFirstLevel(userId, courseId) {
-        const firstLevel = await this.prisma.level.findFirst({
-            where: { courseId, isPublished: true },
-            orderBy: { orderIndex: 'asc' },
-        });
-        if (!firstLevel)
-            return null;
-        return this.prisma.userLevelUnlock.upsert({
-            where: {
-                userId_levelId: { userId, levelId: firstLevel.id },
-            },
-            create: {
-                userId,
-                levelId: firstLevel.id,
-            },
-            update: {},
-        });
-    }
     async getUserLevelUnlocks(userId, courseId) {
         return this.prisma.userLevelUnlock.findMany({
             where: {
                 userId,
                 level: { courseId },
             },
-            include: { level: true },
         });
     }
     async getUserLessonProgress(userId, courseId) {
@@ -141,11 +96,51 @@ let CoursesRepository = class CoursesRepository {
                 },
             },
             include: {
-                lesson: {
-                    include: { level: true },
-                },
+                lesson: true,
             },
         });
+    }
+    async createUserProgress(userId, courseId) {
+        return this.prisma.userCourseProgress.create({
+            data: {
+                userId,
+                courseId,
+                completionPercentage: 0,
+                masteryPercentage: 0,
+                totalXpEarned: 0,
+                timeSpentSeconds: 0,
+            },
+        });
+    }
+    async updateUserProgress(userId, courseId, data) {
+        return this.prisma.userCourseProgress.update({
+            where: {
+                userId_courseId: { userId, courseId },
+            },
+            data: {
+                ...data,
+                lastActivityAt: new Date(),
+            },
+        });
+    }
+    async unlockFirstLevel(userId, courseId) {
+        const firstLevel = await this.prisma.level.findFirst({
+            where: { courseId },
+            orderBy: { orderIndex: 'asc' },
+        });
+        if (firstLevel) {
+            return this.prisma.userLevelUnlock.upsert({
+                where: {
+                    userId_levelId: { userId, levelId: firstLevel.id },
+                },
+                update: {},
+                create: {
+                    userId,
+                    levelId: firstLevel.id,
+                },
+            });
+        }
+        return null;
     }
 };
 exports.CoursesRepository = CoursesRepository;

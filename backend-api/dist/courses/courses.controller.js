@@ -16,6 +16,7 @@ exports.CoursesController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const courses_service_1 = require("./courses.service");
+const decorators_1 = require("../auth/decorators");
 const dto_1 = require("./dto");
 let CoursesController = class CoursesController {
     constructor(coursesService) {
@@ -30,27 +31,27 @@ let CoursesController = class CoursesController {
     async findBySlug(slug) {
         return this.coursesService.findBySlug(slug);
     }
-    async getProgress(slug) {
-        const userId = 'temp-user-id';
-        return this.coursesService.getProgress(slug, userId);
+    async getProgress(slug, user) {
+        return this.coursesService.getProgress(slug, user.id);
     }
     async getLevels(slug) {
         return this.coursesService.getLevels(slug);
     }
-    async startCourse(slug) {
-        const userId = 'temp-user-id';
-        return this.coursesService.startCourse(slug, userId);
+    async startCourse(slug, user) {
+        return this.coursesService.startCourse(slug, user.id);
     }
-    async getCertificate(slug) {
+    async getCertificate(slug, user) {
         return {
             message: 'Certificate generation not yet implemented',
             courseSlug: slug,
+            userId: user.id,
         };
     }
 };
 exports.CoursesController = CoursesController;
 __decorate([
     (0, common_1.Get)(),
+    (0, decorators_1.Public)(),
     (0, swagger_1.ApiOperation)({ summary: 'List all published courses' }),
     (0, swagger_1.ApiResponse)({
         status: 200,
@@ -64,6 +65,7 @@ __decorate([
 ], CoursesController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':slug'),
+    (0, decorators_1.Public)(),
     (0, swagger_1.ApiOperation)({ summary: 'Get detailed course information with all levels' }),
     (0, swagger_1.ApiParam)({ name: 'slug', example: 'python-basics' }),
     (0, swagger_1.ApiResponse)({
@@ -89,12 +91,14 @@ __decorate([
     }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'Course not found' }),
     __param(0, (0, common_1.Param)('slug')),
+    __param(1, (0, decorators_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], CoursesController.prototype, "getProgress", null);
 __decorate([
     (0, common_1.Get)(':slug/levels'),
+    (0, decorators_1.Public)(),
     (0, swagger_1.ApiOperation)({ summary: 'Get all levels for a specific course' }),
     (0, swagger_1.ApiParam)({ name: 'slug', example: 'python-basics' }),
     (0, swagger_1.ApiResponse)({
@@ -120,8 +124,9 @@ __decorate([
     }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'Course not found' }),
     __param(0, (0, common_1.Param)('slug')),
+    __param(1, (0, decorators_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], CoursesController.prototype, "startCourse", null);
 __decorate([
@@ -132,8 +137,9 @@ __decorate([
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Returns certificate URL' }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'Course not found or not completed' }),
     __param(0, (0, common_1.Param)('slug')),
+    __param(1, (0, decorators_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], CoursesController.prototype, "getCertificate", null);
 exports.CoursesController = CoursesController = __decorate([

@@ -50,8 +50,10 @@ export class CourseListItemDto {
   })
   userProgress?: {
     completionPercentage: number;
+    masteryPercentage: number;
+    totalXpEarned: number;
     startedAt: Date;
-    lastActivityAt: Date;
+    lastActivityAt: Date | null;
   } | null;
 }
 

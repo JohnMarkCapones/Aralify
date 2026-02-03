@@ -1,1586 +1,474 @@
-import { PrismaClient, UserRole, Difficulty, QuestionType, SubmissionStatus, XpSourceType, BadgeRarity, ActivityType, NotificationType, DeviceType, ReportReason, ReportStatus, LeaderboardType, LessonStatus, Visibility, MessagePerm } from '@prisma/client';
+import { PrismaClient, Difficulty, QuizType, UserRole } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Seeding database...');
+  console.log('🌱 Starting seed...\n');
 
-  // ============================================================================
-  // 1. USERS
-  // ============================================================================
-  console.log('Creating users...');
+  // ============================================
+  // DEMO USERS
+  // ============================================
+  console.log('👤 Seeding demo users...');
 
-  const users = await Promise.all([
-    prisma.user.upsert({
-      where: { email: 'juan@example.com' },
-      update: {},
-      create: {
-        id: 'user_001',
-        email: 'juan@example.com',
-        username: 'juandelacruz',
-        displayName: 'Juan Dela Cruz',
-        locale: 'fil',
-        xpTotal: 2500,
-        level: 5,
-        streakCurrent: 7,
-        streakLongest: 14,
-        role: UserRole.USER,
-        isVerified: true,
+  const adminUser = await prisma.user.upsert({
+    where: { email: 'admin@aralify.com' },
+    update: {},
+    create: {
+      email: 'admin@aralify.com',
+      username: 'admin',
+      displayName: 'Admin User',
+      bio: 'Platform administrator',
+      role: UserRole.ADMIN,
+      isVerified: true,
+      xpTotal: 10000,
+      level: 25,
+      streakCurrent: 30,
+      streakLongest: 45,
+      settings: {
+        create: {
+          theme: 'dark',
+          codeEditorTheme: 'vs-dark',
+          fontSize: 14,
+          dailyGoalMins: 60,
+          difficultyPref: Difficulty.HARD,
+        },
       },
-    }),
-    prisma.user.upsert({
-      where: { email: 'maria@example.com' },
-      update: {},
-      create: {
-        id: 'user_002',
-        email: 'maria@example.com',
-        username: 'maria_dev',
-        displayName: 'Maria Santos',
-        locale: 'en',
-        xpTotal: 8500,
-        level: 12,
-        streakCurrent: 30,
-        streakLongest: 45,
-        role: UserRole.USER,
-        isVerified: true,
+      notificationSettings: {
+        create: {
+          emailEnabled: true,
+          pushEnabled: true,
+          streakReminders: true,
+          achievementNotifs: true,
+          socialNotifs: true,
+        },
       },
-    }),
-    prisma.user.upsert({
-      where: { email: 'admin@aralify.com' },
-      update: {},
-      create: {
-        id: 'user_003',
-        email: 'admin@aralify.com',
-        username: 'admin',
-        displayName: 'Admin User',
-        locale: 'en',
-        xpTotal: 0,
-        level: 1,
-        streakCurrent: 0,
-        role: UserRole.ADMIN,
-        isVerified: true,
+      privacySettings: {
+        create: {
+          profileVisibility: 'PUBLIC',
+          showProgress: true,
+          showActivity: true,
+          allowMessages: 'EVERYONE',
+        },
       },
-    }),
-    prisma.user.upsert({
-      where: { email: 'mod@aralify.com' },
-      update: {},
-      create: {
-        id: 'user_004',
-        email: 'mod@aralify.com',
-        username: 'moderator',
-        displayName: 'Mod User',
-        locale: 'en',
-        xpTotal: 1200,
-        level: 3,
-        streakCurrent: 5,
-        role: UserRole.MODERATOR,
-        isVerified: true,
-      },
-    }),
-    prisma.user.upsert({
-      where: { email: 'newbie@example.com' },
-      update: {},
-      create: {
-        id: 'user_005',
-        email: 'newbie@example.com',
-        username: 'newbie_coder',
-        displayName: 'New Learner',
-        locale: 'fil',
-        xpTotal: 100,
-        level: 1,
-        streakCurrent: 1,
-        role: UserRole.USER,
-        isVerified: false,
-      },
-    }),
-  ]);
+    },
+  });
 
-  console.log(`Created ${users.length} users`);
+  const modUser = await prisma.user.upsert({
+    where: { email: 'mod@aralify.com' },
+    update: {},
+    create: {
+      email: 'mod@aralify.com',
+      username: 'moderator',
+      displayName: 'Mod User',
+      bio: 'Community moderator',
+      role: UserRole.MODERATOR,
+      isVerified: true,
+      xpTotal: 5000,
+      level: 15,
+      streakCurrent: 14,
+      streakLongest: 20,
+      settings: {
+        create: {
+          theme: 'auto',
+          codeEditorTheme: 'vs-dark',
+          fontSize: 14,
+          dailyGoalMins: 45,
+          difficultyPref: Difficulty.MEDIUM,
+        },
+      },
+      notificationSettings: { create: {} },
+      privacySettings: { create: {} },
+    },
+  });
 
-  // ============================================================================
-  // 2. COURSES
-  // ============================================================================
-  console.log('Creating courses...');
+  const demoUser = await prisma.user.upsert({
+    where: { email: 'demo@aralify.com' },
+    update: {},
+    create: {
+      email: 'demo@aralify.com',
+      username: 'demo_learner',
+      displayName: 'Demo Learner',
+      bio: 'Just learning to code!',
+      role: UserRole.USER,
+      isVerified: true,
+      xpTotal: 1500,
+      level: 5,
+      streakCurrent: 3,
+      streakLongest: 7,
+      settings: {
+        create: {
+          theme: 'light',
+          codeEditorTheme: 'vs-light',
+          fontSize: 16,
+          dailyGoalMins: 30,
+          difficultyPref: Difficulty.EASY,
+        },
+      },
+      notificationSettings: { create: {} },
+      privacySettings: { create: {} },
+    },
+  });
 
-  const courses = await Promise.all([
-    prisma.course.upsert({
-      where: { slug: 'python-basics' },
-      update: {},
-      create: {
-        id: 'course_001',
-        slug: 'python-basics',
-        language: 'python',
-        titleEn: 'Python Basics',
-        titleFil: 'Batayan ng Python',
-        descriptionEn: 'Learn Python programming from scratch. Perfect for beginners.',
-        descriptionFil: 'Matuto ng Python programming mula sa simula. Perpekto para sa mga baguhan.',
-        iconUrl: '/icons/python.svg',
-        color: '#3776AB',
-        estimatedHours: 20,
-        isPublished: true,
-        orderIndex: 0,
-      },
-    }),
-    prisma.course.upsert({
-      where: { slug: 'javascript-fundamentals' },
-      update: {},
-      create: {
-        id: 'course_002',
-        slug: 'javascript-fundamentals',
-        language: 'javascript',
-        titleEn: 'JavaScript Fundamentals',
-        titleFil: 'Batayan ng JavaScript',
-        descriptionEn: 'Master JavaScript basics and DOM manipulation.',
-        descriptionFil: 'I-master ang batayan ng JavaScript at DOM manipulation.',
-        iconUrl: '/icons/js.svg',
-        color: '#F7DF1E',
-        estimatedHours: 25,
-        isPublished: true,
-        orderIndex: 1,
-      },
-    }),
-    prisma.course.upsert({
-      where: { slug: 'web-development' },
-      update: {},
-      create: {
-        id: 'course_003',
-        slug: 'web-development',
-        language: 'html',
-        titleEn: 'Web Development',
-        titleFil: 'Pagbuo ng Web',
-        descriptionEn: 'Build websites from scratch with HTML, CSS, and JavaScript.',
-        descriptionFil: 'Bumuo ng mga website mula sa simula gamit ang HTML, CSS, at JavaScript.',
-        iconUrl: '/icons/web.svg',
-        color: '#E34F26',
-        estimatedHours: 30,
-        isPublished: true,
-        orderIndex: 2,
-      },
-    }),
-    prisma.course.upsert({
-      where: { slug: 'data-structures' },
-      update: {},
-      create: {
-        id: 'course_004',
-        slug: 'data-structures',
-        language: 'python',
-        titleEn: 'Data Structures',
-        titleFil: 'Istruktura ng Data',
-        descriptionEn: 'Learn essential data structures with Python.',
-        descriptionFil: 'Matuto ng mahahalagang istruktura ng data gamit ang Python.',
-        iconUrl: '/icons/ds.svg',
-        color: '#4B8BBE',
-        estimatedHours: 40,
-        isPublished: false,
-        orderIndex: 3,
-      },
-    }),
-  ]);
+  console.log(`   ✅ Created ${adminUser.email}, ${modUser.email}, ${demoUser.email}\n`);
 
-  console.log(`Created ${courses.length} courses`);
+  // ============================================
+  // COURSES
+  // ============================================
+  console.log('📚 Seeding courses...');
 
-  // ============================================================================
-  // 3. LEVELS
-  // ============================================================================
-  console.log('Creating levels...');
+  const pythonCourse = await prisma.course.upsert({
+    where: { slug: 'python-fundamentals' },
+    update: {},
+    create: {
+      slug: 'python-fundamentals',
+      title: 'Python Fundamentals',
+      titleEn: 'Python Fundamentals',
+      titleFil: 'Batayan ng Python',
+      description: 'Learn Python from scratch. Master variables, loops, functions, and more!',
+      language: 'python',
+      iconUrl: '/icons/python.svg',
+      color: '#3776AB',
+      orderIndex: 0,
+      isPublished: true,
+    },
+  });
 
-  const levels = await Promise.all([
-    // Python Basics levels
-    prisma.level.upsert({
-      where: { id: 'level_001' },
-      update: {},
-      create: {
-        id: 'level_001',
-        courseId: 'course_001',
-        slug: 'variables',
-        titleEn: 'Variables & Data Types',
-        titleFil: 'Mga Variable at Uri ng Data',
-        descriptionEn: 'Learn how to store and manipulate data using variables.',
-        descriptionFil: 'Matuto kung paano mag-imbak at magmanipula ng data gamit ang mga variable.',
-        orderIndex: 0,
-        isPublished: true,
-      },
-    }),
-    prisma.level.upsert({
-      where: { id: 'level_002' },
-      update: {},
-      create: {
-        id: 'level_002',
-        courseId: 'course_001',
-        slug: 'control-flow',
-        titleEn: 'Control Flow',
-        titleFil: 'Daloy ng Kontrol',
-        descriptionEn: 'Master if statements, conditions, and logical operators.',
-        descriptionFil: 'I-master ang if statements, conditions, at logical operators.',
-        orderIndex: 1,
-        isPublished: true,
-      },
-    }),
-    prisma.level.upsert({
-      where: { id: 'level_003' },
-      update: {},
-      create: {
-        id: 'level_003',
-        courseId: 'course_001',
-        slug: 'functions',
-        titleEn: 'Functions',
-        titleFil: 'Mga Function',
-        descriptionEn: 'Create reusable code blocks with functions.',
-        descriptionFil: 'Gumawa ng reusable code blocks gamit ang functions.',
-        orderIndex: 2,
-        isPublished: true,
-      },
-    }),
-    prisma.level.upsert({
-      where: { id: 'level_004' },
-      update: {},
-      create: {
-        id: 'level_004',
-        courseId: 'course_001',
-        slug: 'loops',
-        titleEn: 'Loops & Iteration',
-        titleFil: 'Mga Loop',
-        descriptionEn: 'Repeat actions efficiently with loops.',
-        descriptionFil: 'Ulitin ang mga aksyon nang mahusay gamit ang mga loop.',
-        orderIndex: 3,
-        isPublished: true,
-      },
-    }),
-    // JavaScript levels
-    prisma.level.upsert({
-      where: { id: 'level_005' },
-      update: {},
-      create: {
-        id: 'level_005',
-        courseId: 'course_002',
-        slug: 'js-basics',
-        titleEn: 'JS Basics',
-        titleFil: 'Batayan ng JS',
-        descriptionEn: 'Introduction to JavaScript syntax and concepts.',
-        descriptionFil: 'Panimula sa JavaScript syntax at concepts.',
-        orderIndex: 0,
-        isPublished: true,
-      },
-    }),
-    prisma.level.upsert({
-      where: { id: 'level_006' },
-      update: {},
-      create: {
-        id: 'level_006',
-        courseId: 'course_002',
-        slug: 'dom-manipulation',
-        titleEn: 'DOM Manipulation',
-        titleFil: 'Pagmamanipula ng DOM',
-        descriptionEn: 'Learn to interact with web pages using JavaScript.',
-        descriptionFil: 'Matuto makipag-interact sa mga web page gamit ang JavaScript.',
-        orderIndex: 1,
-        isPublished: true,
-      },
-    }),
-    // Web Development level
-    prisma.level.upsert({
-      where: { id: 'level_007' },
-      update: {},
-      create: {
-        id: 'level_007',
-        courseId: 'course_003',
-        slug: 'html-basics',
-        titleEn: 'HTML Basics',
-        titleFil: 'Batayan ng HTML',
-        descriptionEn: 'Learn the structure of web pages with HTML.',
-        descriptionFil: 'Matuto ng istruktura ng mga web page gamit ang HTML.',
-        orderIndex: 0,
-        isPublished: true,
-      },
-    }),
-  ]);
+  const jsCourse = await prisma.course.upsert({
+    where: { slug: 'javascript-essentials' },
+    update: {},
+    create: {
+      slug: 'javascript-essentials',
+      title: 'JavaScript Essentials',
+      titleEn: 'JavaScript Essentials',
+      titleFil: 'Mga Pangunahing JavaScript',
+      description: 'Master JavaScript for web development. DOM, events, async, and more!',
+      language: 'javascript',
+      iconUrl: '/icons/javascript.svg',
+      color: '#F7DF1E',
+      orderIndex: 1,
+      isPublished: true,
+    },
+  });
 
-  console.log(`Created ${levels.length} levels`);
+  const htmlCssCourse = await prisma.course.upsert({
+    where: { slug: 'html-css-basics' },
+    update: {},
+    create: {
+      slug: 'html-css-basics',
+      title: 'HTML & CSS Basics',
+      titleEn: 'HTML & CSS Basics',
+      titleFil: 'Batayan ng HTML at CSS',
+      description: 'Build beautiful websites with HTML and CSS. Learn structure and styling!',
+      language: 'html',
+      iconUrl: '/icons/html5.svg',
+      color: '#E34F26',
+      orderIndex: 2,
+      isPublished: true,
+    },
+  });
 
-  // ============================================================================
-  // 4. LESSONS
-  // ============================================================================
-  console.log('Creating lessons...');
+  console.log(`   ✅ Created ${pythonCourse.title}, ${jsCourse.title}, ${htmlCssCourse.title}\n`);
 
-  const lessons = await Promise.all([
-    // Level 1: Variables - Easy, Medium, Hard
-    prisma.lesson.upsert({
-      where: { id: 'lesson_001' },
-      update: {},
-      create: {
-        id: 'lesson_001',
-        levelId: 'level_001',
-        difficulty: Difficulty.EASY,
-        titleEn: 'Introduction to Variables',
-        titleFil: 'Panimula sa mga Variable',
-        content: { type: 'tutorial', sections: [{ title: 'What is a Variable?', content: 'A variable is like a container that stores data.' }] },
-        xpReward: 50,
-        estimatedTimeMinutes: 10,
-        orderIndex: 0,
-        isPublished: true,
-      },
-    }),
-    prisma.lesson.upsert({
-      where: { id: 'lesson_002' },
-      update: {},
-      create: {
-        id: 'lesson_002',
-        levelId: 'level_001',
-        difficulty: Difficulty.MEDIUM,
-        titleEn: 'Working with Numbers',
-        titleFil: 'Paggamit ng mga Numero',
-        content: { type: 'tutorial', sections: [{ title: 'Number Operations', content: 'Learn arithmetic operations in Python.' }] },
-        xpReward: 100,
-        estimatedTimeMinutes: 15,
-        orderIndex: 1,
-        isPublished: true,
-      },
-    }),
-    prisma.lesson.upsert({
-      where: { id: 'lesson_003' },
-      update: {},
-      create: {
-        id: 'lesson_003',
-        levelId: 'level_001',
-        difficulty: Difficulty.HARD,
-        titleEn: 'Type Conversion Mastery',
-        titleFil: 'Pag-master ng Type Conversion',
-        content: { type: 'tutorial', sections: [{ title: 'Converting Types', content: 'Master type conversion between different data types.' }] },
-        xpReward: 150,
-        estimatedTimeMinutes: 20,
-        orderIndex: 2,
-        isPublished: true,
-      },
-    }),
-    // Level 2: Control Flow
-    prisma.lesson.upsert({
-      where: { id: 'lesson_004' },
-      update: {},
-      create: {
-        id: 'lesson_004',
-        levelId: 'level_002',
-        difficulty: Difficulty.EASY,
-        titleEn: 'If Statements',
-        titleFil: 'Mga If Statement',
-        content: { type: 'tutorial', sections: [{ title: 'Making Decisions', content: 'Learn how to make decisions in code.' }] },
-        xpReward: 50,
-        estimatedTimeMinutes: 10,
-        orderIndex: 0,
-        isPublished: true,
-      },
-    }),
-    prisma.lesson.upsert({
-      where: { id: 'lesson_005' },
-      update: {},
-      create: {
-        id: 'lesson_005',
-        levelId: 'level_002',
-        difficulty: Difficulty.MEDIUM,
-        titleEn: 'Else and Elif',
-        titleFil: 'Else at Elif',
-        content: { type: 'tutorial', sections: [{ title: 'Multiple Conditions', content: 'Handle multiple conditions with else and elif.' }] },
-        xpReward: 100,
-        estimatedTimeMinutes: 15,
-        orderIndex: 1,
-        isPublished: true,
-      },
-    }),
-    prisma.lesson.upsert({
-      where: { id: 'lesson_006' },
-      update: {},
-      create: {
-        id: 'lesson_006',
-        levelId: 'level_002',
-        difficulty: Difficulty.HARD,
-        titleEn: 'Nested Conditions',
-        titleFil: 'Nested na Kondisyon',
-        content: { type: 'tutorial', sections: [{ title: 'Complex Logic', content: 'Master nested conditions and complex logic.' }] },
-        xpReward: 150,
-        estimatedTimeMinutes: 20,
-        orderIndex: 2,
-        isPublished: true,
-      },
-    }),
-    // Level 3: Functions
-    prisma.lesson.upsert({
-      where: { id: 'lesson_007' },
-      update: {},
-      create: {
-        id: 'lesson_007',
-        levelId: 'level_003',
-        difficulty: Difficulty.EASY,
-        titleEn: 'Creating Functions',
-        titleFil: 'Paggawa ng mga Function',
-        content: { type: 'tutorial', sections: [{ title: 'Your First Function', content: 'Learn to create your first function.' }] },
-        xpReward: 50,
-        estimatedTimeMinutes: 10,
-        orderIndex: 0,
-        isPublished: true,
-      },
-    }),
-    prisma.lesson.upsert({
-      where: { id: 'lesson_008' },
-      update: {},
-      create: {
-        id: 'lesson_008',
-        levelId: 'level_003',
-        difficulty: Difficulty.MEDIUM,
-        titleEn: 'Parameters & Return',
-        titleFil: 'Mga Parameter at Return',
-        content: { type: 'tutorial', sections: [{ title: 'Function I/O', content: 'Pass data in and get results back.' }] },
-        xpReward: 100,
-        estimatedTimeMinutes: 15,
-        orderIndex: 1,
-        isPublished: true,
-      },
-    }),
-    prisma.lesson.upsert({
-      where: { id: 'lesson_009' },
-      update: {},
-      create: {
-        id: 'lesson_009',
-        levelId: 'level_003',
-        difficulty: Difficulty.HARD,
-        titleEn: 'Advanced Functions',
-        titleFil: 'Advanced na mga Function',
-        content: { type: 'tutorial', sections: [{ title: 'Advanced Concepts', content: 'Lambda, decorators, and more.' }] },
-        xpReward: 150,
-        estimatedTimeMinutes: 20,
-        orderIndex: 2,
-        isPublished: true,
-      },
-    }),
-    // JS Basics
-    prisma.lesson.upsert({
-      where: { id: 'lesson_010' },
-      update: {},
-      create: {
-        id: 'lesson_010',
-        levelId: 'level_005',
-        difficulty: Difficulty.EASY,
-        titleEn: 'JavaScript Variables',
-        titleFil: 'Mga Variable sa JavaScript',
-        content: { type: 'tutorial', sections: [{ title: 'let, const, var', content: 'Learn the different ways to declare variables.' }] },
-        xpReward: 50,
-        estimatedTimeMinutes: 10,
-        orderIndex: 0,
-        isPublished: true,
-      },
-    }),
-    prisma.lesson.upsert({
-      where: { id: 'lesson_011' },
-      update: {},
-      create: {
-        id: 'lesson_011',
-        levelId: 'level_005',
-        difficulty: Difficulty.MEDIUM,
-        titleEn: 'JS Data Types',
-        titleFil: 'Mga Uri ng Data sa JS',
-        content: { type: 'tutorial', sections: [{ title: 'Data Types', content: 'Strings, numbers, booleans, and more.' }] },
-        xpReward: 100,
-        estimatedTimeMinutes: 15,
-        orderIndex: 1,
-        isPublished: true,
-      },
-    }),
-    // HTML Basics
-    prisma.lesson.upsert({
-      where: { id: 'lesson_012' },
-      update: {},
-      create: {
-        id: 'lesson_012',
-        levelId: 'level_007',
-        difficulty: Difficulty.EASY,
-        titleEn: 'HTML Structure',
-        titleFil: 'Istruktura ng HTML',
-        content: { type: 'tutorial', sections: [{ title: 'HTML Basics', content: 'Learn the basic structure of HTML documents.' }] },
-        xpReward: 50,
-        estimatedTimeMinutes: 10,
-        orderIndex: 0,
-        isPublished: true,
-      },
-    }),
-  ]);
+  // ============================================
+  // LEVELS & LESSONS
+  // ============================================
+  console.log('📖 Seeding levels and lessons...');
 
-  console.log(`Created ${lessons.length} lessons`);
+  // Python Course Levels
+  const pythonLevels = [
+    { slug: 'variables-data-types', title: 'Variables & Data Types', description: 'Learn about variables, strings, numbers, and booleans' },
+    { slug: 'control-flow', title: 'Control Flow', description: 'Master if statements, loops, and conditions' },
+    { slug: 'functions', title: 'Functions', description: 'Create reusable code with functions' },
+    { slug: 'lists-dictionaries', title: 'Lists & Dictionaries', description: 'Work with collections of data' },
+  ];
 
-  // ============================================================================
-  // 5. QUIZZES
-  // ============================================================================
-  console.log('Creating quizzes...');
+  // JavaScript Course Levels
+  const jsLevels = [
+    { slug: 'js-basics', title: 'JavaScript Basics', description: 'Variables, types, and operators' },
+    { slug: 'dom-manipulation', title: 'DOM Manipulation', description: 'Interact with web pages' },
+    { slug: 'events-handlers', title: 'Events & Handlers', description: 'Respond to user interactions' },
+    { slug: 'async-javascript', title: 'Async JavaScript', description: 'Promises, async/await, and fetch' },
+  ];
 
-  const quizzes = await Promise.all([
-    prisma.quiz.upsert({
-      where: { id: 'quiz_001' },
-      update: {},
-      create: {
-        id: 'quiz_001',
-        lessonId: 'lesson_001',
-        questionType: QuestionType.MULTIPLE_CHOICE,
-        questionEn: 'What keyword is used to create a variable in Python?',
-        questionFil: 'Anong keyword ang ginagamit sa paggawa ng variable sa Python?',
-        options: { options: [{ id: 'a', text: 'var' }, { id: 'b', text: 'let' }, { id: 'c', text: 'const' }, { id: 'd', text: 'No keyword needed' }] },
-        correctAnswer: { answer: 'd' },
-        explanationEn: 'In Python, you can create variables without any keyword. Just use: variable_name = value',
-        explanationFil: 'Sa Python, maaari kang gumawa ng variable nang walang keyword. Gamitin lang: variable_name = value',
-        orderIndex: 0,
-      },
-    }),
-    prisma.quiz.upsert({
-      where: { id: 'quiz_002' },
-      update: {},
-      create: {
-        id: 'quiz_002',
-        lessonId: 'lesson_001',
-        questionType: QuestionType.TRUE_FALSE,
-        questionEn: 'Python is a statically typed language.',
-        questionFil: 'Ang Python ay isang statically typed na wika.',
-        options: { options: [{ id: 'true', text: 'True' }, { id: 'false', text: 'False' }] },
-        correctAnswer: { answer: 'false' },
-        explanationEn: 'Python is dynamically typed - you don\'t need to declare variable types.',
-        orderIndex: 1,
-      },
-    }),
-    prisma.quiz.upsert({
-      where: { id: 'quiz_003' },
-      update: {},
-      create: {
-        id: 'quiz_003',
-        lessonId: 'lesson_002',
-        questionType: QuestionType.CODE_OUTPUT,
-        questionEn: 'What is the output of: print(5 + 3)',
-        questionFil: 'Ano ang output ng: print(5 + 3)',
-        correctAnswer: { answer: '8' },
-        explanationEn: '5 + 3 equals 8, and print() displays it.',
-        orderIndex: 0,
-      },
-    }),
-    prisma.quiz.upsert({
-      where: { id: 'quiz_004' },
-      update: {},
-      create: {
-        id: 'quiz_004',
-        lessonId: 'lesson_002',
-        questionType: QuestionType.FILL_BLANK,
-        questionEn: 'To convert a string to integer, use ___()',
-        questionFil: 'Para i-convert ang string sa integer, gamitin ang ___()',
-        correctAnswer: { answer: 'int' },
-        explanationEn: 'The int() function converts strings or floats to integers.',
-        orderIndex: 1,
-      },
-    }),
-    prisma.quiz.upsert({
-      where: { id: 'quiz_005' },
-      update: {},
-      create: {
-        id: 'quiz_005',
-        lessonId: 'lesson_004',
-        questionType: QuestionType.MULTIPLE_CHOICE,
-        questionEn: 'Which operator checks equality?',
-        questionFil: 'Aling operator ang nag-check ng pagkakapantay?',
-        options: { options: [{ id: 'a', text: '=' }, { id: 'b', text: '==' }, { id: 'c', text: '===' }, { id: 'd', text: '!=' }] },
-        correctAnswer: { answer: 'b' },
-        explanationEn: '== is the equality operator. = is for assignment, != is for not equal.',
-        orderIndex: 0,
-      },
-    }),
-  ]);
+  // HTML/CSS Course Levels
+  const htmlCssLevels = [
+    { slug: 'html-structure', title: 'HTML Structure', description: 'Tags, elements, and document structure' },
+    { slug: 'css-styling', title: 'CSS Styling', description: 'Colors, fonts, and basic styling' },
+    { slug: 'layout-flexbox', title: 'Layout with Flexbox', description: 'Create flexible layouts' },
+    { slug: 'responsive-design', title: 'Responsive Design', description: 'Build mobile-friendly websites' },
+  ];
 
-  console.log(`Created ${quizzes.length} quizzes`);
+  const courseLevelsMap = [
+    { course: pythonCourse, levels: pythonLevels, langId: 71 }, // Python 3
+    { course: jsCourse, levels: jsLevels, langId: 63 }, // JavaScript
+    { course: htmlCssCourse, levels: htmlCssLevels, langId: 63 }, // HTML uses JS for Judge0
+  ];
 
-  // ============================================================================
-  // 6. CODE CHALLENGES
-  // ============================================================================
-  console.log('Creating code challenges...');
+  let totalLessons = 0;
+  let totalQuizzes = 0;
+  let totalChallenges = 0;
 
-  const challenges = await Promise.all([
-    prisma.codeChallenge.upsert({
-      where: { id: 'cc_001' },
-      update: {},
-      create: {
-        id: 'cc_001',
-        lessonId: 'lesson_001',
-        titleEn: 'Create a Variable',
-        titleFil: 'Gumawa ng Variable',
-        descriptionEn: 'Create a variable named "greeting" and assign it the value "Hello, World!"',
-        descriptionFil: 'Gumawa ng variable na pinangalanang "greeting" at bigyan ito ng value na "Hello, World!"',
-        starterCode: '# Create a variable named "greeting"\n',
-        solutionCode: 'greeting = "Hello, World!"',
-        language: 'python',
-        testCases: { tests: [{ input: {}, expected: 'Hello, World!', check: 'greeting' }] },
-        orderIndex: 0,
-      },
-    }),
-    prisma.codeChallenge.upsert({
-      where: { id: 'cc_002' },
-      update: {},
-      create: {
-        id: 'cc_002',
-        lessonId: 'lesson_002',
-        titleEn: 'Calculate Sum',
-        titleFil: 'Kalkulahin ang Kabuuan',
-        descriptionEn: 'Given variables a and b, calculate their sum and store it in "result".',
-        descriptionFil: 'Gamit ang mga variable a at b, kalkulahin ang kabuuan at ilagay sa "result".',
-        starterCode: '# Variables a and b are already defined\n# Calculate the sum and store in result\n',
-        solutionCode: 'result = a + b',
-        language: 'python',
-        testCases: { tests: [{ input: { a: 5, b: 3 }, expected: 8 }, { input: { a: 10, b: -5 }, expected: 5 }, { input: { a: 0, b: 0 }, expected: 0 }] },
-        orderIndex: 0,
-      },
-    }),
-    prisma.codeChallenge.upsert({
-      where: { id: 'cc_003' },
-      update: {},
-      create: {
-        id: 'cc_003',
-        lessonId: 'lesson_003',
-        titleEn: 'Type Converter',
-        titleFil: 'Tagapag-convert ng Uri',
-        descriptionEn: 'Convert the string variable "string_num" to an integer and store it in "num".',
-        descriptionFil: 'I-convert ang string variable "string_num" sa integer at ilagay sa "num".',
-        starterCode: '# string_num contains a number as string\n# Convert it to integer\n',
-        solutionCode: 'num = int(string_num)',
-        language: 'python',
-        testCases: { tests: [{ input: { string_num: '42' }, expected: 42 }, { input: { string_num: '100' }, expected: 100 }] },
-        orderIndex: 0,
-      },
-    }),
-    prisma.codeChallenge.upsert({
-      where: { id: 'cc_004' },
-      update: {},
-      create: {
-        id: 'cc_004',
-        lessonId: 'lesson_007',
-        titleEn: 'Hello Function',
-        titleFil: 'Function na Hello',
-        descriptionEn: 'Create a function called "greet" that takes a name and returns "Hello, {name}!"',
-        descriptionFil: 'Gumawa ng function na tinatawag na "greet" na kumukuha ng pangalan at nagbabalik ng "Hello, {name}!"',
-        starterCode: '# Create a greet function\ndef greet(name):\n    pass\n',
-        solutionCode: 'def greet(name):\n    return f"Hello, {name}!"',
-        language: 'python',
-        testCases: { tests: [{ input: { name: 'World' }, expected: 'Hello, World!' }, { input: { name: 'Juan' }, expected: 'Hello, Juan!' }] },
-        orderIndex: 0,
-      },
-    }),
-  ]);
+  for (const { course, levels, langId } of courseLevelsMap) {
+    for (let i = 0; i < levels.length; i++) {
+      const levelData = levels[i];
 
-  console.log(`Created ${challenges.length} code challenges`);
+      const level = await prisma.level.upsert({
+        where: { courseId_slug: { courseId: course.id, slug: levelData.slug } },
+        update: {},
+        create: {
+          courseId: course.id,
+          slug: levelData.slug,
+          title: levelData.title,
+          description: levelData.description,
+          orderIndex: i,
+          isPublished: true,
+        },
+      });
 
-  // ============================================================================
-  // 7. ACHIEVEMENTS
-  // ============================================================================
-  console.log('Creating achievements...');
+      // Create 3 lessons per level (Easy, Medium, Hard)
+      const difficulties: Difficulty[] = [Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD];
+      const xpRewards = { EASY: 100, MEDIUM: 200, HARD: 300 };
 
-  const achievements = await Promise.all([
-    prisma.achievement.upsert({
-      where: { slug: 'first-steps' },
-      update: {},
-      create: {
-        id: 'ach_001',
-        slug: 'first-steps',
-        nameEn: 'First Steps',
-        nameFil: 'Unang Hakbang',
-        descriptionEn: 'Complete your first lesson',
-        descriptionFil: 'Kumpletuhin ang iyong unang aralin',
-        iconUrl: '/achievements/first-steps.svg',
-        category: 'onboarding',
-        xpReward: 500,
-        criteria: { type: 'lessons_completed', threshold: 1 },
-        isSecret: false,
-      },
-    }),
-    prisma.achievement.upsert({
-      where: { slug: 'week-warrior' },
-      update: {},
-      create: {
-        id: 'ach_002',
-        slug: 'week-warrior',
-        nameEn: 'Week Warrior',
-        nameFil: 'Mandirigma ng Linggo',
-        descriptionEn: 'Maintain a 7-day streak',
-        descriptionFil: 'Mapanatili ang 7-araw na streak',
-        iconUrl: '/achievements/week-warrior.svg',
-        category: 'streak',
-        xpReward: 1000,
-        criteria: { type: 'streak', threshold: 7 },
-        isSecret: false,
-      },
-    }),
-    prisma.achievement.upsert({
-      where: { slug: 'course-master' },
-      update: {},
-      create: {
-        id: 'ach_003',
-        slug: 'course-master',
-        nameEn: 'Course Master',
-        nameFil: 'Master ng Kurso',
-        descriptionEn: 'Complete an entire course',
-        descriptionFil: 'Kumpletuhin ang buong kurso',
-        iconUrl: '/achievements/course-master.svg',
-        category: 'completion',
-        xpReward: 2000,
-        criteria: { type: 'course_completed', threshold: 1 },
-        isSecret: false,
-      },
-    }),
-    prisma.achievement.upsert({
-      where: { slug: 'speed-demon' },
-      update: {},
-      create: {
-        id: 'ach_004',
-        slug: 'speed-demon',
-        nameEn: 'Speed Demon',
-        nameFil: 'Mabilis na Demonyo',
-        descriptionEn: 'Complete a challenge in under 60 seconds',
-        descriptionFil: 'Kumpletuhin ang challenge sa loob ng 60 segundo',
-        iconUrl: '/achievements/speed-demon.svg',
-        category: 'challenge',
-        xpReward: 750,
-        criteria: { type: 'challenge_time', threshold: 60 },
-        isSecret: false,
-      },
-    }),
-    prisma.achievement.upsert({
-      where: { slug: 'perfectionist' },
-      update: {},
-      create: {
-        id: 'ach_005',
-        slug: 'perfectionist',
-        nameEn: 'Perfectionist',
-        nameFil: 'Perpeksyunista',
-        descriptionEn: 'Get 100% on 10 lessons',
-        descriptionFil: 'Makakuha ng 100% sa 10 aralin',
-        iconUrl: '/achievements/perfectionist.svg',
-        category: 'accuracy',
-        xpReward: 1500,
-        criteria: { type: 'perfect_score', threshold: 10 },
-        isSecret: false,
-      },
-    }),
-    prisma.achievement.upsert({
-      where: { slug: 'secret-explorer' },
-      update: {},
-      create: {
-        id: 'ach_006',
-        slug: 'secret-explorer',
-        nameEn: 'Secret Explorer',
-        nameFil: 'Lihim na Manlalakbay',
-        descriptionEn: '???',
-        descriptionFil: '???',
-        iconUrl: '/achievements/secret.svg',
-        category: 'hidden',
-        xpReward: 2500,
-        criteria: { type: 'easter_egg', threshold: 1 },
-        isSecret: true,
-      },
-    }),
-  ]);
+      for (let d = 0; d < difficulties.length; d++) {
+        const difficulty = difficulties[d];
+        const lessonSlug = `${levelData.slug}-lesson`;
 
-  console.log(`Created ${achievements.length} achievements`);
+        const lesson = await prisma.lesson.upsert({
+          where: { levelId_slug_difficulty: { levelId: level.id, slug: lessonSlug, difficulty } },
+          update: {},
+          create: {
+            levelId: level.id,
+            slug: lessonSlug,
+            title: `${levelData.title} - ${difficulty}`,
+            content: {
+              introduction: `Welcome to ${levelData.title} (${difficulty} mode)!`,
+              sections: [
+                { title: 'Overview', content: `This lesson covers ${levelData.description.toLowerCase()}.` },
+                { title: 'Key Concepts', content: 'Learn the fundamental concepts step by step.' },
+                { title: 'Practice', content: 'Apply what you learned with hands-on exercises.' },
+              ],
+              summary: 'Great job completing this lesson!',
+            },
+            difficulty,
+            xpReward: xpRewards[difficulty],
+            orderIndex: d,
+            isPublished: true,
+          },
+        });
+        totalLessons++;
 
-  // ============================================================================
-  // 8. BADGES
-  // ============================================================================
-  console.log('Creating badges...');
+        // Create 2 quizzes per lesson
+        const quizTypes: QuizType[] = [QuizType.MULTIPLE_CHOICE, QuizType.TRUE_FALSE];
+        for (let q = 0; q < quizTypes.length; q++) {
+          await prisma.quiz.upsert({
+            where: { id: `quiz-${lesson.id}-${q}` },
+            update: {},
+            create: {
+              id: `quiz-${lesson.id}-${q}`,
+              lessonId: lesson.id,
+              type: quizTypes[q],
+              question: quizTypes[q] === QuizType.MULTIPLE_CHOICE
+                ? `What is a key concept in ${levelData.title}?`
+                : `${levelData.title} is an important programming concept.`,
+              options: quizTypes[q] === QuizType.MULTIPLE_CHOICE
+                ? ['Option A - Correct', 'Option B', 'Option C', 'Option D']
+                : undefined,
+              correctAnswer: quizTypes[q] === QuizType.MULTIPLE_CHOICE ? 'Option A - Correct' : 'true',
+              explanation: `This is the explanation for the ${quizTypes[q]} quiz.`,
+              orderIndex: q,
+            },
+          });
+          totalQuizzes++;
+        }
 
-  const badges = await Promise.all([
-    prisma.badge.upsert({
-      where: { slug: 'python-novice' },
-      update: {},
-      create: {
-        id: 'badge_001',
-        slug: 'python-novice',
-        nameEn: 'Python Novice',
-        nameFil: 'Baguhan sa Python',
-        descriptionEn: 'Completed first Python level',
-        descriptionFil: 'Nakumpleto ang unang level ng Python',
-        iconUrl: '/badges/python-novice.svg',
-        rarity: BadgeRarity.COMMON,
-        criteria: { type: 'level_complete', course: 'python-basics', level: 1 },
-      },
-    }),
-    prisma.badge.upsert({
-      where: { slug: 'python-intermediate' },
-      update: {},
-      create: {
-        id: 'badge_002',
-        slug: 'python-intermediate',
-        nameEn: 'Python Intermediate',
-        nameFil: 'Intermediate sa Python',
-        descriptionEn: 'Completed half of Python course',
-        descriptionFil: 'Nakumpleto ang kalahati ng kurso ng Python',
-        iconUrl: '/badges/python-mid.svg',
-        rarity: BadgeRarity.UNCOMMON,
-        criteria: { type: 'course_progress', course: 'python-basics', percentage: 50 },
-      },
-    }),
-    prisma.badge.upsert({
-      where: { slug: 'python-expert' },
-      update: {},
-      create: {
-        id: 'badge_003',
-        slug: 'python-expert',
-        nameEn: 'Python Expert',
-        nameFil: 'Eksperto sa Python',
-        descriptionEn: 'Mastered Python course',
-        descriptionFil: 'Na-master ang kurso ng Python',
-        iconUrl: '/badges/python-expert.svg',
-        rarity: BadgeRarity.RARE,
-        criteria: { type: 'course_mastery', course: 'python-basics', percentage: 100 },
-      },
-    }),
-    prisma.badge.upsert({
-      where: { slug: 'streak-master' },
-      update: {},
-      create: {
-        id: 'badge_004',
-        slug: 'streak-master',
-        nameEn: 'Streak Master',
-        nameFil: 'Master ng Streak',
-        descriptionEn: '30-day learning streak',
-        descriptionFil: '30-araw na streak sa pag-aaral',
-        iconUrl: '/badges/streak-master.svg',
-        rarity: BadgeRarity.EPIC,
-        criteria: { type: 'streak', days: 30 },
-      },
-    }),
-    prisma.badge.upsert({
-      where: { slug: 'code-legend' },
-      update: {},
-      create: {
-        id: 'badge_005',
-        slug: 'code-legend',
-        nameEn: 'Code Legend',
-        nameFil: 'Alamat ng Code',
-        descriptionEn: 'Achieved 10,000 total XP',
-        descriptionFil: 'Nakamit ang 10,000 kabuuang XP',
-        iconUrl: '/badges/legend.svg',
-        rarity: BadgeRarity.LEGENDARY,
-        criteria: { type: 'total_xp', amount: 10000 },
-      },
-    }),
-    prisma.badge.upsert({
-      where: { slug: 'js-novice' },
-      update: {},
-      create: {
-        id: 'badge_006',
-        slug: 'js-novice',
-        nameEn: 'JS Novice',
-        nameFil: 'Baguhan sa JS',
-        descriptionEn: 'Completed first JavaScript level',
-        descriptionFil: 'Nakumpleto ang unang level ng JavaScript',
-        iconUrl: '/badges/js-novice.svg',
-        rarity: BadgeRarity.COMMON,
-        criteria: { type: 'level_complete', course: 'javascript-fundamentals', level: 1 },
-      },
-    }),
-  ]);
+        // Create 1 code challenge per lesson
+        await prisma.codeChallenge.upsert({
+          where: { id: `challenge-${lesson.id}` },
+          update: {},
+          create: {
+            id: `challenge-${lesson.id}`,
+            lessonId: lesson.id,
+            title: `${levelData.title} Challenge`,
+            description: `Apply your knowledge of ${levelData.description.toLowerCase()}`,
+            starterCode: course.language === 'python'
+              ? '# Write your code here\n\ndef solution():\n    pass\n'
+              : course.language === 'javascript'
+              ? '// Write your code here\n\nfunction solution() {\n  \n}\n'
+              : '<!-- Write your HTML here -->\n',
+            solutionCode: course.language === 'python'
+              ? 'def solution():\n    return "Hello, World!"\n'
+              : course.language === 'javascript'
+              ? 'function solution() {\n  return "Hello, World!";\n}\n'
+              : '<h1>Hello, World!</h1>\n',
+            testCases: [
+              { input: '', expectedOutput: 'Hello, World!' },
+            ],
+            hints: ['Think about the basics', 'Review the lesson content', 'Try a simple approach first'],
+            languageId: langId,
+          },
+        });
+        totalChallenges++;
+      }
+    }
+  }
 
-  console.log(`Created ${badges.length} badges`);
+  console.log(`   ✅ Created ${totalLessons} lessons, ${totalQuizzes} quizzes, ${totalChallenges} challenges\n`);
 
-  // ============================================================================
-  // 9. USER PROGRESS DATA
-  // ============================================================================
-  console.log('Creating user progress...');
+  // ============================================
+  // ACHIEVEMENTS
+  // ============================================
+  console.log('🏆 Seeding achievements...');
 
-  // User Course Progress
-  await Promise.all([
-    prisma.userCourseProgress.upsert({
-      where: { userId_courseId: { userId: 'user_001', courseId: 'course_001' } },
-      update: {},
-      create: {
-        userId: 'user_001',
-        courseId: 'course_001',
-        completionPercentage: 45.5,
-        masteryPercentage: 33.3,
-        totalXpEarned: 750,
-        timeSpentSeconds: 7200,
-      },
-    }),
-    prisma.userCourseProgress.upsert({
-      where: { userId_courseId: { userId: 'user_001', courseId: 'course_002' } },
-      update: {},
-      create: {
-        userId: 'user_001',
-        courseId: 'course_002',
-        completionPercentage: 10.0,
-        masteryPercentage: 5.0,
-        totalXpEarned: 100,
-        timeSpentSeconds: 1800,
-      },
-    }),
-    prisma.userCourseProgress.upsert({
-      where: { userId_courseId: { userId: 'user_002', courseId: 'course_001' } },
-      update: {},
-      create: {
-        userId: 'user_002',
-        courseId: 'course_001',
-        completionPercentage: 100.0,
-        masteryPercentage: 100.0,
-        totalXpEarned: 2500,
-        timeSpentSeconds: 36000,
-        completedAt: new Date('2025-12-20'),
-      },
-    }),
-    prisma.userCourseProgress.upsert({
-      where: { userId_courseId: { userId: 'user_005', courseId: 'course_001' } },
-      update: {},
-      create: {
-        userId: 'user_005',
-        courseId: 'course_001',
-        completionPercentage: 5.0,
-        masteryPercentage: 0.0,
-        totalXpEarned: 50,
-        timeSpentSeconds: 600,
-      },
-    }),
-  ]);
+  const achievements = [
+    // Completion achievements
+    { slug: 'first-lesson', title: 'First Steps', description: 'Complete your first lesson', category: 'completion', xpReward: 50, criteria: { type: 'lessons_completed', count: 1 } },
+    { slug: 'ten-lessons', title: 'Getting Started', description: 'Complete 10 lessons', category: 'completion', xpReward: 200, criteria: { type: 'lessons_completed', count: 10 } },
+    { slug: 'fifty-lessons', title: 'Dedicated Learner', description: 'Complete 50 lessons', category: 'completion', xpReward: 500, criteria: { type: 'lessons_completed', count: 50 } },
+    { slug: 'hundred-lessons', title: 'Centurion', description: 'Complete 100 lessons', category: 'completion', xpReward: 1000, criteria: { type: 'lessons_completed', count: 100 } },
 
-  // User Level Unlocks
-  await Promise.all([
-    prisma.userLevelUnlock.upsert({
-      where: { userId_levelId: { userId: 'user_001', levelId: 'level_001' } },
-      update: {},
-      create: { userId: 'user_001', levelId: 'level_001' },
-    }),
-    prisma.userLevelUnlock.upsert({
-      where: { userId_levelId: { userId: 'user_001', levelId: 'level_002' } },
-      update: {},
-      create: { userId: 'user_001', levelId: 'level_002' },
-    }),
-    prisma.userLevelUnlock.upsert({
-      where: { userId_levelId: { userId: 'user_002', levelId: 'level_001' } },
-      update: {},
-      create: { userId: 'user_002', levelId: 'level_001' },
-    }),
-    prisma.userLevelUnlock.upsert({
-      where: { userId_levelId: { userId: 'user_002', levelId: 'level_002' } },
-      update: {},
-      create: { userId: 'user_002', levelId: 'level_002' },
-    }),
-    prisma.userLevelUnlock.upsert({
-      where: { userId_levelId: { userId: 'user_002', levelId: 'level_003' } },
-      update: {},
-      create: { userId: 'user_002', levelId: 'level_003' },
-    }),
-    prisma.userLevelUnlock.upsert({
-      where: { userId_levelId: { userId: 'user_002', levelId: 'level_004' } },
-      update: {},
-      create: { userId: 'user_002', levelId: 'level_004' },
-    }),
-    prisma.userLevelUnlock.upsert({
-      where: { userId_levelId: { userId: 'user_005', levelId: 'level_001' } },
-      update: {},
-      create: { userId: 'user_005', levelId: 'level_001' },
-    }),
-  ]);
+    // Streak achievements
+    { slug: 'streak-3', title: 'On Fire', description: 'Maintain a 3-day streak', category: 'streak', xpReward: 100, criteria: { type: 'streak', count: 3 } },
+    { slug: 'streak-7', title: 'Week Warrior', description: 'Maintain a 7-day streak', category: 'streak', xpReward: 250, criteria: { type: 'streak', count: 7 } },
+    { slug: 'streak-30', title: 'Monthly Master', description: 'Maintain a 30-day streak', category: 'streak', xpReward: 1000, criteria: { type: 'streak', count: 30 } },
+    { slug: 'streak-100', title: 'Unstoppable', description: 'Maintain a 100-day streak', category: 'streak', xpReward: 5000, criteria: { type: 'streak', count: 100 }, isSecret: true },
 
-  // User Lesson Progress
-  await Promise.all([
-    prisma.userLessonProgress.upsert({
-      where: { userId_lessonId: { userId: 'user_001', lessonId: 'lesson_001' } },
-      update: {},
-      create: {
-        userId: 'user_001',
-        lessonId: 'lesson_001',
-        status: LessonStatus.COMPLETED,
-        score: 100,
-        xpEarned: 50,
-        timeSpentSeconds: 480,
-        completedAt: new Date(),
-      },
-    }),
-    prisma.userLessonProgress.upsert({
-      where: { userId_lessonId: { userId: 'user_001', lessonId: 'lesson_002' } },
-      update: {},
-      create: {
-        userId: 'user_001',
-        lessonId: 'lesson_002',
-        status: LessonStatus.COMPLETED,
-        score: 85,
-        xpEarned: 100,
-        timeSpentSeconds: 720,
-        completedAt: new Date(),
-      },
-    }),
-    prisma.userLessonProgress.upsert({
-      where: { userId_lessonId: { userId: 'user_001', lessonId: 'lesson_003' } },
-      update: {},
-      create: {
-        userId: 'user_001',
-        lessonId: 'lesson_003',
-        status: LessonStatus.IN_PROGRESS,
-        timeSpentSeconds: 300,
-      },
-    }),
-    prisma.userLessonProgress.upsert({
-      where: { userId_lessonId: { userId: 'user_002', lessonId: 'lesson_001' } },
-      update: {},
-      create: {
-        userId: 'user_002',
-        lessonId: 'lesson_001',
-        status: LessonStatus.COMPLETED,
-        score: 100,
-        xpEarned: 50,
-        timeSpentSeconds: 360,
-        completedAt: new Date(),
-      },
-    }),
-    prisma.userLessonProgress.upsert({
-      where: { userId_lessonId: { userId: 'user_002', lessonId: 'lesson_002' } },
-      update: {},
-      create: {
-        userId: 'user_002',
-        lessonId: 'lesson_002',
-        status: LessonStatus.COMPLETED,
-        score: 100,
-        xpEarned: 100,
-        timeSpentSeconds: 600,
-        completedAt: new Date(),
-      },
-    }),
-    prisma.userLessonProgress.upsert({
-      where: { userId_lessonId: { userId: 'user_002', lessonId: 'lesson_003' } },
-      update: {},
-      create: {
-        userId: 'user_002',
-        lessonId: 'lesson_003',
-        status: LessonStatus.COMPLETED,
-        score: 95,
-        xpEarned: 150,
-        timeSpentSeconds: 900,
-        completedAt: new Date(),
-      },
-    }),
-    prisma.userLessonProgress.upsert({
-      where: { userId_lessonId: { userId: 'user_005', lessonId: 'lesson_001' } },
-      update: {},
-      create: {
-        userId: 'user_005',
-        lessonId: 'lesson_001',
-        status: LessonStatus.IN_PROGRESS,
-        timeSpentSeconds: 300,
-      },
-    }),
-  ]);
+    // Mastery achievements
+    { slug: 'first-hard', title: 'Challenge Accepted', description: 'Complete your first HARD lesson', category: 'mastery', xpReward: 150, criteria: { type: 'hard_lessons', count: 1 } },
+    { slug: 'python-master', title: 'Python Master', description: 'Complete all Python lessons', category: 'mastery', xpReward: 2000, criteria: { type: 'course_complete', course: 'python-fundamentals' } },
+    { slug: 'js-master', title: 'JavaScript Master', description: 'Complete all JavaScript lessons', category: 'mastery', xpReward: 2000, criteria: { type: 'course_complete', course: 'javascript-essentials' } },
 
-  console.log('Created user progress data');
+    // XP achievements
+    { slug: 'xp-1000', title: 'Rising Star', description: 'Earn 1,000 XP', category: 'xp', xpReward: 100, criteria: { type: 'total_xp', count: 1000 } },
+    { slug: 'xp-10000', title: 'XP Hunter', description: 'Earn 10,000 XP', category: 'xp', xpReward: 500, criteria: { type: 'total_xp', count: 10000 } },
 
-  // ============================================================================
-  // 10. GAMIFICATION DATA
-  // ============================================================================
-  console.log('Creating gamification data...');
+    // Social achievements
+    { slug: 'first-comment', title: 'Socializer', description: 'Leave your first comment', category: 'social', xpReward: 50, criteria: { type: 'comments', count: 1 } },
+    { slug: 'first-follower', title: 'Influencer', description: 'Get your first follower', category: 'social', xpReward: 100, criteria: { type: 'followers', count: 1 } },
+  ];
 
-  // XP Transactions
-  await Promise.all([
-    prisma.xpTransaction.create({
-      data: {
-        userId: 'user_001',
-        amount: 50,
-        sourceType: XpSourceType.LESSON_COMPLETE,
-        sourceId: 'lesson_001',
-        description: 'Completed: Introduction to Variables',
-        multiplier: 1.0,
-      },
-    }),
-    prisma.xpTransaction.create({
-      data: {
-        userId: 'user_001',
-        amount: 200,
-        sourceType: XpSourceType.LESSON_COMPLETE,
-        sourceId: 'lesson_002',
-        description: 'Completed: Working with Numbers (Medium)',
-        multiplier: 2.0,
-      },
-    }),
-    prisma.xpTransaction.create({
-      data: {
-        userId: 'user_001',
-        amount: 50,
-        sourceType: XpSourceType.STREAK_BONUS,
-        description: '7-day streak bonus',
-        multiplier: 1.0,
-      },
-    }),
-    prisma.xpTransaction.create({
-      data: {
-        userId: 'user_002',
-        amount: 450,
-        sourceType: XpSourceType.LESSON_COMPLETE,
-        sourceId: 'lesson_003',
-        description: 'Completed: Type Conversion Mastery (Hard)',
-        multiplier: 3.0,
-      },
-    }),
-    prisma.xpTransaction.create({
-      data: {
-        userId: 'user_002',
-        amount: 500,
-        sourceType: XpSourceType.ACHIEVEMENT,
-        sourceId: 'ach_001',
-        description: 'Achievement: First Steps',
-        multiplier: 1.0,
-      },
-    }),
-  ]);
-
-  // User Achievements
-  await Promise.all([
-    prisma.userAchievement.upsert({
-      where: { userId_achievementId: { userId: 'user_001', achievementId: 'ach_001' } },
-      update: {},
-      create: { userId: 'user_001', achievementId: 'ach_001' },
-    }),
-    prisma.userAchievement.upsert({
-      where: { userId_achievementId: { userId: 'user_001', achievementId: 'ach_002' } },
-      update: {},
-      create: { userId: 'user_001', achievementId: 'ach_002' },
-    }),
-    prisma.userAchievement.upsert({
-      where: { userId_achievementId: { userId: 'user_002', achievementId: 'ach_001' } },
-      update: {},
-      create: { userId: 'user_002', achievementId: 'ach_001' },
-    }),
-    prisma.userAchievement.upsert({
-      where: { userId_achievementId: { userId: 'user_002', achievementId: 'ach_002' } },
-      update: {},
-      create: { userId: 'user_002', achievementId: 'ach_002' },
-    }),
-    prisma.userAchievement.upsert({
-      where: { userId_achievementId: { userId: 'user_002', achievementId: 'ach_003' } },
-      update: {},
-      create: { userId: 'user_002', achievementId: 'ach_003' },
-    }),
-    prisma.userAchievement.upsert({
-      where: { userId_achievementId: { userId: 'user_002', achievementId: 'ach_005' } },
-      update: {},
-      create: { userId: 'user_002', achievementId: 'ach_005' },
-    }),
-  ]);
-
-  // User Badges
-  await Promise.all([
-    prisma.userBadge.upsert({
-      where: { userId_badgeId: { userId: 'user_001', badgeId: 'badge_001' } },
-      update: {},
-      create: { userId: 'user_001', badgeId: 'badge_001', isDisplayed: true, displayOrder: 1 },
-    }),
-    prisma.userBadge.upsert({
-      where: { userId_badgeId: { userId: 'user_002', badgeId: 'badge_001' } },
-      update: {},
-      create: { userId: 'user_002', badgeId: 'badge_001' },
-    }),
-    prisma.userBadge.upsert({
-      where: { userId_badgeId: { userId: 'user_002', badgeId: 'badge_002' } },
-      update: {},
-      create: { userId: 'user_002', badgeId: 'badge_002', isDisplayed: true, displayOrder: 1 },
-    }),
-    prisma.userBadge.upsert({
-      where: { userId_badgeId: { userId: 'user_002', badgeId: 'badge_003' } },
-      update: {},
-      create: { userId: 'user_002', badgeId: 'badge_003', isDisplayed: true, displayOrder: 2 },
-    }),
-    prisma.userBadge.upsert({
-      where: { userId_badgeId: { userId: 'user_002', badgeId: 'badge_004' } },
-      update: {},
-      create: { userId: 'user_002', badgeId: 'badge_004', isDisplayed: true, displayOrder: 3 },
-    }),
-  ]);
-
-  // Streak History
-  const today = new Date();
-  for (let i = 6; i >= 0; i--) {
-    const date = new Date(today);
-    date.setDate(date.getDate() - i);
-    await prisma.streakHistory.upsert({
-      where: { userId_date: { userId: 'user_001', date } },
+  for (const achievement of achievements) {
+    await prisma.achievement.upsert({
+      where: { slug: achievement.slug },
       update: {},
       create: {
-        userId: 'user_001',
-        date,
-        activityCount: Math.floor(Math.random() * 4) + 1,
-        xpEarned: Math.floor(Math.random() * 300) + 100,
-        streakDay: 7 - i,
+        slug: achievement.slug,
+        title: achievement.title,
+        description: achievement.description,
+        category: achievement.category,
+        xpReward: achievement.xpReward,
+        criteria: achievement.criteria,
+        isSecret: achievement.isSecret || false,
+        iconUrl: `/icons/achievements/${achievement.slug}.svg`,
       },
     });
   }
 
-  console.log('Created gamification data');
+  console.log(`   ✅ Created ${achievements.length} achievements\n`);
 
-  // ============================================================================
-  // 11. SOCIAL DATA
-  // ============================================================================
-  console.log('Creating social data...');
+  // ============================================
+  // BADGES
+  // ============================================
+  console.log('🎖️ Seeding badges...');
 
-  // Follows
-  await Promise.all([
-    prisma.follow.upsert({
-      where: { followerId_followingId: { followerId: 'user_001', followingId: 'user_002' } },
+  const badges = [
+    { slug: 'newcomer', title: 'Newcomer', description: 'Welcome to Aralify!', rarity: 'common' },
+    { slug: 'quick-learner', title: 'Quick Learner', description: 'Complete 5 lessons in one day', rarity: 'common' },
+    { slug: 'night-owl', title: 'Night Owl', description: 'Study after midnight', rarity: 'common' },
+    { slug: 'early-bird', title: 'Early Bird', description: 'Study before 6 AM', rarity: 'rare' },
+    { slug: 'perfectionist', title: 'Perfectionist', description: 'Get 100% on 10 quizzes', rarity: 'rare' },
+    { slug: 'speed-demon', title: 'Speed Demon', description: 'Complete a lesson in under 5 minutes', rarity: 'rare' },
+    { slug: 'polyglot', title: 'Polyglot', description: 'Complete lessons in 3 different languages', rarity: 'epic' },
+    { slug: 'mentor', title: 'Mentor', description: 'Help 10 learners with comments', rarity: 'epic' },
+    { slug: 'legend', title: 'Legend', description: 'Reach level 50', rarity: 'legendary' },
+    { slug: 'founder', title: 'Founder', description: 'Early adopter of Aralify', rarity: 'legendary' },
+  ];
+
+  for (const badge of badges) {
+    await prisma.badge.upsert({
+      where: { slug: badge.slug },
       update: {},
-      create: { followerId: 'user_001', followingId: 'user_002' },
-    }),
-    prisma.follow.upsert({
-      where: { followerId_followingId: { followerId: 'user_005', followingId: 'user_001' } },
-      update: {},
-      create: { followerId: 'user_005', followingId: 'user_001' },
-    }),
-    prisma.follow.upsert({
-      where: { followerId_followingId: { followerId: 'user_005', followingId: 'user_002' } },
-      update: {},
-      create: { followerId: 'user_005', followingId: 'user_002' },
-    }),
-    prisma.follow.upsert({
-      where: { followerId_followingId: { followerId: 'user_002', followingId: 'user_001' } },
-      update: {},
-      create: { followerId: 'user_002', followingId: 'user_001' },
-    }),
-  ]);
+      create: {
+        slug: badge.slug,
+        title: badge.title,
+        description: badge.description,
+        rarity: badge.rarity,
+        iconUrl: `/icons/badges/${badge.slug}.svg`,
+      },
+    });
+  }
 
-  // Activities
-  await Promise.all([
-    prisma.activity.create({
-      data: {
-        userId: 'user_001',
-        activityType: ActivityType.COURSE_STARTED,
-        entityType: 'course',
-        entityId: 'course_001',
-        isPublic: true,
-      },
-    }),
-    prisma.activity.create({
-      data: {
-        userId: 'user_001',
-        activityType: ActivityType.LESSON_COMPLETED,
-        entityType: 'lesson',
-        entityId: 'lesson_001',
-        isPublic: true,
-      },
-    }),
-    prisma.activity.create({
-      data: {
-        userId: 'user_001',
-        activityType: ActivityType.ACHIEVEMENT_EARNED,
-        entityType: 'achievement',
-        entityId: 'ach_001',
-        isPublic: true,
-      },
-    }),
-    prisma.activity.create({
-      data: {
-        userId: 'user_002',
-        activityType: ActivityType.COURSE_COMPLETED,
-        entityType: 'course',
-        entityId: 'course_001',
-        isPublic: true,
-      },
-    }),
-    prisma.activity.create({
-      data: {
-        userId: 'user_002',
-        activityType: ActivityType.BADGE_EARNED,
-        entityType: 'badge',
-        entityId: 'badge_003',
-        isPublic: true,
-      },
-    }),
-  ]);
+  console.log(`   ✅ Created ${badges.length} badges\n`);
 
-  console.log('Created social data');
+  // ============================================
+  // GIVE DEMO USER SOME PROGRESS
+  // ============================================
+  console.log('📊 Seeding demo user progress...');
 
-  // ============================================================================
-  // 12. COMMENTS
-  // ============================================================================
-  console.log('Creating comments...');
-
-  // Create parent comments first
-  await prisma.comment.upsert({
-    where: { id: 'com_001' },
+  // Give demo user the newcomer badge
+  await prisma.userBadge.upsert({
+    where: { userId_badgeId: { userId: demoUser.id, badgeId: (await prisma.badge.findUnique({ where: { slug: 'newcomer' } }))!.id } },
     update: {},
     create: {
-      id: 'com_001',
-      userId: 'user_001',
-      lessonId: 'lesson_001',
-      content: 'Great explanation of variables! Very clear.',
-    },
-  });
-  await prisma.comment.upsert({
-    where: { id: 'com_002' },
-    update: {},
-    create: {
-      id: 'com_002',
-      userId: 'user_002',
-      lessonId: 'lesson_001',
-      content: 'Tip: Try using meaningful variable names like "user_age" instead of "x".',
-      isPinned: true,
-    },
-  });
-  await prisma.comment.upsert({
-    where: { id: 'com_004' },
-    update: {},
-    create: {
-      id: 'com_004',
-      userId: 'user_001',
-      lessonId: 'lesson_002',
-      content: 'The integer conversion part was tricky for me at first.',
-      isEdited: true,
+      userId: demoUser.id,
+      badgeId: (await prisma.badge.findUnique({ where: { slug: 'newcomer' } }))!.id,
     },
   });
 
-  // Create reply comments after parents exist
-  await prisma.comment.upsert({
-    where: { id: 'com_003' },
-    update: {},
-    create: {
-      id: 'com_003',
-      userId: 'user_005',
-      lessonId: 'lesson_001',
-      parentId: 'com_001',
-      content: 'Thanks! This helped me understand better.',
-    },
-  });
-  await prisma.comment.upsert({
-    where: { id: 'com_005' },
-    update: {},
-    create: {
-      id: 'com_005',
-      userId: 'user_002',
-      lessonId: 'lesson_002',
-      parentId: 'com_004',
-      content: 'Try using int() and float() - practice makes perfect!',
-    },
-  });
-
-  const comments = await prisma.comment.findMany();
-
-  // Comment Likes
-  await Promise.all([
-    prisma.commentLike.create({ data: { userId: 'user_002', commentId: 'com_001' } }),
-    prisma.commentLike.create({ data: { userId: 'user_005', commentId: 'com_002' } }),
-    prisma.commentLike.create({ data: { userId: 'user_001', commentId: 'com_002' } }),
-    prisma.commentLike.create({ data: { userId: 'user_001', commentId: 'com_005' } }),
-    prisma.commentLike.create({ data: { userId: 'user_005', commentId: 'com_001' } }),
-  ]);
-
-  console.log(`Created ${comments.length} comments with likes`);
-
-  // ============================================================================
-  // 13. NOTIFICATIONS
-  // ============================================================================
-  console.log('Creating notifications...');
-
-  await Promise.all([
-    prisma.notification.create({
-      data: {
-        userId: 'user_001',
-        type: NotificationType.ACHIEVEMENT_EARNED,
-        title: 'Achievement Unlocked!',
-        message: 'You earned "First Steps"!',
-        isRead: true,
-      },
-    }),
-    prisma.notification.create({
-      data: {
-        userId: 'user_001',
-        type: NotificationType.STREAK_REMINDER,
-        title: 'Keep your streak!',
-        message: "Don't forget to practice today!",
-        isRead: false,
-      },
-    }),
-    prisma.notification.create({
-      data: {
-        userId: 'user_001',
-        type: NotificationType.NEW_FOLLOWER,
-        title: 'New Follower',
-        message: 'newbie_coder started following you',
-        isRead: true,
-      },
-    }),
-    prisma.notification.create({
-      data: {
-        userId: 'user_002',
-        type: NotificationType.BADGE_EARNED,
-        title: 'New Badge!',
-        message: 'You earned "Python Expert"!',
-        isRead: true,
-      },
-    }),
-    prisma.notification.create({
-      data: {
-        userId: 'user_005',
-        type: NotificationType.LEVEL_UP,
-        title: 'Level Up!',
-        message: 'You reached Level 2!',
-        isRead: false,
-      },
-    }),
-  ]);
-
-  console.log('Created notifications');
-
-  // ============================================================================
-  // 14. SETTINGS
-  // ============================================================================
-  console.log('Creating user settings...');
-
-  await Promise.all([
-    prisma.userSettings.upsert({
-      where: { userId: 'user_001' },
+  // Give demo user some achievements
+  const firstLessonAchievement = await prisma.achievement.findUnique({ where: { slug: 'first-lesson' } });
+  if (firstLessonAchievement) {
+    await prisma.userAchievement.upsert({
+      where: { userId_achievementId: { userId: demoUser.id, achievementId: firstLessonAchievement.id } },
       update: {},
       create: {
-        userId: 'user_001',
-        theme: 'dark',
-        codeEditorTheme: 'monokai',
-        fontSize: 14,
-        dailyGoalMins: 30,
-        difficultyPref: Difficulty.MEDIUM,
+        userId: demoUser.id,
+        achievementId: firstLessonAchievement.id,
       },
-    }),
-    prisma.userSettings.upsert({
-      where: { userId: 'user_002' },
-      update: {},
-      create: {
-        userId: 'user_002',
-        theme: 'auto',
-        codeEditorTheme: 'vs-dark',
-        fontSize: 16,
-        dailyGoalMins: 60,
-        difficultyPref: Difficulty.HARD,
-      },
-    }),
-    prisma.userSettings.upsert({
-      where: { userId: 'user_005' },
-      update: {},
-      create: {
-        userId: 'user_005',
-        theme: 'auto',
-        codeEditorTheme: 'vs-dark',
-        fontSize: 18,
-        dailyGoalMins: 15,
-        difficultyPref: Difficulty.EASY,
-      },
-    }),
-  ]);
+    });
+  }
 
-  await Promise.all([
-    prisma.notificationSettings.upsert({
-      where: { userId: 'user_001' },
-      update: {},
-      create: {
-        userId: 'user_001',
-        emailEnabled: true,
-        pushEnabled: true,
-        streakReminders: true,
-        achievementNotifs: true,
-        socialNotifs: true,
-      },
-    }),
-    prisma.notificationSettings.upsert({
-      where: { userId: 'user_002' },
-      update: {},
-      create: {
-        userId: 'user_002',
-        emailEnabled: true,
-        pushEnabled: true,
-        streakReminders: false,
-        achievementNotifs: true,
-        socialNotifs: true,
-      },
-    }),
-    prisma.notificationSettings.upsert({
-      where: { userId: 'user_005' },
-      update: {},
-      create: {
-        userId: 'user_005',
-        emailEnabled: true,
-        pushEnabled: true,
-        streakReminders: true,
-        achievementNotifs: true,
-        socialNotifs: true,
-      },
-    }),
-  ]);
+  // Give admin user some badges and achievements
+  const legendBadge = await prisma.badge.findUnique({ where: { slug: 'legend' } });
+  const founderBadge = await prisma.badge.findUnique({ where: { slug: 'founder' } });
 
-  await Promise.all([
-    prisma.privacySettings.upsert({
-      where: { userId: 'user_001' },
+  if (legendBadge) {
+    await prisma.userBadge.upsert({
+      where: { userId_badgeId: { userId: adminUser.id, badgeId: legendBadge.id } },
       update: {},
-      create: {
-        userId: 'user_001',
-        profileVisibility: Visibility.PUBLIC,
-        showProgress: true,
-        showActivity: true,
-        allowMessages: MessagePerm.EVERYONE,
-      },
-    }),
-    prisma.privacySettings.upsert({
-      where: { userId: 'user_002' },
+      create: { userId: adminUser.id, badgeId: legendBadge.id },
+    });
+  }
+
+  if (founderBadge) {
+    await prisma.userBadge.upsert({
+      where: { userId_badgeId: { userId: adminUser.id, badgeId: founderBadge.id } },
       update: {},
-      create: {
-        userId: 'user_002',
-        profileVisibility: Visibility.PUBLIC,
-        showProgress: true,
-        showActivity: true,
-        allowMessages: MessagePerm.FRIENDS,
-      },
-    }),
-    prisma.privacySettings.upsert({
-      where: { userId: 'user_004' },
-      update: {},
-      create: {
-        userId: 'user_004',
-        profileVisibility: Visibility.PRIVATE,
-        showProgress: false,
-        showActivity: false,
-        allowMessages: MessagePerm.NONE,
-      },
-    }),
-    prisma.privacySettings.upsert({
-      where: { userId: 'user_005' },
-      update: {},
-      create: {
-        userId: 'user_005',
-        profileVisibility: Visibility.PUBLIC,
-        showProgress: true,
-        showActivity: true,
-        allowMessages: MessagePerm.EVERYONE,
-      },
-    }),
-  ]);
+      create: { userId: adminUser.id, badgeId: founderBadge.id },
+    });
+  }
 
-  console.log('Created user settings');
+  console.log(`   ✅ Added badges and achievements to demo users\n`);
 
-  // ============================================================================
-  // 15. LEADERBOARD
-  // ============================================================================
-  console.log('Creating leaderboard snapshot...');
-
-  const weekStart = new Date();
-  weekStart.setDate(weekStart.getDate() - 7);
-
-  await prisma.leaderboardSnapshot.create({
-    data: {
-      leaderboardType: LeaderboardType.GLOBAL_WEEKLY,
-      periodStart: weekStart,
-      periodEnd: new Date(),
-      rankings: {
-        rankings: [
-          { rank: 1, userId: 'user_002', xp: 1500, username: 'maria_dev' },
-          { rank: 2, userId: 'user_001', xp: 750, username: 'juandelacruz' },
-          { rank: 3, userId: 'user_005', xp: 100, username: 'newbie_coder' },
-        ],
-      },
-    },
-  });
-
-  console.log('Created leaderboard snapshot');
-
-  console.log('\n✅ Database seeded successfully!');
+  // ============================================
+  // SUMMARY
+  // ============================================
+  console.log('═══════════════════════════════════════');
+  console.log('🎉 Seed completed successfully!');
+  console.log('═══════════════════════════════════════');
+  console.log(`   👤 Users: 3 demo users`);
+  console.log(`   📚 Courses: 3`);
+  console.log(`   📖 Levels: 12`);
+  console.log(`   📝 Lessons: ${totalLessons}`);
+  console.log(`   ❓ Quizzes: ${totalQuizzes}`);
+  console.log(`   💻 Code Challenges: ${totalChallenges}`);
+  console.log(`   🏆 Achievements: ${achievements.length}`);
+  console.log(`   🎖️ Badges: ${badges.length}`);
+  console.log('═══════════════════════════════════════\n');
 }
 
 main()
   .catch((e) => {
-    console.error('Error seeding database:', e);
+    console.error('❌ Seed failed:', e);
     process.exit(1);
   })
   .finally(async () => {

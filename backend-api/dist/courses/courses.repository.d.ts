@@ -1,5 +1,4 @@
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma } from '@prisma/client';
 export declare class CoursesRepository {
     private readonly prisma;
     constructor(prisma: PrismaService);
@@ -8,164 +7,185 @@ export declare class CoursesRepository {
         isPublished?: boolean;
         orderBy?: 'popular' | 'newest' | 'alphabetical';
     }): Promise<({
-        levels: {
-            isPublished: boolean;
-            id: string;
-            slug: string;
-            titleEn: string;
-            titleFil: string | null;
-            descriptionEn: string | null;
-            descriptionFil: string | null;
-            orderIndex: number;
-            createdAt: Date;
-            updatedAt: Date;
-            courseId: string;
-        }[];
         _count: {
             levels: number;
         };
     } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+        title: string;
         language: string;
         isPublished: boolean;
-        id: string;
         slug: string;
-        titleEn: string;
+        titleEn: string | null;
         titleFil: string | null;
-        descriptionEn: string;
-        descriptionFil: string | null;
         iconUrl: string | null;
         color: string | null;
         orderIndex: number;
-        estimatedHours: number;
-        createdAt: Date;
-        updatedAt: Date;
     })[]>;
     findBySlug(slug: string): Promise<({
         levels: ({
             lessons: {
-                content: Prisma.JsonValue;
-                isPublished: boolean;
                 id: string;
-                titleEn: string;
-                titleFil: string | null;
-                orderIndex: number;
                 createdAt: Date;
                 updatedAt: Date;
-                difficulty: import(".prisma/client").$Enums.Difficulty;
+                content: import("@prisma/client/runtime/library").JsonValue | null;
+                title: string;
+                isPublished: boolean;
+                slug: string;
+                orderIndex: number;
                 levelId: string;
+                difficulty: import(".prisma/client").$Enums.Difficulty;
                 xpReward: number;
-                timeLimitSeconds: number | null;
-                estimatedTimeMinutes: number;
             }[];
         } & {
-            isPublished: boolean;
             id: string;
-            slug: string;
-            titleEn: string;
-            titleFil: string | null;
-            descriptionEn: string | null;
-            descriptionFil: string | null;
-            orderIndex: number;
             createdAt: Date;
             updatedAt: Date;
+            description: string | null;
+            title: string;
+            isPublished: boolean;
+            slug: string;
+            orderIndex: number;
             courseId: string;
         })[];
     } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+        title: string;
         language: string;
         isPublished: boolean;
-        id: string;
         slug: string;
-        titleEn: string;
+        titleEn: string | null;
         titleFil: string | null;
-        descriptionEn: string;
-        descriptionFil: string | null;
         iconUrl: string | null;
         color: string | null;
         orderIndex: number;
-        estimatedHours: number;
-        createdAt: Date;
-        updatedAt: Date;
     }) | null>;
     findById(id: string): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+        title: string;
         language: string;
         isPublished: boolean;
-        id: string;
         slug: string;
-        titleEn: string;
+        titleEn: string | null;
         titleFil: string | null;
-        descriptionEn: string;
-        descriptionFil: string | null;
         iconUrl: string | null;
         color: string | null;
         orderIndex: number;
-        estimatedHours: number;
-        createdAt: Date;
-        updatedAt: Date;
     } | null>;
     getLevels(courseId: string): Promise<({
         lessons: {
-            content: Prisma.JsonValue;
-            isPublished: boolean;
             id: string;
-            titleEn: string;
-            titleFil: string | null;
-            orderIndex: number;
             createdAt: Date;
             updatedAt: Date;
-            difficulty: import(".prisma/client").$Enums.Difficulty;
+            content: import("@prisma/client/runtime/library").JsonValue | null;
+            title: string;
+            isPublished: boolean;
+            slug: string;
+            orderIndex: number;
             levelId: string;
+            difficulty: import(".prisma/client").$Enums.Difficulty;
             xpReward: number;
-            timeLimitSeconds: number | null;
-            estimatedTimeMinutes: number;
         }[];
     } & {
-        isPublished: boolean;
         id: string;
-        slug: string;
-        titleEn: string;
-        titleFil: string | null;
-        descriptionEn: string | null;
-        descriptionFil: string | null;
-        orderIndex: number;
         createdAt: Date;
         updatedAt: Date;
+        description: string | null;
+        title: string;
+        isPublished: boolean;
+        slug: string;
+        orderIndex: number;
         courseId: string;
     })[]>;
     getUserProgress(userId: string, courseId: string): Promise<{
         id: string;
-        courseId: string;
+        createdAt: Date;
+        updatedAt: Date;
         userId: string;
+        courseId: string;
         completionPercentage: number;
         masteryPercentage: number;
         totalXpEarned: number;
         timeSpentSeconds: number;
         startedAt: Date;
+        lastActivityAt: Date | null;
         completedAt: Date | null;
-        lastActivityAt: Date;
     } | null>;
+    getUserLevelUnlocks(userId: string, courseId: string): Promise<{
+        id: string;
+        userId: string;
+        levelId: string;
+        unlockedAt: Date;
+    }[]>;
+    getUserLessonProgress(userId: string, courseId: string): Promise<({
+        lesson: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            content: import("@prisma/client/runtime/library").JsonValue | null;
+            title: string;
+            isPublished: boolean;
+            slug: string;
+            orderIndex: number;
+            levelId: string;
+            difficulty: import(".prisma/client").$Enums.Difficulty;
+            xpReward: number;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: import(".prisma/client").$Enums.ProgressStatus;
+        userId: string;
+        completedAt: Date | null;
+        lessonId: string;
+        score: number | null;
+        xpEarned: number;
+        timeSpent: number | null;
+    })[]>;
     createUserProgress(userId: string, courseId: string): Promise<{
         id: string;
-        courseId: string;
+        createdAt: Date;
+        updatedAt: Date;
         userId: string;
+        courseId: string;
         completionPercentage: number;
         masteryPercentage: number;
         totalXpEarned: number;
         timeSpentSeconds: number;
         startedAt: Date;
+        lastActivityAt: Date | null;
         completedAt: Date | null;
-        lastActivityAt: Date;
     }>;
-    updateUserProgress(userId: string, courseId: string, data: Prisma.UserCourseProgressUpdateInput): Promise<{
+    updateUserProgress(userId: string, courseId: string, data: {
+        completionPercentage?: number;
+        masteryPercentage?: number;
+        totalXpEarned?: number;
+        timeSpentSeconds?: number;
+        lastActivityAt?: Date;
+        completedAt?: Date;
+    }): Promise<{
         id: string;
-        courseId: string;
+        createdAt: Date;
+        updatedAt: Date;
         userId: string;
+        courseId: string;
         completionPercentage: number;
         masteryPercentage: number;
         totalXpEarned: number;
         timeSpentSeconds: number;
         startedAt: Date;
+        lastActivityAt: Date | null;
         completedAt: Date | null;
-        lastActivityAt: Date;
     }>;
     unlockFirstLevel(userId: string, courseId: string): Promise<{
         id: string;
@@ -173,65 +193,4 @@ export declare class CoursesRepository {
         levelId: string;
         unlockedAt: Date;
     } | null>;
-    getUserLevelUnlocks(userId: string, courseId: string): Promise<({
-        level: {
-            isPublished: boolean;
-            id: string;
-            slug: string;
-            titleEn: string;
-            titleFil: string | null;
-            descriptionEn: string | null;
-            descriptionFil: string | null;
-            orderIndex: number;
-            createdAt: Date;
-            updatedAt: Date;
-            courseId: string;
-        };
-    } & {
-        id: string;
-        userId: string;
-        levelId: string;
-        unlockedAt: Date;
-    })[]>;
-    getUserLessonProgress(userId: string, courseId: string): Promise<({
-        lesson: {
-            level: {
-                isPublished: boolean;
-                id: string;
-                slug: string;
-                titleEn: string;
-                titleFil: string | null;
-                descriptionEn: string | null;
-                descriptionFil: string | null;
-                orderIndex: number;
-                createdAt: Date;
-                updatedAt: Date;
-                courseId: string;
-            };
-        } & {
-            content: Prisma.JsonValue;
-            isPublished: boolean;
-            id: string;
-            titleEn: string;
-            titleFil: string | null;
-            orderIndex: number;
-            createdAt: Date;
-            updatedAt: Date;
-            difficulty: import(".prisma/client").$Enums.Difficulty;
-            levelId: string;
-            xpReward: number;
-            timeLimitSeconds: number | null;
-            estimatedTimeMinutes: number;
-        };
-    } & {
-        status: import(".prisma/client").$Enums.LessonStatus;
-        id: string;
-        userId: string;
-        timeSpentSeconds: number;
-        startedAt: Date | null;
-        completedAt: Date | null;
-        lessonId: string;
-        score: number | null;
-        xpEarned: number;
-    })[]>;
 }
