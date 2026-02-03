@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { CoursesModule } from './courses/courses.module';
+import { LessonsModule } from './lessons/lessons.module';
 import { JwtAuthGuard } from './auth/guards';
 
 @Module({
@@ -17,6 +18,7 @@ import { JwtAuthGuard } from './auth/guards';
     PrismaModule,
     AuthModule,
     CoursesModule,
+    LessonsModule,
   ],
   controllers: [AppController],
   providers: [

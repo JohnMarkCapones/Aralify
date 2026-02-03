@@ -16,7 +16,9 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "db:seed": "ts-node prisma/seed.ts",
+    "db:reset": "prisma db push --force-reset && npm run db:seed"
   },
   "keywords": [
     "nestjs",
@@ -41,6 +43,7 @@
     "class-validator": "^0.14.3",
     "dotenv": "^17.2.3",
     "fastify": "^5.7.2",
+    "jwks-rsa": "^3.2.2",
     "nestjs-zod": "^5.1.1",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
@@ -48,6 +51,9 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "zod": "^4.3.6"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.16",

@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var AuthController_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthController = void 0;
 const common_1 = require("@nestjs/common");
@@ -18,9 +19,11 @@ const swagger_1 = require("@nestjs/swagger");
 const auth_service_1 = require("./auth.service");
 const decorators_1 = require("./decorators");
 const dto_1 = require("./dto");
-let AuthController = class AuthController {
+let AuthController = AuthController_1 = class AuthController {
     constructor(authService) {
         this.authService = authService;
+        this.logger = new common_1.Logger(AuthController_1.name);
+        this.logger.log('AuthController initialized');
     }
     getStatus() {
         return {
@@ -30,7 +33,11 @@ let AuthController = class AuthController {
         };
     }
     async getMe(user) {
+        this.logger.log(`=== GET /auth/me called ===`);
+        this.logger.log(`User from token: ${user?.email || 'NO USER'}`);
+        this.logger.log(`User ID: ${user?.id || 'NO ID'}`);
         const fullUser = await this.authService.getUserWithSettings(user.id);
+        this.logger.log(`Full user fetched: ${fullUser?.email || 'NOT FOUND'}`);
         return this.mapToProfileDto(fullUser || user);
     }
     async updateMe(user, updateDto) {
@@ -203,7 +210,7 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "deleteAccount", null);
-exports.AuthController = AuthController = __decorate([
+exports.AuthController = AuthController = AuthController_1 = __decorate([
     (0, swagger_1.ApiTags)('Auth'),
     (0, common_1.Controller)('api/v1/auth'),
     __metadata("design:paramtypes", [auth_service_1.AuthService])

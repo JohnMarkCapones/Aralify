@@ -19,16 +19,24 @@ let AuthService = AuthService_1 = class AuthService {
         this.logger = new common_1.Logger(AuthService_1.name);
     }
     async validateUser(payload) {
+        this.logger.log(`=== validateUser START ===`);
+        this.logger.log(`Payload sub: ${payload.sub}`);
+        this.logger.log(`Payload email: ${payload.email}`);
         const supabaseUserId = payload.sub;
         const email = payload.email;
+        this.logger.log(`Looking for user by ID: ${supabaseUserId}`);
         let user = await this.prisma.user.findUnique({
             where: { id: supabaseUserId },
         });
+        this.logger.log(`Found by ID: ${user ? 'YES' : 'NO'}`);
         if (!user && email) {
+            this.logger.log(`Looking for user by email: ${email}`);
             user = await this.prisma.user.findUnique({
                 where: { email },
             });
+            this.logger.log(`Found by email: ${user ? 'YES' : 'NO'}`);
             if (user && user.id !== supabaseUserId) {
+                this.logger.log(`Updating user ID from ${user.id} to ${supabaseUserId}`);
                 user = await this.prisma.user.update({
                     where: { email },
                     data: { id: supabaseUserId },
@@ -36,15 +44,26 @@ let AuthService = AuthService_1 = class AuthService {
             }
         }
         if (!user && email) {
-            this.logger.log(`Creating new user for Supabase ID: ${supabaseUserId}`);
-            user = await this.createUserFromSupabase(supabaseUserId, email);
+            this.logger.log(`*** CREATING NEW USER ***`);
+            this.logger.log(`Supabase ID: ${supabaseUserId}`);
+            this.logger.log(`Email: ${email}`);
+            try {
+                user = await this.createUserFromSupabase(supabaseUserId, email);
+                this.logger.log(`User created successfully: ${user.id}`);
+            }
+            catch (error) {
+                this.logger.error(`Failed to create user: ${error instanceof Error ? error.message : String(error)}`);
+                throw error;
+            }
         }
         if (user) {
+            this.logger.log(`Updating lastLoginAt for user: ${user.id}`);
             await this.prisma.user.update({
                 where: { id: user.id },
                 data: { lastLoginAt: new Date() },
             });
         }
+        this.logger.log(`=== validateUser END - User: ${user?.email || 'NULL'} ===`);
         return user;
     }
     async createUserFromSupabase(supabaseUserId, email) {

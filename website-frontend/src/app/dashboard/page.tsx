@@ -15,20 +15,48 @@ export default async function DashboardPage() {
 
   // Fetch user profile from your API
   const token = (await supabase.auth.getSession()).data.session?.access_token;
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+  console.log('=== DEBUG AUTH ===');
+  console.log('API URL:', apiUrl);
+  console.log('Token exists:', !!token);
+  console.log('Token (first 50 chars):', token?.substring(0, 50));
 
   let profile = null;
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/me`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      cache: 'no-store',
-    });
-    if (res.ok) {
-      profile = await res.json();
+  let profileError = null;
+
+  if (!apiUrl) {
+    console.error('NEXT_PUBLIC_API_URL is not set!');
+    profileError = 'API URL not configured';
+  } else if (!token) {
+    console.error('No access token available!');
+    profileError = 'No access token';
+  } else {
+    try {
+      const url = `${apiUrl}/api/v1/auth/me`;
+      console.log('Fetching:', url);
+
+      const res = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        cache: 'no-store',
+      });
+
+      console.log('Response status:', res.status);
+
+      if (res.ok) {
+        profile = await res.json();
+        console.log('Profile fetched:', profile?.email);
+      } else {
+        const errorText = await res.text();
+        console.error('API Error:', res.status, errorText);
+        profileError = `API returned ${res.status}`;
+      }
+    } catch (e) {
+      console.error('Failed to fetch profile:', e);
+      profileError = String(e);
     }
-  } catch (e) {
-    console.error('Failed to fetch profile:', e);
   }
 
   return (
@@ -54,11 +82,11 @@ export default async function DashboardPage() {
             </CardContent>
           </Card>
 
-          {profile && (
-            <Card>
+          {profile ? (
+            <Card className="border-green-500">
               <CardHeader>
-                <CardTitle>Your Profile</CardTitle>
-                <CardDescription>From your NestJS API</CardDescription>
+                <CardTitle className="text-green-500">✅ Your Profile</CardTitle>
+                <CardDescription>From your NestJS API - IT WORKS!</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
@@ -67,6 +95,23 @@ export default async function DashboardPage() {
                   <p><strong>Level:</strong> {profile.level}</p>
                   <p><strong>XP:</strong> {profile.xpTotal}</p>
                   <p><strong>Streak:</strong> {profile.streakCurrent} days</p>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="border-red-500 border-2">
+              <CardHeader>
+                <CardTitle className="text-red-500">❌ Profile Error - DEBUG INFO</CardTitle>
+                <CardDescription>Could not load from NestJS API</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 text-sm font-mono">
+                  <p><strong>API URL:</strong> {apiUrl || 'NOT SET!'}</p>
+                  <p><strong>Token exists:</strong> {token ? '✅ Yes' : '❌ No'}</p>
+                  <p><strong>Token preview:</strong> {token ? token.substring(0, 30) + '...' : 'N/A'}</p>
+                  <p><strong>Error:</strong> <span className="text-red-400">{profileError || 'Unknown'}</span></p>
+                  <hr className="my-2" />
+                  <p className="text-xs text-gray-500">Check terminal logs for more details</p>
                 </div>
               </CardContent>
             </Card>

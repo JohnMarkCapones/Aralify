@@ -7,6 +7,7 @@ import {
   HttpCode,
   HttpStatus,
   Headers,
+  Logger,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -27,7 +28,11 @@ import {
 @ApiTags('Auth')
 @Controller('api/v1/auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  private readonly logger = new Logger(AuthController.name);
+
+  constructor(private readonly authService: AuthService) {
+    this.logger.log('AuthController initialized');
+  }
 
   @Get('status')
   @Public()
@@ -51,7 +56,13 @@ export class AuthController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getMe(@CurrentUser() user: User): Promise<UserProfileDto> {
+    this.logger.log(`=== GET /auth/me called ===`);
+    this.logger.log(`User from token: ${user?.email || 'NO USER'}`);
+    this.logger.log(`User ID: ${user?.id || 'NO ID'}`);
+
     const fullUser = await this.authService.getUserWithSettings(user.id);
+    this.logger.log(`Full user fetched: ${fullUser?.email || 'NOT FOUND'}`);
+
     return this.mapToProfileDto(fullUser || user);
   }
 

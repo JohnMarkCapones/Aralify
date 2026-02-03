@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { UserProfileDto, UpdateProfileDto, SessionInfoDto, AuthStatusDto } from './dto';
 export declare class AuthController {
     private readonly authService;
+    private readonly logger;
     constructor(authService: AuthService);
     getStatus(): AuthStatusDto;
     getMe(user: User): Promise<UserProfileDto>;
