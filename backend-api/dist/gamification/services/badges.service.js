@@ -8,14 +8,49 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var BadgesService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BadgesService = void 0;
 const common_1 = require("@nestjs/common");
 const gamification_repository_1 = require("../gamification.repository");
 const MAX_DISPLAYED_BADGES = 5;
-let BadgesService = class BadgesService {
+const BADGE_CRITERIA = {
+    newcomer: async () => true,
+    'quick-learner': async (userId, repo) => {
+        const today = await repo.getLessonsCompletedToday(userId);
+        return today >= 5;
+    },
+    'night-owl': async (userId, repo) => {
+        return repo.hasCompletedLessonDuringHours(userId, 0, 5);
+    },
+    'early-bird': async (userId, repo) => {
+        return repo.hasCompletedLessonDuringHours(userId, 4, 6);
+    },
+    perfectionist: async (userId, repo) => {
+        const lessons = await repo.getUserLessonStats(userId);
+        return lessons.completedCount >= 10;
+    },
+    'speed-demon': async (userId, repo) => {
+        return repo.hasFastCompletion(userId, 300);
+    },
+    polyglot: async (userId, repo) => {
+        const langCount = await repo.getCompletedLanguageCount(userId);
+        return langCount >= 3;
+    },
+    mentor: async (userId, repo) => {
+        const social = await repo.getUserSocialStats(userId);
+        return social.commentCount >= 10;
+    },
+    legend: async (userId, repo) => {
+        const user = await repo.getUserGamificationData(userId);
+        return (user?.level ?? 0) >= 50;
+    },
+    founder: async () => false,
+};
+let BadgesService = BadgesService_1 = class BadgesService {
     constructor(repository) {
         this.repository = repository;
+        this.logger = new common_1.Logger(BadgesService_1.name);
     }
     async getBadges(userId, options) {
         const badges = await this.repository.getUserBadges(userId, options);
@@ -100,6 +135,35 @@ let BadgesService = class BadgesService {
             maxDisplay: MAX_DISPLAYED_BADGES,
         };
     }
+    async evaluateForUser(userId) {
+        const ownedBadges = await this.repository.getUserBadges(userId);
+        const ownedSlugs = new Set(ownedBadges.map((ub) => ub.badge.slug));
+        const newlyAwarded = [];
+        for (const [slug, check] of Object.entries(BADGE_CRITERIA)) {
+            if (ownedSlugs.has(slug))
+                continue;
+            try {
+                const earned = await check(userId, this.repository);
+                if (!earned)
+                    continue;
+                const badge = await this.repository.getBadgeBySlug(slug);
+                if (!badge)
+                    continue;
+                await this.repository.awardBadge(userId, badge.id);
+                newlyAwarded.push(slug);
+                await this.repository.createActivity({
+                    userId,
+                    type: 'BADGE_EARNED',
+                    data: { badgeId: badge.id, slug: badge.slug, title: badge.title },
+                });
+                this.logger.log(`User ${userId} earned badge: ${badge.title}`);
+            }
+            catch (error) {
+                this.logger.warn(`Badge evaluation failed for ${slug}: ${error}`);
+            }
+        }
+        return newlyAwarded;
+    }
     async getDisplayedBadges(userId) {
         return this.getBadges(userId, { displayedOnly: true });
     }
@@ -118,7 +182,7 @@ let BadgesService = class BadgesService {
     }
 };
 exports.BadgesService = BadgesService;
-exports.BadgesService = BadgesService = __decorate([
+exports.BadgesService = BadgesService = BadgesService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [gamification_repository_1.GamificationRepository])
 ], BadgesService);

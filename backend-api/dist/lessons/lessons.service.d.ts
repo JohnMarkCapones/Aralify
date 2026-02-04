@@ -1,11 +1,13 @@
 import { LessonsRepository } from './lessons.repository';
-import { CompleteLessonDto, UnlockHintDto } from './dto';
+import { CompleteLessonDto, SubmitQuizAnswerDto, UnlockHintDto } from './dto';
 import { GamificationService } from '../gamification/services';
+import { QuizService } from './services/quiz.service';
 export declare class LessonsService {
     private readonly lessonsRepository;
     private readonly gamificationService;
+    private readonly quizService;
     private readonly logger;
-    constructor(lessonsRepository: LessonsRepository, gamificationService: GamificationService);
+    constructor(lessonsRepository: LessonsRepository, gamificationService: GamificationService, quizService: QuizService);
     findById(id: string, userId?: string): Promise<{
         id: any;
         slug: any;
@@ -95,6 +97,7 @@ export declare class LessonsService {
                 title: string;
                 xpReward: number;
             }[];
+            newBadges: string[];
         } | undefined;
     }>;
     getQuizzes(lessonId: string): Promise<{
@@ -108,6 +111,14 @@ export declare class LessonsService {
             orderIndex: number;
         }[];
         totalCount: number;
+    }>;
+    submitQuizAnswer(lessonId: string, quizId: string, userId: string, dto: SubmitQuizAnswerDto): Promise<{
+        correct: boolean;
+        explanation: string | null;
+        xpEarned: number;
+        attemptNumber: number;
+        alreadyCorrect: boolean;
+        firstAttemptBonus: boolean;
     }>;
     getChallenges(lessonId: string): Promise<{
         lessonId: string;

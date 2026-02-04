@@ -10,6 +10,9 @@ export interface UpdateStreakResult {
         name: string;
     } | null;
     xpAwarded: number;
+    freezeConsumed: boolean;
+    freezeEarned: boolean;
+    freezesAvailable: number;
 }
 export interface ClaimDailyBonusResult {
     success: boolean;
@@ -27,6 +30,8 @@ export declare class StreaksService {
     getStreakInfo(userId: string): Promise<{
         currentStreak: number;
         longestStreak: number;
+        freezesAvailable: number;
+        maxFreezes: 2;
         isStreakActive: boolean;
         streakAtRisk: boolean;
         lastActivityDate: Date | null;

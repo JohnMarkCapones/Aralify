@@ -8,6 +8,7 @@ export interface UserGamificationData {
   level: number;
   streakCurrent: number;
   streakLongest: number;
+  streakFreezes: number;
   lastDailyClaimAt: Date | null;
   lastActiveAt: Date | null;
   createdAt: Date;
@@ -33,34 +34,55 @@ export class GamificationRepository {
       level: user.level,
       streakCurrent: user.streakCurrent,
       streakLongest: user.streakLongest,
-      lastDailyClaimAt: (user as any).lastDailyClaimAt ?? null,
+      streakFreezes: user.streakFreezes,
+      lastDailyClaimAt: user.lastDailyClaimAt,
       lastActiveAt: user.lastActiveAt,
       createdAt: user.createdAt,
     };
   }
 
-  async updateUserXpAndLevel(
+  /**
+   * Atomically create XP transaction and increment user's XP total.
+   * Returns the updated user with new xpTotal.
+   */
+  async awardXpAtomic(
     userId: string,
-    data: { xpTotal: number; level: number },
+    amount: number,
+    level: number,
+    source: XpSource,
+    sourceId?: string,
+    description?: string,
   ) {
-    return this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        xpTotal: data.xpTotal,
-        level: data.level,
-      },
-    });
+    const [, user] = await this.prisma.$transaction([
+      this.prisma.xpTransaction.create({
+        data: { userId, amount, source, sourceId, description },
+      }),
+      this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          xpTotal: { increment: amount },
+          level,
+        },
+      }),
+    ]);
+    return user;
   }
 
   async updateUserStreak(
     userId: string,
-    data: { streakCurrent: number; streakLongest?: number; lastActiveAt?: Date },
+    data: {
+      streakCurrent: number;
+      streakLongest?: number;
+      streakFreezes?: number;
+      lastActiveAt?: Date;
+    },
   ) {
     return this.prisma.user.update({
       where: { id: userId },
       data: {
         streakCurrent: data.streakCurrent,
         ...(data.streakLongest !== undefined && { streakLongest: data.streakLongest }),
+        ...(data.streakFreezes !== undefined && { streakFreezes: data.streakFreezes }),
         ...(data.lastActiveAt && { lastActiveAt: data.lastActiveAt }),
       },
     });
@@ -69,7 +91,7 @@ export class GamificationRepository {
   async updateLastDailyClaim(userId: string) {
     return this.prisma.user.update({
       where: { id: userId },
-      data: { lastDailyClaimAt: new Date() } as any,
+      data: { lastDailyClaimAt: new Date() },
     });
   }
 
@@ -202,15 +224,15 @@ export class GamificationRepository {
   // BADGES
   // ============================================
 
-  async getUserBadges(userId: string, options?: { displayedOnly?: boolean }): Promise<any[]> {
+  async getUserBadges(userId: string, options?: { displayedOnly?: boolean }) {
     return this.prisma.userBadge.findMany({
       where: {
         userId,
         ...(options?.displayedOnly && { isDisplayed: true }),
-      } as any,
+      },
       include: { badge: true },
       orderBy: options?.displayedOnly
-        ? ({ displayOrder: 'asc' } as any)
+        ? { displayOrder: 'asc' }
         : { earnedAt: 'desc' },
     });
   }
@@ -223,11 +245,11 @@ export class GamificationRepository {
 
   async getDisplayedBadgeCount(userId: string) {
     return this.prisma.userBadge.count({
-      where: { userId, isDisplayed: true } as any,
+      where: { userId, isDisplayed: true },
     });
   }
 
-  async getUserBadge(userId: string, badgeId: string): Promise<any> {
+  async getUserBadge(userId: string, badgeId: string) {
     return this.prisma.userBadge.findUnique({
       where: {
         userId_badgeId: { userId, badgeId },
@@ -241,7 +263,7 @@ export class GamificationRepository {
     badgeId: string,
     isDisplayed: boolean,
     displayOrder?: number,
-  ): Promise<any> {
+  ) {
     return this.prisma.userBadge.update({
       where: {
         userId_badgeId: { userId, badgeId },
@@ -249,7 +271,7 @@ export class GamificationRepository {
       data: {
         isDisplayed,
         displayOrder: isDisplayed ? displayOrder : null,
-      } as any,
+      },
       include: { badge: true },
     });
   }
@@ -369,6 +391,82 @@ export class GamificationRepository {
     ]);
 
     return { commentCount, followerCount, followingCount };
+  }
+
+  /**
+   * Check if user has completed any lesson during a specific hour range (UTC).
+   * Used for time-based achievements like "Night Owl".
+   */
+  async hasCompletedLessonDuringHours(
+    userId: string,
+    hourStart: number,
+    hourEnd: number,
+  ): Promise<boolean> {
+    const completions = await this.prisma.userLessonProgress.findMany({
+      where: { userId, status: 'COMPLETED', completedAt: { not: null } },
+      select: { completedAt: true },
+    });
+
+    return completions.some((c) => {
+      if (!c.completedAt) return false;
+      const hour = c.completedAt.getUTCHours();
+      return hourStart <= hourEnd
+        ? hour >= hourStart && hour < hourEnd
+        : hour >= hourStart || hour < hourEnd;
+    });
+  }
+
+  /**
+   * Check if user has completed any lesson in under a certain number of seconds.
+   * Used for speed-based achievements like "Speed Demon".
+   */
+  async hasFastCompletion(userId: string, maxSeconds: number): Promise<boolean> {
+    const fast = await this.prisma.userLessonProgress.findFirst({
+      where: {
+        userId,
+        status: 'COMPLETED',
+        timeSpent: { not: null, lte: maxSeconds },
+      },
+    });
+    return !!fast;
+  }
+
+  /**
+   * Count distinct course languages the user has completed lessons in.
+   * Used for "Polyglot" badge.
+   */
+  async getCompletedLanguageCount(userId: string): Promise<number> {
+    const lessons = await this.prisma.userLessonProgress.findMany({
+      where: { userId, status: 'COMPLETED' },
+      include: {
+        lesson: {
+          include: {
+            level: {
+              include: { course: { select: { language: true } } },
+            },
+          },
+        },
+      },
+    });
+
+    const languages = new Set(lessons.map((lp) => lp.lesson.level.course.language));
+    return languages.size;
+  }
+
+  /**
+   * Count lessons completed today.
+   */
+  async getLessonsCompletedToday(userId: string): Promise<number> {
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    return this.prisma.userLessonProgress.count({
+      where: {
+        userId,
+        status: 'COMPLETED',
+        completedAt: { gte: startOfDay },
+      },
+    });
   }
 
   // ============================================

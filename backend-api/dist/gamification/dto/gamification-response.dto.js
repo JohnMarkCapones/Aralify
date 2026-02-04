@@ -179,6 +179,14 @@ __decorate([
     __metadata("design:type", Number)
 ], StreakInfoDto.prototype, "longestStreak", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)({ example: 1, description: 'Number of streak freezes available' }),
+    __metadata("design:type", Number)
+], StreakInfoDto.prototype, "freezesAvailable", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 2, description: 'Maximum streak freezes that can be held' }),
+    __metadata("design:type", Number)
+], StreakInfoDto.prototype, "maxFreezes", void 0);
+__decorate([
     (0, swagger_1.ApiProperty)({ example: true, description: 'Whether streak is currently active' }),
     __metadata("design:type", Boolean)
 ], StreakInfoDto.prototype, "isStreakActive", void 0);
@@ -414,6 +422,14 @@ __decorate([
     (0, swagger_1.ApiProperty)({ example: 45 }),
     __metadata("design:type", Number)
 ], ProfileStreakDto.prototype, "longest", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 1, description: 'Streak freezes available' }),
+    __metadata("design:type", Number)
+], ProfileStreakDto.prototype, "freezesAvailable", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 2, description: 'Max freezes that can be held' }),
+    __metadata("design:type", Number)
+], ProfileStreakDto.prototype, "maxFreezes", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ example: true }),
     __metadata("design:type", Boolean)

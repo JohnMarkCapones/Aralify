@@ -356,8 +356,8 @@ async function main() {
     { slug: 'popular', title: 'Popular', description: 'Get 10 followers', category: 'social', xpReward: 300, criteria: { type: 'social', action: 'follower', count: 10 } },
 
     // Secret achievements
-    { slug: 'night-owl', title: 'Night Owl', description: 'Complete a lesson after midnight', category: 'secret', xpReward: 100, criteria: { type: 'lesson_count', count: 1 }, isSecret: true },
-    { slug: 'speed-demon', title: 'Speed Demon', description: 'Complete a lesson in under 2 minutes', category: 'secret', xpReward: 150, criteria: { type: 'lesson_count', count: 1 }, isSecret: true },
+    { slug: 'night-owl', title: 'Night Owl', description: 'Complete a lesson after midnight', category: 'secret', xpReward: 100, criteria: { type: 'time_of_day', hour_start: 0, hour_end: 5 }, isSecret: true },
+    { slug: 'speed-demon', title: 'Speed Demon', description: 'Complete a lesson in under 2 minutes', category: 'secret', xpReward: 150, criteria: { type: 'fast_completion', max_seconds: 120 }, isSecret: true },
   ];
 
   for (const achievement of achievements) {

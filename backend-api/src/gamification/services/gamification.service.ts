@@ -32,7 +32,9 @@ export class GamificationService {
     }
 
     const levelProgress = calculateLevelProgress(user.xpTotal);
-    const displayedBadges = await this.badgesService.getDisplayedBadges(userId);
+
+    // Extract displayed badges from the already-fetched badges result
+    const displayedBadges = badges.badges.filter((b) => b.isDisplayed);
 
     return {
       user: {
@@ -53,6 +55,8 @@ export class GamificationService {
       streak: {
         current: streakInfo.currentStreak,
         longest: streakInfo.longestStreak,
+        freezesAvailable: streakInfo.freezesAvailable,
+        maxFreezes: streakInfo.maxFreezes,
         isActive: streakInfo.isStreakActive,
         atRisk: streakInfo.streakAtRisk,
         lastActivityDate: streakInfo.lastActivityDate,
@@ -70,7 +74,7 @@ export class GamificationService {
       },
       badges: {
         total: badges.total,
-        displayed: displayedBadges.badges,
+        displayed: displayedBadges,
         maxDisplay: badges.maxDisplay,
       },
     };
@@ -164,10 +168,14 @@ export class GamificationService {
       (a) => a.isUnlocked && a.unlockedAt !== null,
     );
 
+    // Evaluate badges
+    const newBadges = await this.badgesService.evaluateForUser(userId);
+
     return {
       xp: xpResult,
       streak: streakResult,
       newAchievements,
+      newBadges,
     };
   }
 }

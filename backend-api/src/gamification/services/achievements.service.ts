@@ -41,6 +41,17 @@ interface XpCriteria {
   amount: number;
 }
 
+interface TimeOfDayCriteria {
+  type: 'time_of_day';
+  hour_start: number;
+  hour_end: number;
+}
+
+interface FastCompletionCriteria {
+  type: 'fast_completion';
+  max_seconds: number;
+}
+
 type AchievementCriteria =
   | LessonCountCriteria
   | LessonDifficultyCriteria
@@ -48,7 +59,9 @@ type AchievementCriteria =
   | CourseCriteria
   | SocialCriteria
   | LevelCriteria
-  | XpCriteria;
+  | XpCriteria
+  | TimeOfDayCriteria
+  | FastCompletionCriteria;
 
 export interface AchievementEvaluation {
   achievementId: string;
@@ -93,7 +106,7 @@ export class AchievementsService {
     for (const achievement of allAchievements) {
       const isAlreadyUnlocked = userAchievementIds.includes(achievement.id);
       const criteria = achievement.criteria as unknown as AchievementCriteria;
-      const { progress, currentValue, targetValue, isMet } = this.evaluateCriteria(
+      const { progress, currentValue, targetValue, isMet } = await this.evaluateCriteria(
         criteria,
         userStats,
       );
@@ -171,31 +184,33 @@ export class AchievementsService {
       userAchievements.map((ua) => [ua.achievementId, ua]),
     );
 
-    let achievements = allAchievements.map((achievement) => {
-      const userAchievement = userAchievementMap.get(achievement.id);
-      const isUnlocked = !!userAchievement;
-      const criteria = achievement.criteria as unknown as AchievementCriteria;
-      const { progress, currentValue, targetValue } = this.evaluateCriteria(
-        criteria,
-        userStats,
-      );
+    let achievements = await Promise.all(
+      allAchievements.map(async (achievement) => {
+        const userAchievement = userAchievementMap.get(achievement.id);
+        const isUnlocked = !!userAchievement;
+        const criteria = achievement.criteria as unknown as AchievementCriteria;
+        const { progress, currentValue, targetValue } = await this.evaluateCriteria(
+          criteria,
+          userStats,
+        );
 
-      return {
-        id: achievement.id,
-        slug: achievement.slug,
-        title: achievement.title,
-        description: achievement.description,
-        iconUrl: achievement.iconUrl,
-        xpReward: achievement.xpReward,
-        category: achievement.category,
-        isSecret: achievement.isSecret,
-        isUnlocked,
-        unlockedAt: userAchievement?.unlockedAt || null,
-        progress: isUnlocked ? 100 : progress,
-        currentValue,
-        targetValue,
-      };
-    });
+        return {
+          id: achievement.id,
+          slug: achievement.slug,
+          title: achievement.title,
+          description: achievement.description,
+          iconUrl: achievement.iconUrl,
+          xpReward: achievement.xpReward,
+          category: achievement.category,
+          isSecret: achievement.isSecret,
+          isUnlocked,
+          unlockedAt: userAchievement?.unlockedAt || null,
+          progress: isUnlocked ? 100 : progress,
+          currentValue,
+          targetValue,
+        };
+      }),
+    );
 
     // Filter by category
     if (options?.category) {
@@ -255,6 +270,7 @@ export class AchievementsService {
       ]);
 
     return {
+      userId,
       xpTotal: user?.xpTotal || 0,
       level: user?.level || 1,
       streakCurrent: user?.streakCurrent || 0,
@@ -274,10 +290,10 @@ export class AchievementsService {
   /**
    * Evaluate a single achievement criteria against user stats
    */
-  private evaluateCriteria(
+  private async evaluateCriteria(
     criteria: AchievementCriteria,
     stats: Awaited<ReturnType<typeof this.getUserStats>>,
-  ): { progress: number; currentValue: number; targetValue: number; isMet: boolean } {
+  ): Promise<{ progress: number; currentValue: number; targetValue: number; isMet: boolean }> {
     let currentValue = 0;
     let targetValue = 0;
 
@@ -336,6 +352,27 @@ export class AchievementsService {
         currentValue = stats.xpTotal;
         targetValue = criteria.amount;
         break;
+
+      case 'time_of_day': {
+        const hasMatch = await this.repository.hasCompletedLessonDuringHours(
+          stats.userId,
+          criteria.hour_start,
+          criteria.hour_end,
+        );
+        currentValue = hasMatch ? 1 : 0;
+        targetValue = 1;
+        break;
+      }
+
+      case 'fast_completion': {
+        const hasFast = await this.repository.hasFastCompletion(
+          stats.userId,
+          criteria.max_seconds,
+        );
+        currentValue = hasFast ? 1 : 0;
+        targetValue = 1;
+        break;
+      }
 
       default:
         return { progress: 0, currentValue: 0, targetValue: 1, isMet: false };

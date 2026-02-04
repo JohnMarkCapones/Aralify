@@ -15,15 +15,17 @@ const common_1 = require("@nestjs/common");
 const client_1 = require("@prisma/client");
 const lessons_repository_1 = require("./lessons.repository");
 const services_1 = require("../gamification/services");
+const quiz_service_1 = require("./services/quiz.service");
 const XP_MULTIPLIERS = {
     EASY: 1,
     MEDIUM: 2,
     HARD: 3,
 };
 let LessonsService = LessonsService_1 = class LessonsService {
-    constructor(lessonsRepository, gamificationService) {
+    constructor(lessonsRepository, gamificationService, quizService) {
         this.lessonsRepository = lessonsRepository;
         this.gamificationService = gamificationService;
+        this.quizService = quizService;
         this.logger = new common_1.Logger(LessonsService_1.name);
     }
     async findById(id, userId) {
@@ -84,6 +86,15 @@ let LessonsService = LessonsService_1 = class LessonsService {
                 progress: this.formatProgress(existingProgress),
             };
         }
+        if (lesson.minQuizScore !== null && lesson.minQuizScore !== undefined) {
+            const { correct, total } = await this.lessonsRepository.getUserQuizScoreForLesson(userId, lessonId);
+            if (total > 0) {
+                const currentScore = Math.round((correct / total) * 100);
+                if (currentScore < lesson.minQuizScore) {
+                    throw new common_1.BadRequestException(`Quiz score too low. Current: ${currentScore}%, Required: ${lesson.minQuizScore}%`);
+                }
+            }
+        }
         const multiplier = XP_MULTIPLIERS[lesson.difficulty] || 1;
         const xpEarned = lesson.xpReward * multiplier;
         const progress = await this.lessonsRepository.upsertUserProgress(userId, lessonId, {
@@ -136,6 +147,7 @@ let LessonsService = LessonsService_1 = class LessonsService {
                         title: a.title,
                         xpReward: a.xpReward,
                     })),
+                    newBadges: gamification.newBadges,
                 }
                 : undefined,
         };
@@ -158,6 +170,17 @@ let LessonsService = LessonsService_1 = class LessonsService {
             lessonId,
             quizzes: sanitizedQuizzes,
             totalCount: quizzes.length,
+        };
+    }
+    async submitQuizAnswer(lessonId, quizId, userId, dto) {
+        const result = await this.quizService.submitQuizAnswer(lessonId, quizId, userId, dto.answer, dto.timeSpentSeconds);
+        return {
+            correct: result.correct,
+            explanation: result.explanation,
+            xpEarned: result.xpAwarded,
+            attemptNumber: result.attemptNumber,
+            alreadyCorrect: result.alreadyCorrect,
+            firstAttemptBonus: result.firstAttemptBonus,
         };
     }
     async getChallenges(lessonId) {
@@ -189,18 +212,20 @@ let LessonsService = LessonsService_1 = class LessonsService {
             throw new common_1.NotFoundException('Challenge not found in this lesson');
         }
         const hints = challenge.hints || [];
-        const { unlockedCount } = await this.lessonsRepository.getUserHintUnlocks(userId, challengeId);
+        const unlocks = await this.lessonsRepository.getHintUnlocks(userId, client_1.HintTargetType.CHALLENGE, challengeId);
+        const unlockedIndices = new Set(unlocks.map((u) => u.hintIndex));
+        unlockedIndices.add(0);
         const formattedHints = hints.map((hint, index) => ({
             index,
-            content: index < unlockedCount ? hint : undefined,
-            isUnlocked: index < unlockedCount,
+            content: unlockedIndices.has(index) ? hint : undefined,
+            isUnlocked: unlockedIndices.has(index),
         }));
         return {
             lessonId,
             challengeId,
             hints: formattedHints,
             totalHints: hints.length,
-            unlockedCount,
+            unlockedCount: Math.min(unlockedIndices.size, hints.length),
         };
     }
     async unlockHint(lessonId, userId, dto) {
@@ -213,20 +238,30 @@ let LessonsService = LessonsService_1 = class LessonsService {
             throw new common_1.NotFoundException('Challenge not found in this lesson');
         }
         const hints = challenge.hints || [];
-        const { unlockedCount } = await this.lessonsRepository.getUserHintUnlocks(userId, dto.challengeId);
-        if (unlockedCount >= hints.length) {
+        const currentUnlockedCount = await this.lessonsRepository.getHintUnlockCount(userId, client_1.HintTargetType.CHALLENGE, dto.challengeId);
+        const nextHintIndex = currentUnlockedCount + 1;
+        if (nextHintIndex >= hints.length) {
             throw new common_1.BadRequestException('All hints are already unlocked');
         }
-        const newUnlockedCount = unlockedCount + 1;
+        const alreadyUnlocked = await this.lessonsRepository.hasHintUnlock(userId, client_1.HintTargetType.CHALLENGE, dto.challengeId, nextHintIndex);
+        if (!alreadyUnlocked) {
+            await this.lessonsRepository.createHintUnlock({
+                userId,
+                targetType: client_1.HintTargetType.CHALLENGE,
+                targetId: dto.challengeId,
+                hintIndex: nextHintIndex,
+            });
+        }
+        const newUnlockedCount = currentUnlockedCount + 1 + 1;
         const unlockedHint = {
-            index: unlockedCount,
-            content: hints[unlockedCount],
+            index: nextHintIndex,
+            content: hints[nextHintIndex],
             isUnlocked: true,
         };
         return {
             success: true,
             hint: unlockedHint,
-            unlockedCount: newUnlockedCount,
+            unlockedCount: Math.min(newUnlockedCount, hints.length),
             totalHints: hints.length,
         };
     }
@@ -283,6 +318,7 @@ exports.LessonsService = LessonsService;
 exports.LessonsService = LessonsService = LessonsService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [lessons_repository_1.LessonsRepository,
-        services_1.GamificationService])
+        services_1.GamificationService,
+        quiz_service_1.QuizService])
 ], LessonsService);
 //# sourceMappingURL=lessons.service.js.map

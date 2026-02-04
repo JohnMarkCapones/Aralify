@@ -27,6 +27,8 @@ export declare class GamificationController {
         streak: {
             current: number;
             longest: number;
+            freezesAvailable: number;
+            maxFreezes: 2;
             isActive: boolean;
             atRisk: boolean;
             lastActivityDate: Date | null;
@@ -66,15 +68,15 @@ export declare class GamificationController {
         badges: {
             total: number | undefined;
             displayed: {
-                id: any;
-                slug: any;
-                title: any;
-                description: any;
-                iconUrl: any;
-                rarity: any;
-                earnedAt: any;
-                isDisplayed: any;
-                displayOrder: any;
+                id: string;
+                slug: string;
+                title: string;
+                description: string;
+                iconUrl: string | null;
+                rarity: string;
+                earnedAt: Date;
+                isDisplayed: boolean;
+                displayOrder: number | null;
             }[];
             maxDisplay: number;
         };
@@ -119,15 +121,15 @@ export declare class GamificationController {
     }>;
     getBadges(user: User, query: GetBadgesQueryDto): Promise<{
         badges: {
-            id: any;
-            slug: any;
-            title: any;
-            description: any;
-            iconUrl: any;
-            rarity: any;
-            earnedAt: any;
-            isDisplayed: any;
-            displayOrder: any;
+            id: string;
+            slug: string;
+            title: string;
+            description: string;
+            iconUrl: string | null;
+            rarity: string;
+            earnedAt: Date;
+            isDisplayed: boolean;
+            displayOrder: number | null;
         }[];
         count: number;
         maxDisplay: number;
@@ -137,26 +139,26 @@ export declare class GamificationController {
         canDisplayMore?: undefined;
     } | {
         badges: {
-            id: any;
-            slug: any;
-            title: any;
-            description: any;
-            iconUrl: any;
-            rarity: any;
-            earnedAt: any;
-            isDisplayed: any;
-            displayOrder: any;
+            id: string;
+            slug: string;
+            title: string;
+            description: string;
+            iconUrl: string | null;
+            rarity: string;
+            earnedAt: Date;
+            isDisplayed: boolean;
+            displayOrder: number | null;
         }[];
         byRarity: Record<string, {
-            id: any;
-            slug: any;
-            title: any;
-            description: any;
-            iconUrl: any;
-            rarity: any;
-            earnedAt: any;
-            isDisplayed: any;
-            displayOrder: any;
+            id: string;
+            slug: string;
+            title: string;
+            description: string;
+            iconUrl: string | null;
+            rarity: string;
+            earnedAt: Date;
+            isDisplayed: boolean;
+            displayOrder: number | null;
         }[]>;
         total: number;
         displayedCount: number;
@@ -233,6 +235,8 @@ export declare class GamificationController {
     getStreakInfo(user: User): Promise<{
         currentStreak: number;
         longestStreak: number;
+        freezesAvailable: number;
+        maxFreezes: 2;
         isStreakActive: boolean;
         streakAtRisk: boolean;
         lastActivityDate: Date | null;

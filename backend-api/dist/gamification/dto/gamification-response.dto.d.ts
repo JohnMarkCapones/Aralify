@@ -50,6 +50,8 @@ export declare class StreakMilestoneDto {
 export declare class StreakInfoDto {
     currentStreak: number;
     longestStreak: number;
+    freezesAvailable: number;
+    maxFreezes: number;
     isStreakActive: boolean;
     streakAtRisk: boolean;
     lastActivityDate?: Date | null;
@@ -119,6 +121,8 @@ export declare class BadgeDisplayResponseDto {
 export declare class ProfileStreakDto {
     current: number;
     longest: number;
+    freezesAvailable: number;
+    maxFreezes: number;
     isActive: boolean;
     atRisk: boolean;
     lastActivityDate?: Date | null;

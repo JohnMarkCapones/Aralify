@@ -33,6 +33,9 @@ let StreaksService = StreaksService_1 = class StreaksService {
         let newStreak = previousStreak;
         let xpAwarded = 0;
         let milestoneReached = null;
+        let freezeConsumed = false;
+        let freezeEarned = false;
+        let freezesAvailable = user.streakFreezes;
         if (lastStreakDay && (0, constants_1.isToday)(lastStreakDay.date)) {
             return {
                 streakUpdated: false,
@@ -40,10 +43,19 @@ let StreaksService = StreaksService_1 = class StreaksService {
                 previousStreak,
                 milestoneReached: null,
                 xpAwarded: 0,
+                freezeConsumed: false,
+                freezeEarned: false,
+                freezesAvailable,
             };
         }
         if (lastStreakDay && (0, constants_1.isYesterday)(lastStreakDay.date)) {
             newStreak = previousStreak + 1;
+        }
+        else if (lastStreakDay && (0, constants_1.isTwoDaysAgo)(lastStreakDay.date) && user.streakFreezes > 0) {
+            freezeConsumed = true;
+            freezesAvailable = user.streakFreezes - 1;
+            newStreak = previousStreak + 1;
+            this.logger.log(`User ${userId} streak freeze consumed (${freezesAvailable} remaining)`);
         }
         else if (lastStreakDay) {
             newStreak = 1;
@@ -52,12 +64,6 @@ let StreaksService = StreaksService_1 = class StreaksService {
             newStreak = 1;
         }
         await this.repository.recordStreakDay(userId, today);
-        const newLongest = Math.max(user.streakLongest, newStreak);
-        await this.repository.updateUserStreak(userId, {
-            streakCurrent: newStreak,
-            streakLongest: newLongest,
-            lastActiveAt: today,
-        });
         const { milestone, isMilestone } = (0, constants_1.getStreakMilestoneBonus)(newStreak);
         if (isMilestone && milestone) {
             milestoneReached = milestone;
@@ -73,13 +79,28 @@ let StreaksService = StreaksService_1 = class StreaksService {
                 },
             });
             this.logger.log(`User ${userId} reached streak milestone: ${milestone.name} (${newStreak} days)`);
+            if (newStreak % 7 === 0 && freezesAvailable < constants_1.STREAK_FREEZE.MAX_FREEZES) {
+                freezeEarned = true;
+                freezesAvailable += 1;
+                this.logger.log(`User ${userId} earned a streak freeze (${freezesAvailable} total)`);
+            }
         }
+        const newLongest = Math.max(user.streakLongest, newStreak);
+        await this.repository.updateUserStreak(userId, {
+            streakCurrent: newStreak,
+            streakLongest: newLongest,
+            streakFreezes: freezesAvailable,
+            lastActiveAt: today,
+        });
         return {
             streakUpdated: true,
             newStreak,
             previousStreak,
             milestoneReached,
             xpAwarded,
+            freezeConsumed,
+            freezeEarned,
+            freezesAvailable,
         };
     }
     async claimDailyBonus(userId) {
@@ -132,6 +153,8 @@ let StreaksService = StreaksService_1 = class StreaksService {
         return {
             currentStreak: user.streakCurrent,
             longestStreak: user.streakLongest,
+            freezesAvailable: user.streakFreezes,
+            maxFreezes: constants_1.STREAK_FREEZE.MAX_FREEZES,
             isStreakActive,
             streakAtRisk,
             lastActivityDate: lastStreakDay?.date || null,

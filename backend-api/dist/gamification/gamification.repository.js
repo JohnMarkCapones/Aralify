@@ -28,19 +28,26 @@ let GamificationRepository = class GamificationRepository {
             level: user.level,
             streakCurrent: user.streakCurrent,
             streakLongest: user.streakLongest,
-            lastDailyClaimAt: user.lastDailyClaimAt ?? null,
+            streakFreezes: user.streakFreezes,
+            lastDailyClaimAt: user.lastDailyClaimAt,
             lastActiveAt: user.lastActiveAt,
             createdAt: user.createdAt,
         };
     }
-    async updateUserXpAndLevel(userId, data) {
-        return this.prisma.user.update({
-            where: { id: userId },
-            data: {
-                xpTotal: data.xpTotal,
-                level: data.level,
-            },
-        });
+    async awardXpAtomic(userId, amount, level, source, sourceId, description) {
+        const [, user] = await this.prisma.$transaction([
+            this.prisma.xpTransaction.create({
+                data: { userId, amount, source, sourceId, description },
+            }),
+            this.prisma.user.update({
+                where: { id: userId },
+                data: {
+                    xpTotal: { increment: amount },
+                    level,
+                },
+            }),
+        ]);
+        return user;
     }
     async updateUserStreak(userId, data) {
         return this.prisma.user.update({
@@ -48,6 +55,7 @@ let GamificationRepository = class GamificationRepository {
             data: {
                 streakCurrent: data.streakCurrent,
                 ...(data.streakLongest !== undefined && { streakLongest: data.streakLongest }),
+                ...(data.streakFreezes !== undefined && { streakFreezes: data.streakFreezes }),
                 ...(data.lastActiveAt && { lastActiveAt: data.lastActiveAt }),
             },
         });
@@ -281,6 +289,57 @@ let GamificationRepository = class GamificationRepository {
             this.prisma.follow.count({ where: { followerId: userId } }),
         ]);
         return { commentCount, followerCount, followingCount };
+    }
+    async hasCompletedLessonDuringHours(userId, hourStart, hourEnd) {
+        const completions = await this.prisma.userLessonProgress.findMany({
+            where: { userId, status: 'COMPLETED', completedAt: { not: null } },
+            select: { completedAt: true },
+        });
+        return completions.some((c) => {
+            if (!c.completedAt)
+                return false;
+            const hour = c.completedAt.getUTCHours();
+            return hourStart <= hourEnd
+                ? hour >= hourStart && hour < hourEnd
+                : hour >= hourStart || hour < hourEnd;
+        });
+    }
+    async hasFastCompletion(userId, maxSeconds) {
+        const fast = await this.prisma.userLessonProgress.findFirst({
+            where: {
+                userId,
+                status: 'COMPLETED',
+                timeSpent: { not: null, lte: maxSeconds },
+            },
+        });
+        return !!fast;
+    }
+    async getCompletedLanguageCount(userId) {
+        const lessons = await this.prisma.userLessonProgress.findMany({
+            where: { userId, status: 'COMPLETED' },
+            include: {
+                lesson: {
+                    include: {
+                        level: {
+                            include: { course: { select: { language: true } } },
+                        },
+                    },
+                },
+            },
+        });
+        const languages = new Set(lessons.map((lp) => lp.lesson.level.course.language));
+        return languages.size;
+    }
+    async getLessonsCompletedToday(userId) {
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+        return this.prisma.userLessonProgress.count({
+            where: {
+                userId,
+                status: 'COMPLETED',
+                completedAt: { gte: startOfDay },
+            },
+        });
     }
     async createActivity(activityData) {
         return this.prisma.activity.create({

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { ProgressStatus } from '@prisma/client';
+import { ProgressStatus, HintTargetType, QuizType, Difficulty } from '@prisma/client';
 
 @Injectable()
 export class LessonsRepository {
@@ -68,6 +68,12 @@ export class LessonsRepository {
   async findChallengesByLessonId(lessonId: string) {
     return this.prisma.codeChallenge.findMany({
       where: { lessonId },
+    });
+  }
+
+  async getQuizById(quizId: string) {
+    return this.prisma.quiz.findUnique({
+      where: { id: quizId },
     });
   }
 
@@ -220,15 +226,334 @@ export class LessonsRepository {
     });
   }
 
-  async getUserHintUnlocks(userId: string, challengeId: string) {
-    // Store hint unlocks in a simple key-value format
-    // For now, we'll use a convention where we track unlocked hint indices
-    // In a production system, this could be a separate table
-    // For simplicity, we'll store this in the lesson progress metadata
-    // or as a separate query. Here we return a count based on a simple approach.
+  // ============================================================================
+  // Quiz Answer Tracking
+  // ============================================================================
 
-    // This is a placeholder - in production, you'd have a UserHintUnlock table
-    // For now, return 0 (first hint always unlocked for free)
-    return { unlockedCount: 1 };
+  async createQuizAnswer(data: {
+    userId: string;
+    quizId: string;
+    answer: string;
+    isCorrect: boolean;
+    attemptNumber: number;
+    xpAwarded: number;
+    timeSpentSeconds?: number;
+  }) {
+    return this.prisma.userQuizAnswer.create({
+      data: {
+        userId: data.userId,
+        quizId: data.quizId,
+        answer: data.answer,
+        isCorrect: data.isCorrect,
+        attemptNumber: data.attemptNumber,
+        xpAwarded: data.xpAwarded,
+        timeSpentSeconds: data.timeSpentSeconds,
+      },
+    });
+  }
+
+  async getQuizAttemptCount(userId: string, quizId: string): Promise<number> {
+    return this.prisma.userQuizAnswer.count({
+      where: { userId, quizId },
+    });
+  }
+
+  async hasCorrectAnswer(userId: string, quizId: string): Promise<boolean> {
+    const correctAnswer = await this.prisma.userQuizAnswer.findFirst({
+      where: { userId, quizId, isCorrect: true },
+    });
+    return !!correctAnswer;
+  }
+
+  async getQuizResultsForLesson(userId: string, lessonId: string) {
+    // Get all quizzes for the lesson
+    const quizzes = await this.prisma.quiz.findMany({
+      where: { lessonId },
+      orderBy: { orderIndex: 'asc' },
+    });
+
+    // Get all user answers for these quizzes
+    const quizIds = quizzes.map((q) => q.id);
+    const answers = await this.prisma.userQuizAnswer.findMany({
+      where: {
+        userId,
+        quizId: { in: quizIds },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    // Group answers by quizId
+    const answersByQuiz = new Map<string, typeof answers>();
+    for (const answer of answers) {
+      if (!answersByQuiz.has(answer.quizId)) {
+        answersByQuiz.set(answer.quizId, []);
+      }
+      answersByQuiz.get(answer.quizId)!.push(answer);
+    }
+
+    return { quizzes, answersByQuiz };
+  }
+
+  async getUserQuizScoreForLesson(
+    userId: string,
+    lessonId: string,
+  ): Promise<{ correct: number; total: number }> {
+    const quizzes = await this.prisma.quiz.findMany({
+      where: { lessonId },
+      select: { id: true },
+    });
+
+    if (quizzes.length === 0) {
+      return { correct: 0, total: 0 };
+    }
+
+    const quizIds = quizzes.map((q) => q.id);
+
+    // Count quizzes with at least one correct answer
+    const correctQuizzes = await this.prisma.userQuizAnswer.groupBy({
+      by: ['quizId'],
+      where: {
+        userId,
+        quizId: { in: quizIds },
+        isCorrect: true,
+      },
+    });
+
+    return {
+      correct: correctQuizzes.length,
+      total: quizzes.length,
+    };
+  }
+
+  // ============================================================================
+  // Hint Unlock Tracking
+  // ============================================================================
+
+  async getHintUnlockCount(
+    userId: string,
+    targetType: HintTargetType,
+    targetId: string,
+  ): Promise<number> {
+    return this.prisma.userHintUnlock.count({
+      where: { userId, targetType, targetId },
+    });
+  }
+
+  async getHintUnlocks(
+    userId: string,
+    targetType: HintTargetType,
+    targetId: string,
+  ) {
+    return this.prisma.userHintUnlock.findMany({
+      where: { userId, targetType, targetId },
+      orderBy: { hintIndex: 'asc' },
+    });
+  }
+
+  async createHintUnlock(data: {
+    userId: string;
+    targetType: HintTargetType;
+    targetId: string;
+    hintIndex: number;
+  }) {
+    return this.prisma.userHintUnlock.create({
+      data: {
+        userId: data.userId,
+        targetType: data.targetType,
+        targetId: data.targetId,
+        hintIndex: data.hintIndex,
+      },
+    });
+  }
+
+  async hasHintUnlock(
+    userId: string,
+    targetType: HintTargetType,
+    targetId: string,
+    hintIndex: number,
+  ): Promise<boolean> {
+    const unlock = await this.prisma.userHintUnlock.findUnique({
+      where: {
+        userId_targetType_targetId_hintIndex: {
+          userId,
+          targetType,
+          targetId,
+          hintIndex,
+        },
+      },
+    });
+    return !!unlock;
+  }
+
+  // ============================================================================
+  // Challenge Submission Tracking
+  // ============================================================================
+
+  async createChallengeSubmission(data: {
+    userId: string;
+    challengeId: string;
+    code: string;
+    languageId: number;
+    status: string;
+    attemptNumber: number;
+    xpAwarded?: number;
+    timeSpentSeconds?: number;
+    testResults?: any;
+  }) {
+    return this.prisma.challengeSubmission.create({
+      data: {
+        userId: data.userId,
+        challengeId: data.challengeId,
+        code: data.code,
+        languageId: data.languageId,
+        status: data.status,
+        attemptNumber: data.attemptNumber,
+        xpAwarded: data.xpAwarded ?? 0,
+        timeSpentSeconds: data.timeSpentSeconds,
+        testResults: data.testResults,
+      },
+    });
+  }
+
+  async getChallengeAttemptCount(
+    userId: string,
+    challengeId: string,
+  ): Promise<number> {
+    return this.prisma.challengeSubmission.count({
+      where: { userId, challengeId },
+    });
+  }
+
+  async hasPassedChallenge(
+    userId: string,
+    challengeId: string,
+  ): Promise<boolean> {
+    const passed = await this.prisma.challengeSubmission.findFirst({
+      where: { userId, challengeId, status: 'PASSED' },
+    });
+    return !!passed;
+  }
+
+  // ============================================================================
+  // Admin Quiz CRUD
+  // ============================================================================
+
+  async createQuiz(
+    lessonId: string,
+    data: {
+      type: QuizType;
+      question: string;
+      options?: any;
+      correctAnswer: string;
+      explanation?: string;
+      hints?: string[];
+      difficulty?: Difficulty;
+      orderIndex?: number;
+    },
+  ) {
+    // Get next order index if not specified
+    let orderIndex = data.orderIndex;
+    if (orderIndex === undefined) {
+      const lastQuiz = await this.prisma.quiz.findFirst({
+        where: { lessonId },
+        orderBy: { orderIndex: 'desc' },
+      });
+      orderIndex = lastQuiz ? lastQuiz.orderIndex + 1 : 0;
+    }
+
+    return this.prisma.quiz.create({
+      data: {
+        lessonId,
+        type: data.type,
+        question: data.question,
+        options: data.options,
+        correctAnswer: data.correctAnswer,
+        explanation: data.explanation,
+        hints: data.hints,
+        difficulty: data.difficulty,
+        orderIndex,
+      },
+    });
+  }
+
+  async updateQuiz(
+    quizId: string,
+    data: {
+      type?: QuizType;
+      question?: string;
+      options?: any;
+      correctAnswer?: string;
+      explanation?: string;
+      hints?: string[];
+      difficulty?: Difficulty;
+      orderIndex?: number;
+    },
+  ) {
+    return this.prisma.quiz.update({
+      where: { id: quizId },
+      data: {
+        type: data.type,
+        question: data.question,
+        options: data.options,
+        correctAnswer: data.correctAnswer,
+        explanation: data.explanation,
+        hints: data.hints,
+        difficulty: data.difficulty,
+        orderIndex: data.orderIndex,
+      },
+    });
+  }
+
+  async deleteQuiz(quizId: string) {
+    return this.prisma.quiz.delete({
+      where: { id: quizId },
+    });
+  }
+
+  async bulkCreateQuizzes(
+    lessonId: string,
+    quizzes: Array<{
+      type: QuizType;
+      question: string;
+      options?: any;
+      correctAnswer: string;
+      explanation?: string;
+      hints?: string[];
+      difficulty?: Difficulty;
+      orderIndex?: number;
+    }>,
+  ) {
+    // Get the starting order index
+    const lastQuiz = await this.prisma.quiz.findFirst({
+      where: { lessonId },
+      orderBy: { orderIndex: 'desc' },
+    });
+    let nextOrderIndex = lastQuiz ? lastQuiz.orderIndex + 1 : 0;
+
+    const createdQuizzes = [];
+    for (const quiz of quizzes) {
+      const created = await this.prisma.quiz.create({
+        data: {
+          lessonId,
+          type: quiz.type,
+          question: quiz.question,
+          options: quiz.options,
+          correctAnswer: quiz.correctAnswer,
+          explanation: quiz.explanation,
+          hints: quiz.hints,
+          difficulty: quiz.difficulty,
+          orderIndex: quiz.orderIndex ?? nextOrderIndex++,
+        },
+      });
+      createdQuizzes.push(created);
+    }
+
+    return createdQuizzes;
+  }
+
+  async getLessonById(lessonId: string) {
+    return this.prisma.lesson.findUnique({
+      where: { id: lessonId },
+    });
   }
 }

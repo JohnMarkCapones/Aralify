@@ -9,7 +9,8 @@ import {
   getMilestonesWithProgress,
   isToday,
   isYesterday,
-  STREAK_MILESTONES,
+  isTwoDaysAgo,
+  STREAK_FREEZE,
 } from '../constants';
 
 export interface UpdateStreakResult {
@@ -18,6 +19,9 @@ export interface UpdateStreakResult {
   previousStreak: number;
   milestoneReached: { days: number; xpBonus: number; name: string } | null;
   xpAwarded: number;
+  freezeConsumed: boolean;
+  freezeEarned: boolean;
+  freezesAvailable: number;
 }
 
 export interface ClaimDailyBonusResult {
@@ -52,24 +56,37 @@ export class StreaksService {
     let newStreak = previousStreak;
     let xpAwarded = 0;
     let milestoneReached = null;
+    let freezeConsumed = false;
+    let freezeEarned = false;
+    let freezesAvailable = user.streakFreezes;
 
     // Check if already recorded activity today
     if (lastStreakDay && isToday(lastStreakDay.date)) {
-      // Already active today, no streak update needed
       return {
         streakUpdated: false,
         newStreak: previousStreak,
         previousStreak,
         milestoneReached: null,
         xpAwarded: 0,
+        freezeConsumed: false,
+        freezeEarned: false,
+        freezesAvailable,
       };
     }
 
     // Check if last activity was yesterday (continuing streak)
     if (lastStreakDay && isYesterday(lastStreakDay.date)) {
       newStreak = previousStreak + 1;
+    } else if (lastStreakDay && isTwoDaysAgo(lastStreakDay.date) && user.streakFreezes > 0) {
+      // Missed exactly 1 day but has a freeze — consume it and continue streak
+      freezeConsumed = true;
+      freezesAvailable = user.streakFreezes - 1;
+      newStreak = previousStreak + 1;
+      this.logger.log(
+        `User ${userId} streak freeze consumed (${freezesAvailable} remaining)`,
+      );
     } else if (lastStreakDay) {
-      // Streak broken, reset to 1
+      // Streak broken (missed 2+ days or no freezes), reset to 1
       newStreak = 1;
     } else {
       // First activity ever
@@ -78,14 +95,6 @@ export class StreaksService {
 
     // Record today's activity
     await this.repository.recordStreakDay(userId, today);
-
-    // Update user streak
-    const newLongest = Math.max(user.streakLongest, newStreak);
-    await this.repository.updateUserStreak(userId, {
-      streakCurrent: newStreak,
-      streakLongest: newLongest,
-      lastActiveAt: today,
-    });
 
     // Check for milestone
     const { milestone, isMilestone } = getStreakMilestoneBonus(newStreak);
@@ -116,7 +125,25 @@ export class StreaksService {
       this.logger.log(
         `User ${userId} reached streak milestone: ${milestone.name} (${newStreak} days)`,
       );
+
+      // Earn a freeze at every 7-day milestone
+      if (newStreak % 7 === 0 && freezesAvailable < STREAK_FREEZE.MAX_FREEZES) {
+        freezeEarned = true;
+        freezesAvailable += 1;
+        this.logger.log(
+          `User ${userId} earned a streak freeze (${freezesAvailable} total)`,
+        );
+      }
     }
+
+    // Update user streak
+    const newLongest = Math.max(user.streakLongest, newStreak);
+    await this.repository.updateUserStreak(userId, {
+      streakCurrent: newStreak,
+      streakLongest: newLongest,
+      streakFreezes: freezesAvailable,
+      lastActiveAt: today,
+    });
 
     return {
       streakUpdated: true,
@@ -124,6 +151,9 @@ export class StreaksService {
       previousStreak,
       milestoneReached,
       xpAwarded,
+      freezeConsumed,
+      freezeEarned,
+      freezesAvailable,
     };
   }
 
@@ -211,6 +241,8 @@ export class StreaksService {
     return {
       currentStreak: user.streakCurrent,
       longestStreak: user.streakLongest,
+      freezesAvailable: user.streakFreezes,
+      maxFreezes: STREAK_FREEZE.MAX_FREEZES,
       isStreakActive,
       streakAtRisk,
       lastActivityDate: lastStreakDay?.date || null,

@@ -32,6 +32,7 @@ export declare class JwtStrategy extends JwtStrategy_base {
         streakCurrent: number;
         streakLongest: number;
         streakFreezes: number;
+        lastDailyClaimAt: Date | null;
         googleId: string | null;
         githubId: string | null;
         facebookId: string | null;
