@@ -6,6 +6,7 @@ export interface UserGamificationData {
     level: number;
     streakCurrent: number;
     streakLongest: number;
+    streakFreezes: number;
     lastDailyClaimAt: Date | null;
     lastActiveAt: Date | null;
     createdAt: Date;
@@ -14,10 +15,7 @@ export declare class GamificationRepository {
     private readonly prisma;
     constructor(prisma: PrismaService);
     getUserGamificationData(userId: string): Promise<UserGamificationData | null>;
-    updateUserXpAndLevel(userId: string, data: {
-        xpTotal: number;
-        level: number;
-    }): Promise<{
+    awardXpAtomic(userId: string, amount: number, level: number, source: XpSource, sourceId?: string, description?: string): Promise<{
         level: number;
         id: string;
         email: string;
@@ -32,6 +30,7 @@ export declare class GamificationRepository {
         streakCurrent: number;
         streakLongest: number;
         streakFreezes: number;
+        lastDailyClaimAt: Date | null;
         googleId: string | null;
         githubId: string | null;
         facebookId: string | null;
@@ -46,6 +45,7 @@ export declare class GamificationRepository {
     updateUserStreak(userId: string, data: {
         streakCurrent: number;
         streakLongest?: number;
+        streakFreezes?: number;
         lastActiveAt?: Date;
     }): Promise<{
         level: number;
@@ -62,6 +62,7 @@ export declare class GamificationRepository {
         streakCurrent: number;
         streakLongest: number;
         streakFreezes: number;
+        lastDailyClaimAt: Date | null;
         googleId: string | null;
         githubId: string | null;
         facebookId: string | null;
@@ -88,6 +89,7 @@ export declare class GamificationRepository {
         streakCurrent: number;
         streakLongest: number;
         streakFreezes: number;
+        lastDailyClaimAt: Date | null;
         googleId: string | null;
         githubId: string | null;
         facebookId: string | null;
@@ -206,11 +208,65 @@ export declare class GamificationRepository {
     } | null>;
     getUserBadges(userId: string, options?: {
         displayedOnly?: boolean;
-    }): Promise<any[]>;
+    }): Promise<({
+        badge: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            description: string;
+            title: string;
+            slug: string;
+            iconUrl: string | null;
+            rarity: string;
+        };
+    } & {
+        id: string;
+        userId: string;
+        badgeId: string;
+        earnedAt: Date;
+        isDisplayed: boolean;
+        displayOrder: number | null;
+    })[]>;
     getUserBadgeCount(userId: string): Promise<number>;
     getDisplayedBadgeCount(userId: string): Promise<number>;
-    getUserBadge(userId: string, badgeId: string): Promise<any>;
-    setBadgeDisplayed(userId: string, badgeId: string, isDisplayed: boolean, displayOrder?: number): Promise<any>;
+    getUserBadge(userId: string, badgeId: string): Promise<({
+        badge: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            description: string;
+            title: string;
+            slug: string;
+            iconUrl: string | null;
+            rarity: string;
+        };
+    } & {
+        id: string;
+        userId: string;
+        badgeId: string;
+        earnedAt: Date;
+        isDisplayed: boolean;
+        displayOrder: number | null;
+    }) | null>;
+    setBadgeDisplayed(userId: string, badgeId: string, isDisplayed: boolean, displayOrder?: number): Promise<{
+        badge: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            description: string;
+            title: string;
+            slug: string;
+            iconUrl: string | null;
+            rarity: string;
+        };
+    } & {
+        id: string;
+        userId: string;
+        badgeId: string;
+        earnedAt: Date;
+        isDisplayed: boolean;
+        displayOrder: number | null;
+    }>;
     awardBadge(userId: string, badgeId: string): Promise<{
         badge: {
             id: string;
@@ -227,6 +283,8 @@ export declare class GamificationRepository {
         userId: string;
         badgeId: string;
         earnedAt: Date;
+        isDisplayed: boolean;
+        displayOrder: number | null;
     }>;
     getBadgeBySlug(slug: string): Promise<{
         id: string;
@@ -277,6 +335,10 @@ export declare class GamificationRepository {
         followerCount: number;
         followingCount: number;
     }>;
+    hasCompletedLessonDuringHours(userId: string, hourStart: number, hourEnd: number): Promise<boolean>;
+    hasFastCompletion(userId: string, maxSeconds: number): Promise<boolean>;
+    getCompletedLanguageCount(userId: string): Promise<number>;
+    getLessonsCompletedToday(userId: string): Promise<number>;
     createActivity(activityData: {
         userId: string;
         type: ActivityType;

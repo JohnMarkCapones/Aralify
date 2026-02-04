@@ -95,6 +95,17 @@ export function isYesterday(date: Date): boolean {
 }
 
 /**
+ * Check if a date is exactly two days ago
+ */
+export function isTwoDaysAgo(date: Date): boolean {
+  const twoDaysAgo = new Date();
+  twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+  const dateStr = date.toISOString().split('T')[0];
+  const twoDaysAgoStr = twoDaysAgo.toISOString().split('T')[0];
+  return dateStr === twoDaysAgoStr;
+}
+
+/**
  * Get all milestones with progress info
  */
 export function getMilestonesWithProgress(currentStreak: number) {

@@ -130,6 +130,12 @@ export class StreakInfoDto {
   @ApiProperty({ example: 45, description: 'Longest streak ever' })
   longestStreak!: number;
 
+  @ApiProperty({ example: 1, description: 'Number of streak freezes available' })
+  freezesAvailable!: number;
+
+  @ApiProperty({ example: 2, description: 'Maximum streak freezes that can be held' })
+  maxFreezes!: number;
+
   @ApiProperty({ example: true, description: 'Whether streak is currently active' })
   isStreakActive!: boolean;
 
@@ -316,6 +322,12 @@ export class ProfileStreakDto {
 
   @ApiProperty({ example: 45 })
   longest!: number;
+
+  @ApiProperty({ example: 1, description: 'Streak freezes available' })
+  freezesAvailable!: number;
+
+  @ApiProperty({ example: 2, description: 'Max freezes that can be held' })
+  maxFreezes!: number;
 
   @ApiProperty({ example: true })
   isActive!: boolean;

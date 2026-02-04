@@ -18,6 +18,7 @@ export declare class UsersRepository {
         streakCurrent: number;
         streakLongest: number;
         streakFreezes: number;
+        lastDailyClaimAt: Date | null;
         googleId: string | null;
         githubId: string | null;
         facebookId: string | null;
@@ -44,6 +45,7 @@ export declare class UsersRepository {
         streakCurrent: number;
         streakLongest: number;
         streakFreezes: number;
+        lastDailyClaimAt: Date | null;
         googleId: string | null;
         githubId: string | null;
         facebookId: string | null;
@@ -103,6 +105,7 @@ export declare class UsersRepository {
         streakCurrent: number;
         streakLongest: number;
         streakFreezes: number;
+        lastDailyClaimAt: Date | null;
         googleId: string | null;
         githubId: string | null;
         facebookId: string | null;
@@ -162,6 +165,7 @@ export declare class UsersRepository {
         streakCurrent: number;
         streakLongest: number;
         streakFreezes: number;
+        lastDailyClaimAt: Date | null;
         googleId: string | null;
         githubId: string | null;
         facebookId: string | null;
@@ -193,6 +197,7 @@ export declare class UsersRepository {
         streakCurrent: number;
         streakLongest: number;
         streakFreezes: number;
+        lastDailyClaimAt: Date | null;
         googleId: string | null;
         githubId: string | null;
         facebookId: string | null;

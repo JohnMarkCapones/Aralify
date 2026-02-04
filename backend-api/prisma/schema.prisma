@@ -31,6 +31,7 @@ model User {
   level         Int       @default(1)
   streakCurrent Int       @default(0)
   streakLongest Int       @default(0)
+  streakFreezes Int       @default(0)
   lastDailyClaimAt DateTime?
 
   // OAuth
@@ -67,6 +68,9 @@ model User {
   activities           Activity[]
   following            Follow[]          @relation("Following")
   followers            Follow[]          @relation("Followers")
+  quizAnswers          UserQuizAnswer[]
+  hintUnlocks          UserHintUnlock[]
+  challengeSubmissions ChallengeSubmission[]
 
   @@map("users")
 }
@@ -247,6 +251,7 @@ model Lesson {
   xpReward    Int        @default(100)
   orderIndex  Int        @default(0)
   isPublished Boolean    @default(false)
+  minQuizScore Int?      // Minimum quiz score (0-100) required to complete lesson
 
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
@@ -268,19 +273,24 @@ enum Difficulty {
 }
 
 model Quiz {
-  id            String   @id @default(cuid())
+  id            String      @id @default(cuid())
   lessonId      String
-  lesson        Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lesson        Lesson      @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
   type          QuizType
   question      String
-  options       Json?    // For multiple choice
+  options       Json?       // For multiple choice
   correctAnswer String
   explanation   String?
-  orderIndex    Int      @default(0)
+  hints         Json?       // Array of hint strings
+  difficulty    Difficulty? // Optional, falls back to lesson difficulty
+  orderIndex    Int         @default(0)
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // Relations
+  userAnswers   UserQuizAnswer[]
 
   @@map("quizzes")
 }
@@ -290,6 +300,11 @@ enum QuizType {
   FILL_BLANK
   CODE_COMPLETION
   TRUE_FALSE
+}
+
+enum HintTargetType {
+  QUIZ
+  CHALLENGE
 }
 
 model CodeChallenge {
@@ -307,6 +322,9 @@ model CodeChallenge {
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  // Relations
+  submissions   ChallengeSubmission[]
 
   @@map("code_challenges")
 }
@@ -574,4 +592,63 @@ enum ActivityType {
   BADGE_EARNED
   STREAK_MILESTONE
   LEVEL_UP
+}
+
+// ============================================
+// QUIZ & CHALLENGE TRACKING
+// ============================================
+
+model UserQuizAnswer {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quizId          String
+  quiz            Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  answer          String
+  isCorrect       Boolean
+  attemptNumber   Int
+  xpAwarded       Int      @default(0)
+  timeSpentSeconds Int?
+
+  createdAt       DateTime @default(now())
+
+  @@index([userId, quizId])
+  @@map("user_quiz_answers")
+}
+
+model UserHintUnlock {
+  id          String         @id @default(cuid())
+  userId      String
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  targetType  HintTargetType
+  targetId    String
+  hintIndex   Int
+
+  unlockedAt  DateTime       @default(now())
+
+  @@unique([userId, targetType, targetId, hintIndex])
+  @@map("user_hint_unlocks")
+}
+
+model ChallengeSubmission {
+  id              String        @id @default(cuid())
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challengeId     String
+  challenge       CodeChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+
+  code            String
+  languageId      Int
+  status          String        // SUBMITTED, PASSED, FAILED
+  testResults     Json?
+  attemptNumber   Int
+  xpAwarded       Int           @default(0)
+  timeSpentSeconds Int?
+
+  createdAt       DateTime      @default(now())
+
+  @@index([userId, challengeId])
+  @@map("challenge_submissions")
 }

@@ -29,6 +29,7 @@ export declare function getNextMilestone(currentStreak: number): {
 export declare function calculateDailyBonus(streakDays: number): number;
 export declare function isToday(date: Date, timezone?: string): boolean;
 export declare function isYesterday(date: Date): boolean;
+export declare function isTwoDaysAgo(date: Date): boolean;
 export declare function getMilestonesWithProgress(currentStreak: number): {
     achieved: boolean;
     daysRemaining: number;

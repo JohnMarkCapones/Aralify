@@ -6,6 +6,7 @@ exports.getNextMilestone = getNextMilestone;
 exports.calculateDailyBonus = calculateDailyBonus;
 exports.isToday = isToday;
 exports.isYesterday = isYesterday;
+exports.isTwoDaysAgo = isTwoDaysAgo;
 exports.getMilestonesWithProgress = getMilestonesWithProgress;
 exports.STREAK_MILESTONES = [
     { days: 3, xpBonus: 25, name: '3-Day Streak' },
@@ -61,6 +62,13 @@ function isYesterday(date) {
     const dateStr = date.toISOString().split('T')[0];
     const yesterdayStr = yesterday.toISOString().split('T')[0];
     return dateStr === yesterdayStr;
+}
+function isTwoDaysAgo(date) {
+    const twoDaysAgo = new Date();
+    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+    const dateStr = date.toISOString().split('T')[0];
+    const twoDaysAgoStr = twoDaysAgo.toISOString().split('T')[0];
+    return dateStr === twoDaysAgoStr;
 }
 function getMilestonesWithProgress(currentStreak) {
     return exports.STREAK_MILESTONES.map((milestone) => ({

@@ -29,6 +29,8 @@ export declare class GamificationService {
         streak: {
             current: number;
             longest: number;
+            freezesAvailable: number;
+            maxFreezes: 2;
             isActive: boolean;
             atRisk: boolean;
             lastActivityDate: Date | null;
@@ -68,15 +70,15 @@ export declare class GamificationService {
         badges: {
             total: number | undefined;
             displayed: {
-                id: any;
-                slug: any;
-                title: any;
-                description: any;
-                iconUrl: any;
-                rarity: any;
-                earnedAt: any;
-                isDisplayed: any;
-                displayOrder: any;
+                id: string;
+                slug: string;
+                title: string;
+                description: string;
+                iconUrl: string | null;
+                rarity: string;
+                earnedAt: Date;
+                isDisplayed: boolean;
+                displayOrder: number | null;
             }[];
             maxDisplay: number;
         };
@@ -115,5 +117,6 @@ export declare class GamificationService {
         xp: import("./xp.service").AwardXpResult;
         streak: import("./streaks.service").UpdateStreakResult;
         newAchievements: import("./achievements.service").AchievementEvaluation[];
+        newBadges: string[];
     }>;
 }

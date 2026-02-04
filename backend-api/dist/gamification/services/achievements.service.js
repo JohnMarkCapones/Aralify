@@ -32,7 +32,7 @@ let AchievementsService = AchievementsService_1 = class AchievementsService {
         for (const achievement of allAchievements) {
             const isAlreadyUnlocked = userAchievementIds.includes(achievement.id);
             const criteria = achievement.criteria;
-            const { progress, currentValue, targetValue, isMet } = this.evaluateCriteria(criteria, userStats);
+            const { progress, currentValue, targetValue, isMet } = await this.evaluateCriteria(criteria, userStats);
             const evaluation = {
                 achievementId: achievement.id,
                 slug: achievement.slug,
@@ -77,11 +77,11 @@ let AchievementsService = AchievementsService_1 = class AchievementsService {
             this.getUserStats(userId),
         ]);
         const userAchievementMap = new Map(userAchievements.map((ua) => [ua.achievementId, ua]));
-        let achievements = allAchievements.map((achievement) => {
+        let achievements = await Promise.all(allAchievements.map(async (achievement) => {
             const userAchievement = userAchievementMap.get(achievement.id);
             const isUnlocked = !!userAchievement;
             const criteria = achievement.criteria;
-            const { progress, currentValue, targetValue } = this.evaluateCriteria(criteria, userStats);
+            const { progress, currentValue, targetValue } = await this.evaluateCriteria(criteria, userStats);
             return {
                 id: achievement.id,
                 slug: achievement.slug,
@@ -97,7 +97,7 @@ let AchievementsService = AchievementsService_1 = class AchievementsService {
                 currentValue,
                 targetValue,
             };
-        });
+        }));
         if (options?.category) {
             achievements = achievements.filter((a) => a.category === options.category);
         }
@@ -134,6 +134,7 @@ let AchievementsService = AchievementsService_1 = class AchievementsService {
             this.repository.getUserSocialStats(userId),
         ]);
         return {
+            userId,
             xpTotal: user?.xpTotal || 0,
             level: user?.level || 1,
             streakCurrent: user?.streakCurrent || 0,
@@ -149,7 +150,7 @@ let AchievementsService = AchievementsService_1 = class AchievementsService {
             followingCount: socialStats.followingCount,
         };
     }
-    evaluateCriteria(criteria, stats) {
+    async evaluateCriteria(criteria, stats) {
         let currentValue = 0;
         let targetValue = 0;
         switch (criteria.type) {
@@ -201,6 +202,18 @@ let AchievementsService = AchievementsService_1 = class AchievementsService {
                 currentValue = stats.xpTotal;
                 targetValue = criteria.amount;
                 break;
+            case 'time_of_day': {
+                const hasMatch = await this.repository.hasCompletedLessonDuringHours(stats.userId, criteria.hour_start, criteria.hour_end);
+                currentValue = hasMatch ? 1 : 0;
+                targetValue = 1;
+                break;
+            }
+            case 'fast_completion': {
+                const hasFast = await this.repository.hasFastCompletion(stats.userId, criteria.max_seconds);
+                currentValue = hasFast ? 1 : 0;
+                targetValue = 1;
+                break;
+            }
             default:
                 return { progress: 0, currentValue: 0, targetValue: 1, isMet: false };
         }

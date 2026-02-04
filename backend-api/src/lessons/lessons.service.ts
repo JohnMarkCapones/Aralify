@@ -5,10 +5,11 @@ import {
   ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
-import { ProgressStatus } from '@prisma/client';
+import { ProgressStatus, HintTargetType } from '@prisma/client';
 import { LessonsRepository } from './lessons.repository';
-import { CompleteLessonDto, UnlockHintDto } from './dto';
+import { CompleteLessonDto, SubmitQuizAnswerDto, UnlockHintDto } from './dto';
 import { GamificationService } from '../gamification/services';
+import { QuizService } from './services/quiz.service';
 
 // XP multipliers based on difficulty
 const XP_MULTIPLIERS: Record<string, number> = {
@@ -24,6 +25,7 @@ export class LessonsService {
   constructor(
     private readonly lessonsRepository: LessonsRepository,
     private readonly gamificationService: GamificationService,
+    private readonly quizService: QuizService,
   ) {}
 
   async findById(id: string, userId?: string) {
@@ -117,6 +119,23 @@ export class LessonsService {
       };
     }
 
+    // Check quiz gating if minQuizScore is set
+    if (lesson.minQuizScore !== null && lesson.minQuizScore !== undefined) {
+      const { correct, total } = await this.lessonsRepository.getUserQuizScoreForLesson(
+        userId,
+        lessonId,
+      );
+
+      if (total > 0) {
+        const currentScore = Math.round((correct / total) * 100);
+        if (currentScore < lesson.minQuizScore) {
+          throw new BadRequestException(
+            `Quiz score too low. Current: ${currentScore}%, Required: ${lesson.minQuizScore}%`,
+          );
+        }
+      }
+    }
+
     // Calculate XP with multiplier
     const multiplier = XP_MULTIPLIERS[lesson.difficulty] || 1;
     const xpEarned = lesson.xpReward * multiplier;
@@ -203,6 +222,7 @@ export class LessonsService {
               title: a.title,
               xpReward: a.xpReward,
             })),
+            newBadges: gamification.newBadges,
           }
         : undefined,
     };
@@ -231,6 +251,32 @@ export class LessonsService {
       lessonId,
       quizzes: sanitizedQuizzes,
       totalCount: quizzes.length,
+    };
+  }
+
+  async submitQuizAnswer(
+    lessonId: string,
+    quizId: string,
+    userId: string,
+    dto: SubmitQuizAnswerDto,
+  ) {
+    // Delegate to QuizService for enhanced tracking and XP calculation
+    const result = await this.quizService.submitQuizAnswer(
+      lessonId,
+      quizId,
+      userId,
+      dto.answer,
+      dto.timeSpentSeconds,
+    );
+
+    // Return compatible response format
+    return {
+      correct: result.correct,
+      explanation: result.explanation,
+      xpEarned: result.xpAwarded,
+      attemptNumber: result.attemptNumber,
+      alreadyCorrect: result.alreadyCorrect,
+      firstAttemptBonus: result.firstAttemptBonus,
     };
   }
 
@@ -273,16 +319,23 @@ export class LessonsService {
     }
 
     const hints = (challenge.hints as string[]) || [];
-    const { unlockedCount } = await this.lessonsRepository.getUserHintUnlocks(
+
+    // Get unlocked hints from DB
+    const unlocks = await this.lessonsRepository.getHintUnlocks(
       userId,
+      HintTargetType.CHALLENGE,
       challengeId,
     );
+    const unlockedIndices = new Set(unlocks.map((u) => u.hintIndex));
+
+    // First hint is always free
+    unlockedIndices.add(0);
 
     // Format hints with unlock status
     const formattedHints = hints.map((hint, index) => ({
       index,
-      content: index < unlockedCount ? hint : undefined,
-      isUnlocked: index < unlockedCount,
+      content: unlockedIndices.has(index) ? hint : undefined,
+      isUnlocked: unlockedIndices.has(index),
     }));
 
     return {
@@ -290,7 +343,7 @@ export class LessonsService {
       challengeId,
       hints: formattedHints,
       totalHints: hints.length,
-      unlockedCount,
+      unlockedCount: Math.min(unlockedIndices.size, hints.length),
     };
   }
 
@@ -308,30 +361,50 @@ export class LessonsService {
     }
 
     const hints = (challenge.hints as string[]) || [];
-    const { unlockedCount } = await this.lessonsRepository.getUserHintUnlocks(
+
+    // Get current unlocked count
+    const currentUnlockedCount = await this.lessonsRepository.getHintUnlockCount(
       userId,
+      HintTargetType.CHALLENGE,
       dto.challengeId,
     );
 
-    if (unlockedCount >= hints.length) {
+    // Calculate next hint index (0 is free, so start from 1)
+    const nextHintIndex = currentUnlockedCount + 1; // +1 because first hint (index 0) is free
+
+    if (nextHintIndex >= hints.length) {
       throw new BadRequestException('All hints are already unlocked');
     }
 
-    // In a production system, you would:
-    // 1. Create a UserHintUnlock record
-    // 2. Potentially deduct coins/gems
-    // For now, we simulate unlocking the next hint
-    const newUnlockedCount = unlockedCount + 1;
+    // Check if already unlocked
+    const alreadyUnlocked = await this.lessonsRepository.hasHintUnlock(
+      userId,
+      HintTargetType.CHALLENGE,
+      dto.challengeId,
+      nextHintIndex,
+    );
+
+    if (!alreadyUnlocked) {
+      // Create unlock record
+      await this.lessonsRepository.createHintUnlock({
+        userId,
+        targetType: HintTargetType.CHALLENGE,
+        targetId: dto.challengeId,
+        hintIndex: nextHintIndex,
+      });
+    }
+
+    const newUnlockedCount = currentUnlockedCount + 1 + 1; // +1 for new unlock, +1 for free first hint
     const unlockedHint = {
-      index: unlockedCount,
-      content: hints[unlockedCount],
+      index: nextHintIndex,
+      content: hints[nextHintIndex],
       isUnlocked: true,
     };
 
     return {
       success: true,
       hint: unlockedHint,
-      unlockedCount: newUnlockedCount,
+      unlockedCount: Math.min(newUnlockedCount, hints.length),
       totalHints: hints.length,
     };
   }

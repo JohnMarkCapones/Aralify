@@ -36,7 +36,7 @@ let GamificationService = class GamificationService {
             throw new Error(`User not found: ${userId}`);
         }
         const levelProgress = (0, constants_1.calculateLevelProgress)(user.xpTotal);
-        const displayedBadges = await this.badgesService.getDisplayedBadges(userId);
+        const displayedBadges = badges.badges.filter((b) => b.isDisplayed);
         return {
             user: {
                 id: user.id,
@@ -56,6 +56,8 @@ let GamificationService = class GamificationService {
             streak: {
                 current: streakInfo.currentStreak,
                 longest: streakInfo.longestStreak,
+                freezesAvailable: streakInfo.freezesAvailable,
+                maxFreezes: streakInfo.maxFreezes,
                 isActive: streakInfo.isStreakActive,
                 atRisk: streakInfo.streakAtRisk,
                 lastActivityDate: streakInfo.lastActivityDate,
@@ -73,7 +75,7 @@ let GamificationService = class GamificationService {
             },
             badges: {
                 total: badges.total,
-                displayed: displayedBadges.badges,
+                displayed: displayedBadges,
                 maxDisplay: badges.maxDisplay,
             },
         };
@@ -132,10 +134,12 @@ let GamificationService = class GamificationService {
         const streakResult = await this.streaksService.updateStreak(userId);
         const achievements = await this.achievementsService.evaluateForUser(userId);
         const newAchievements = achievements.filter((a) => a.isUnlocked && a.unlockedAt !== null);
+        const newBadges = await this.badgesService.evaluateForUser(userId);
         return {
             xp: xpResult,
             streak: streakResult,
             newAchievements,
+            newBadges,
         };
     }
 };

@@ -189,6 +189,20 @@ export class CompleteLessonResponseDto {
 
   @ApiProperty({ type: UserLessonProgressDto })
   progress!: UserLessonProgressDto;
+
+  @ApiPropertyOptional({
+    description: 'Gamification results (XP, streak, achievements) from this completion',
+  })
+  gamification?: {
+    levelUp: boolean;
+    newLevel: number;
+    newTotalXp: number;
+    rankTitle: string;
+    streakUpdated: boolean;
+    currentStreak: number;
+    streakMilestone: { days: number; xpBonus: number; name: string } | null;
+    newAchievements: { slug: string; title: string; xpReward: number }[];
+  };
 }
 
 export class LessonQuizzesResponseDto {
@@ -228,6 +242,17 @@ export class LessonHintsResponseDto {
 
   @ApiProperty({ example: 1 })
   unlockedCount!: number;
+}
+
+export class SubmitQuizAnswerResponseDto {
+  @ApiProperty({ example: true })
+  correct!: boolean;
+
+  @ApiPropertyOptional({ example: 'Variables in Python are dynamically typed...' })
+  explanation?: string | null;
+
+  @ApiPropertyOptional({ example: 25, description: 'XP earned (only if correct)' })
+  xpEarned?: number;
 }
 
 export class UnlockHintResponseDto {

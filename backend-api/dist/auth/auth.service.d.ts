@@ -59,6 +59,7 @@ export declare class AuthService {
         streakCurrent: number;
         streakLongest: number;
         streakFreezes: number;
+        lastDailyClaimAt: Date | null;
         googleId: string | null;
         githubId: string | null;
         facebookId: string | null;

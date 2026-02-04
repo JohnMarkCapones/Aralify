@@ -50,25 +50,19 @@ export class XpService {
     }
 
     const previousLevel = user.level;
-    const previousXp = user.xpTotal;
-    const newTotal = previousXp + amount;
+    const newTotal = user.xpTotal + amount;
     const newLevel = calculateLevelFromXp(newTotal);
     const levelUp = newLevel > previousLevel;
 
-    // Create transaction and update user atomically
-    await Promise.all([
-      this.repository.createXpTransaction({
-        userId,
-        amount,
-        source,
-        sourceId,
-        description,
-      }),
-      this.repository.updateUserXpAndLevel(userId, {
-        xpTotal: newTotal,
-        level: newLevel,
-      }),
-    ]);
+    // Atomically create XP transaction and increment user total
+    const updatedUser = await this.repository.awardXpAtomic(
+      userId,
+      amount,
+      newLevel,
+      source,
+      sourceId,
+      description,
+    );
 
     // Log level up
     if (levelUp) {
@@ -76,21 +70,20 @@ export class XpService {
         `User ${userId} leveled up from ${previousLevel} to ${newLevel}`,
       );
 
-      // Create level up activity
       await this.repository.createActivity({
         userId,
         type: 'LEVEL_UP',
         data: {
           previousLevel,
           newLevel,
-          xpTotal: newTotal,
+          xpTotal: updatedUser.xpTotal,
         },
       });
     }
 
     return {
       xpAwarded: amount,
-      newTotal,
+      newTotal: updatedUser.xpTotal,
       levelUp,
       previousLevel,
       newLevel,

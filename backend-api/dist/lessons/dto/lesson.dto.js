@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UnlockHintResponseDto = exports.LessonHintsResponseDto = exports.LessonChallengesResponseDto = exports.LessonQuizzesResponseDto = exports.CompleteLessonResponseDto = exports.StartLessonResponseDto = exports.LessonDetailDto = exports.UserLessonProgressDto = exports.HintDto = exports.ChallengeSummaryDto = exports.QuizSummaryDto = exports.I18nTextDto = void 0;
+exports.UnlockHintResponseDto = exports.SubmitQuizAnswerResponseDto = exports.LessonHintsResponseDto = exports.LessonChallengesResponseDto = exports.LessonQuizzesResponseDto = exports.CompleteLessonResponseDto = exports.StartLessonResponseDto = exports.LessonDetailDto = exports.UserLessonProgressDto = exports.HintDto = exports.ChallengeSummaryDto = exports.QuizSummaryDto = exports.I18nTextDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 class I18nTextDto {
 }
@@ -220,6 +220,12 @@ __decorate([
     (0, swagger_1.ApiProperty)({ type: UserLessonProgressDto }),
     __metadata("design:type", UserLessonProgressDto)
 ], CompleteLessonResponseDto.prototype, "progress", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Gamification results (XP, streak, achievements) from this completion',
+    }),
+    __metadata("design:type", Object)
+], CompleteLessonResponseDto.prototype, "gamification", void 0);
 class LessonQuizzesResponseDto {
 }
 exports.LessonQuizzesResponseDto = LessonQuizzesResponseDto;
@@ -273,6 +279,21 @@ __decorate([
     (0, swagger_1.ApiProperty)({ example: 1 }),
     __metadata("design:type", Number)
 ], LessonHintsResponseDto.prototype, "unlockedCount", void 0);
+class SubmitQuizAnswerResponseDto {
+}
+exports.SubmitQuizAnswerResponseDto = SubmitQuizAnswerResponseDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: true }),
+    __metadata("design:type", Boolean)
+], SubmitQuizAnswerResponseDto.prototype, "correct", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ example: 'Variables in Python are dynamically typed...' }),
+    __metadata("design:type", Object)
+], SubmitQuizAnswerResponseDto.prototype, "explanation", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ example: 25, description: 'XP earned (only if correct)' }),
+    __metadata("design:type", Number)
+], SubmitQuizAnswerResponseDto.prototype, "xpEarned", void 0);
 class UnlockHintResponseDto {
 }
 exports.UnlockHintResponseDto = UnlockHintResponseDto;

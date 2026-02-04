@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UnlockHintDto = exports.CompleteLessonDto = void 0;
+exports.UnlockHintDto = exports.SubmitQuizAnswerDto = exports.CompleteLessonDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 class CompleteLessonDto {
@@ -35,6 +35,27 @@ __decorate([
     (0, class_validator_1.Max)(100),
     __metadata("design:type", Number)
 ], CompleteLessonDto.prototype, "score", void 0);
+class SubmitQuizAnswerDto {
+}
+exports.SubmitQuizAnswerDto = SubmitQuizAnswerDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        example: 'Option A - Correct',
+        description: 'The answer submitted by the user',
+    }),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], SubmitQuizAnswerDto.prototype, "answer", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        example: 45,
+        description: 'Time spent on this question in seconds',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsInt)(),
+    (0, class_validator_1.Min)(0),
+    __metadata("design:type", Number)
+], SubmitQuizAnswerDto.prototype, "timeSpentSeconds", void 0);
 class UnlockHintDto {
 }
 exports.UnlockHintDto = UnlockHintDto;

@@ -25,23 +25,10 @@ let XpService = XpService_1 = class XpService {
             throw new Error(`User not found: ${userId}`);
         }
         const previousLevel = user.level;
-        const previousXp = user.xpTotal;
-        const newTotal = previousXp + amount;
+        const newTotal = user.xpTotal + amount;
         const newLevel = (0, constants_1.calculateLevelFromXp)(newTotal);
         const levelUp = newLevel > previousLevel;
-        await Promise.all([
-            this.repository.createXpTransaction({
-                userId,
-                amount,
-                source,
-                sourceId,
-                description,
-            }),
-            this.repository.updateUserXpAndLevel(userId, {
-                xpTotal: newTotal,
-                level: newLevel,
-            }),
-        ]);
+        const updatedUser = await this.repository.awardXpAtomic(userId, amount, newLevel, source, sourceId, description);
         if (levelUp) {
             this.logger.log(`User ${userId} leveled up from ${previousLevel} to ${newLevel}`);
             await this.repository.createActivity({
@@ -50,13 +37,13 @@ let XpService = XpService_1 = class XpService {
                 data: {
                     previousLevel,
                     newLevel,
-                    xpTotal: newTotal,
+                    xpTotal: updatedUser.xpTotal,
                 },
             });
         }
         return {
             xpAwarded: amount,
-            newTotal,
+            newTotal: updatedUser.xpTotal,
             levelUp,
             previousLevel,
             newLevel,

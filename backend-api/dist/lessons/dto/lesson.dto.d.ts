@@ -61,6 +61,24 @@ export declare class CompleteLessonResponseDto {
     levelUnlocked?: boolean;
     nextLevelId?: string;
     progress: UserLessonProgressDto;
+    gamification?: {
+        levelUp: boolean;
+        newLevel: number;
+        newTotalXp: number;
+        rankTitle: string;
+        streakUpdated: boolean;
+        currentStreak: number;
+        streakMilestone: {
+            days: number;
+            xpBonus: number;
+            name: string;
+        } | null;
+        newAchievements: {
+            slug: string;
+            title: string;
+            xpReward: number;
+        }[];
+    };
 }
 export declare class LessonQuizzesResponseDto {
     lessonId: string;
@@ -78,6 +96,11 @@ export declare class LessonHintsResponseDto {
     hints: HintDto[];
     totalHints: number;
     unlockedCount: number;
+}
+export declare class SubmitQuizAnswerResponseDto {
+    correct: boolean;
+    explanation?: string | null;
+    xpEarned?: number;
 }
 export declare class UnlockHintResponseDto {
     success: boolean;

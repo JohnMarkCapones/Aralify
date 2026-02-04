@@ -1,20 +1,21 @@
 import { GamificationRepository } from '../gamification.repository';
 export declare class BadgesService {
     private readonly repository;
+    private readonly logger;
     constructor(repository: GamificationRepository);
     getBadges(userId: string, options?: {
         displayedOnly?: boolean;
     }): Promise<{
         badges: {
-            id: any;
-            slug: any;
-            title: any;
-            description: any;
-            iconUrl: any;
-            rarity: any;
-            earnedAt: any;
-            isDisplayed: any;
-            displayOrder: any;
+            id: string;
+            slug: string;
+            title: string;
+            description: string;
+            iconUrl: string | null;
+            rarity: string;
+            earnedAt: Date;
+            isDisplayed: boolean;
+            displayOrder: number | null;
         }[];
         count: number;
         maxDisplay: number;
@@ -24,26 +25,26 @@ export declare class BadgesService {
         canDisplayMore?: undefined;
     } | {
         badges: {
-            id: any;
-            slug: any;
-            title: any;
-            description: any;
-            iconUrl: any;
-            rarity: any;
-            earnedAt: any;
-            isDisplayed: any;
-            displayOrder: any;
+            id: string;
+            slug: string;
+            title: string;
+            description: string;
+            iconUrl: string | null;
+            rarity: string;
+            earnedAt: Date;
+            isDisplayed: boolean;
+            displayOrder: number | null;
         }[];
         byRarity: Record<string, {
-            id: any;
-            slug: any;
-            title: any;
-            description: any;
-            iconUrl: any;
-            rarity: any;
-            earnedAt: any;
-            isDisplayed: any;
-            displayOrder: any;
+            id: string;
+            slug: string;
+            title: string;
+            description: string;
+            iconUrl: string | null;
+            rarity: string;
+            earnedAt: Date;
+            isDisplayed: boolean;
+            displayOrder: number | null;
         }[]>;
         total: number;
         displayedCount: number;
@@ -117,17 +118,18 @@ export declare class BadgesService {
         maxDisplay: number;
         message?: undefined;
     }>;
+    evaluateForUser(userId: string): Promise<string[]>;
     getDisplayedBadges(userId: string): Promise<{
         badges: {
-            id: any;
-            slug: any;
-            title: any;
-            description: any;
-            iconUrl: any;
-            rarity: any;
-            earnedAt: any;
-            isDisplayed: any;
-            displayOrder: any;
+            id: string;
+            slug: string;
+            title: string;
+            description: string;
+            iconUrl: string | null;
+            rarity: string;
+            earnedAt: Date;
+            isDisplayed: boolean;
+            displayOrder: number | null;
         }[];
         count: number;
         maxDisplay: number;
@@ -137,26 +139,26 @@ export declare class BadgesService {
         canDisplayMore?: undefined;
     } | {
         badges: {
-            id: any;
-            slug: any;
-            title: any;
-            description: any;
-            iconUrl: any;
-            rarity: any;
-            earnedAt: any;
-            isDisplayed: any;
-            displayOrder: any;
+            id: string;
+            slug: string;
+            title: string;
+            description: string;
+            iconUrl: string | null;
+            rarity: string;
+            earnedAt: Date;
+            isDisplayed: boolean;
+            displayOrder: number | null;
         }[];
         byRarity: Record<string, {
-            id: any;
-            slug: any;
-            title: any;
-            description: any;
-            iconUrl: any;
-            rarity: any;
-            earnedAt: any;
-            isDisplayed: any;
-            displayOrder: any;
+            id: string;
+            slug: string;
+            title: string;
+            description: string;
+            iconUrl: string | null;
+            rarity: string;
+            earnedAt: Date;
+            isDisplayed: boolean;
+            displayOrder: number | null;
         }[]>;
         total: number;
         displayedCount: number;

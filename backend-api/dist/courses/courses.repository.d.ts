@@ -39,6 +39,7 @@ export declare class CoursesRepository {
                 levelId: string;
                 difficulty: import(".prisma/client").$Enums.Difficulty;
                 xpReward: number;
+                minQuizScore: number | null;
             }[];
         } & {
             id: string;
@@ -94,6 +95,7 @@ export declare class CoursesRepository {
             levelId: string;
             difficulty: import(".prisma/client").$Enums.Difficulty;
             xpReward: number;
+            minQuizScore: number | null;
         }[];
     } & {
         id: string;
@@ -139,6 +141,7 @@ export declare class CoursesRepository {
             levelId: string;
             difficulty: import(".prisma/client").$Enums.Difficulty;
             xpReward: number;
+            minQuizScore: number | null;
         };
     } & {
         status: import(".prisma/client").$Enums.ProgressStatus;
