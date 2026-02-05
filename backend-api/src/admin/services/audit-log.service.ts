@@ -82,7 +82,7 @@ export class AuditLogService {
       entityId: log.entityId,
       oldValue: log.oldValue as Record<string, unknown> | null,
       newValue: log.newValue as Record<string, unknown> | null,
-      reason: log.reason,
+      reason: log.description,
       ipAddress: log.ipAddress,
       userAgent: log.userAgent,
       createdAt: log.createdAt,

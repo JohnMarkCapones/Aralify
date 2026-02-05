@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional, IsEnum, IsBoolean, IsDateString, MinLength, MaxLength } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsBoolean, IsDateString, IsInt, Min, Max, MinLength, MaxLength } from 'class-validator';
+import { Type, Transform } from 'class-transformer';
 import { UserRole } from '@prisma/client';
 
 // ============================================================================
@@ -9,10 +10,17 @@ import { UserRole } from '@prisma/client';
 export class GetUsersQueryDto {
   @ApiPropertyOptional({ example: 1, description: 'Page number (1-indexed)', default: 1 })
   @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
   page?: number;
 
   @ApiPropertyOptional({ example: 20, description: 'Items per page', default: 20 })
   @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
   limit?: number;
 
   @ApiPropertyOptional({ example: 'john', description: 'Search by username, email, or display name' })
@@ -27,11 +35,13 @@ export class GetUsersQueryDto {
 
   @ApiPropertyOptional({ example: false, description: 'Filter by ban status' })
   @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
   @IsBoolean()
   isBanned?: boolean;
 
   @ApiPropertyOptional({ example: true, description: 'Filter by active status' })
   @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
   @IsBoolean()
   isActive?: boolean;
 

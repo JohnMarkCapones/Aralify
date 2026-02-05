@@ -39,6 +39,7 @@ import { AdminRequestContext } from '../types';
 
 @ApiTags('Admin - Content')
 @Controller('api/v1/admin')
+@ContentAdmin()
 export class AdminCoursesController {
   constructor(private readonly adminCoursesService: AdminCoursesService) {}
 
@@ -47,7 +48,7 @@ export class AdminCoursesController {
   // ============================================================================
 
   @Get('courses')
-  @ContentAdmin()
+
   @ApiOperation({ summary: 'List all courses with filtering and pagination' })
   @ApiResponse({
     status: 200,
@@ -61,7 +62,7 @@ export class AdminCoursesController {
   }
 
   @Get('courses/:id')
-  @ContentAdmin()
+
   @ApiOperation({ summary: 'Get detailed course information with levels and lessons' })
   @ApiParam({ name: 'id', description: 'Course ID' })
   @ApiResponse({
@@ -75,7 +76,7 @@ export class AdminCoursesController {
   }
 
   @Post('courses')
-  @ContentAdmin()
+
   @ApiOperation({ summary: 'Create a new course' })
   @ApiResponse({
     status: 201,
@@ -93,7 +94,7 @@ export class AdminCoursesController {
   }
 
   @Put('courses/:id')
-  @ContentAdmin()
+
   @ApiOperation({ summary: 'Update a course' })
   @ApiParam({ name: 'id', description: 'Course ID' })
   @ApiResponse({
@@ -114,7 +115,7 @@ export class AdminCoursesController {
   }
 
   @Delete('courses/:id')
-  @ContentAdmin()
+
   @ApiOperation({ summary: 'Delete a course' })
   @ApiParam({ name: 'id', description: 'Course ID' })
   @ApiResponse({
@@ -133,7 +134,7 @@ export class AdminCoursesController {
   }
 
   @Post('courses/:id/publish')
-  @ContentAdmin()
+
   @ApiOperation({ summary: 'Publish a course' })
   @ApiParam({ name: 'id', description: 'Course ID' })
   @ApiResponse({
@@ -152,7 +153,7 @@ export class AdminCoursesController {
   }
 
   @Post('courses/:id/unpublish')
-  @ContentAdmin()
+
   @ApiOperation({ summary: 'Unpublish a course' })
   @ApiParam({ name: 'id', description: 'Course ID' })
   @ApiResponse({
@@ -175,7 +176,7 @@ export class AdminCoursesController {
   // ============================================================================
 
   @Post('levels')
-  @ContentAdmin()
+
   @ApiOperation({ summary: 'Create a new level' })
   @ApiResponse({
     status: 201,
@@ -194,7 +195,7 @@ export class AdminCoursesController {
   }
 
   @Put('levels/:id')
-  @ContentAdmin()
+
   @ApiOperation({ summary: 'Update a level' })
   @ApiParam({ name: 'id', description: 'Level ID' })
   @ApiResponse({
@@ -215,7 +216,7 @@ export class AdminCoursesController {
   }
 
   @Delete('levels/:id')
-  @ContentAdmin()
+
   @ApiOperation({ summary: 'Delete a level' })
   @ApiParam({ name: 'id', description: 'Level ID' })
   @ApiResponse({
@@ -234,7 +235,7 @@ export class AdminCoursesController {
   }
 
   @Post('levels/:id/publish')
-  @ContentAdmin()
+
   @ApiOperation({ summary: 'Publish a level' })
   @ApiParam({ name: 'id', description: 'Level ID' })
   @ApiResponse({
@@ -253,7 +254,7 @@ export class AdminCoursesController {
   }
 
   @Post('levels/:id/unpublish')
-  @ContentAdmin()
+
   @ApiOperation({ summary: 'Unpublish a level' })
   @ApiParam({ name: 'id', description: 'Level ID' })
   @ApiResponse({
@@ -276,7 +277,7 @@ export class AdminCoursesController {
   // ============================================================================
 
   @Post('lessons')
-  @ContentAdmin()
+
   @ApiOperation({ summary: 'Create a new lesson' })
   @ApiResponse({
     status: 201,
@@ -295,7 +296,7 @@ export class AdminCoursesController {
   }
 
   @Put('lessons/:id')
-  @ContentAdmin()
+
   @ApiOperation({ summary: 'Update a lesson' })
   @ApiParam({ name: 'id', description: 'Lesson ID' })
   @ApiResponse({
@@ -316,7 +317,7 @@ export class AdminCoursesController {
   }
 
   @Delete('lessons/:id')
-  @ContentAdmin()
+
   @ApiOperation({ summary: 'Delete a lesson' })
   @ApiParam({ name: 'id', description: 'Lesson ID' })
   @ApiResponse({
@@ -335,7 +336,7 @@ export class AdminCoursesController {
   }
 
   @Post('lessons/:id/publish')
-  @ContentAdmin()
+
   @ApiOperation({ summary: 'Publish a lesson' })
   @ApiParam({ name: 'id', description: 'Lesson ID' })
   @ApiResponse({
@@ -354,7 +355,7 @@ export class AdminCoursesController {
   }
 
   @Post('lessons/:id/unpublish')
-  @ContentAdmin()
+
   @ApiOperation({ summary: 'Unpublish a lesson' })
   @ApiParam({ name: 'id', description: 'Lesson ID' })
   @ApiResponse({

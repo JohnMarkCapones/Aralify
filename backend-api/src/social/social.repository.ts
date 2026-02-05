@@ -111,10 +111,12 @@ export class SocialRepository {
     return { followersCount, followingCount };
   }
 
-  async getFollowingIds(userId: string): Promise<string[]> {
+  async getFollowingIds(userId: string, limit: number = 1000): Promise<string[]> {
     const follows = await this.prisma.follow.findMany({
       where: { followerId: userId },
       select: { followingId: true },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
     });
 
     return follows.map((f) => f.followingId);
@@ -122,12 +124,17 @@ export class SocialRepository {
 
   // ── User Search ────────────────────────────────────────
 
+  private escapeLikeQuery(query: string): string {
+    return query.replace(/[\\%_]/g, (char) => `\\${char}`);
+  }
+
   async searchUsers(query: string, limit: number, offset: number) {
+    const escaped = this.escapeLikeQuery(query);
     const where = {
       isActive: true,
       OR: [
-        { username: { contains: query, mode: 'insensitive' as const } },
-        { displayName: { contains: query, mode: 'insensitive' as const } },
+        { username: { contains: escaped, mode: 'insensitive' as const } },
+        { displayName: { contains: escaped, mode: 'insensitive' as const } },
       ],
       privacySettings: {
         profileVisibility: { not: 'PRIVATE' as const },

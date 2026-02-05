@@ -1,5 +1,6 @@
 import {
   Injectable,
+  Logger,
   NotFoundException,
   BadRequestException,
   ForbiddenException,
@@ -25,6 +26,8 @@ import {
 
 @Injectable()
 export class AdminUsersService {
+  private readonly logger = new Logger(AdminUsersService.name);
+
   constructor(
     private readonly adminUsersRepository: AdminUsersRepository,
     private readonly auditLogService: AuditLogService,
@@ -73,6 +76,10 @@ export class AdminUsersService {
       throw new NotFoundException('User not found');
     }
 
+    if (id === context.adminId) {
+      throw new ForbiddenException('Cannot ban yourself');
+    }
+
     if (user.isBanned) {
       throw new BadRequestException('User is already banned');
     }
@@ -93,7 +100,7 @@ export class AdminUsersService {
       bannedUntil: dto.bannedUntil ? new Date(dto.bannedUntil) : undefined,
     });
 
-    await this.auditLogService.log(
+    await this.logAudit(
       AuditAction.USER_BANNED,
       'User',
       id,
@@ -141,7 +148,7 @@ export class AdminUsersService {
 
     const updatedUser = await this.adminUsersRepository.unbanUser(id);
 
-    await this.auditLogService.log(
+    await this.logAudit(
       AuditAction.USER_UNBANNED,
       'User',
       id,
@@ -184,7 +191,7 @@ export class AdminUsersService {
 
     const updatedUser = await this.adminUsersRepository.updateRole(id, dto.role);
 
-    await this.auditLogService.log(
+    await this.logAudit(
       AuditAction.USER_ROLE_CHANGED,
       'User',
       id,
@@ -214,6 +221,10 @@ export class AdminUsersService {
       throw new NotFoundException('User not found');
     }
 
+    if (id === context.adminId) {
+      throw new ForbiddenException('Cannot delete yourself');
+    }
+
     if (user.role === UserRole.ADMIN) {
       throw new ForbiddenException('Cannot delete admin users');
     }
@@ -227,7 +238,7 @@ export class AdminUsersService {
 
     await this.adminUsersRepository.deleteUser(id);
 
-    await this.auditLogService.log(
+    await this.logAudit(
       AuditAction.USER_DELETED,
       'User',
       id,
@@ -242,6 +253,26 @@ export class AdminUsersService {
       success: true,
       message: 'User account has been deleted',
     };
+  }
+
+  private async logAudit(
+    action: AuditAction,
+    entityType: string,
+    entityId: string,
+    context: AdminRequestContext,
+    options?: {
+      oldValue?: Record<string, unknown>;
+      newValue?: Record<string, unknown>;
+      reason?: string;
+    },
+  ): Promise<void> {
+    try {
+      await this.auditLogService.log(action, entityType, entityId, context, options);
+    } catch (error) {
+      this.logger.warn(
+        `Failed to log audit: ${action} ${entityType}/${entityId}: ${error}`,
+      );
+    }
   }
 
   private formatUser(user: any): AdminUserDto {

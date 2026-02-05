@@ -48,6 +48,9 @@ export class FollowListResponseDto {
 
   @ApiProperty({ example: 0 })
   offset!: number;
+
+  @ApiProperty({ example: true })
+  has_more!: boolean;
 }
 
 export class UserSearchResponseDto {
@@ -62,6 +65,9 @@ export class UserSearchResponseDto {
 
   @ApiProperty({ example: 0 })
   offset!: number;
+
+  @ApiProperty({ example: false })
+  has_more!: boolean;
 }
 
 export class ActivityEntryDto {
@@ -93,4 +99,7 @@ export class ActivityFeedResponseDto {
 
   @ApiProperty({ example: 0 })
   offset!: number;
+
+  @ApiProperty({ example: true })
+  has_more!: boolean;
 }

@@ -36,11 +36,12 @@ import { AdminRequestContext } from '../types';
 
 @ApiTags('Admin - Users')
 @Controller('api/v1/admin/users')
+@AdminOnly()
 export class AdminUsersController {
   constructor(private readonly adminUsersService: AdminUsersService) {}
 
   @Get()
-  @AdminOnly()
+
   @ApiOperation({ summary: 'List all users with filtering and pagination' })
   @ApiResponse({
     status: 200,
@@ -54,7 +55,7 @@ export class AdminUsersController {
   }
 
   @Get(':id')
-  @AdminOnly()
+
   @ApiOperation({ summary: 'Get detailed user information' })
   @ApiParam({ name: 'id', description: 'User ID' })
   @ApiResponse({
@@ -68,7 +69,7 @@ export class AdminUsersController {
   }
 
   @Post(':id/ban')
-  @AdminOnly()
+
   @ApiOperation({ summary: 'Ban a user' })
   @ApiParam({ name: 'id', description: 'User ID' })
   @ApiResponse({
@@ -90,7 +91,7 @@ export class AdminUsersController {
   }
 
   @Post(':id/unban')
-  @AdminOnly()
+
   @ApiOperation({ summary: 'Unban a user' })
   @ApiParam({ name: 'id', description: 'User ID' })
   @ApiResponse({
@@ -111,7 +112,7 @@ export class AdminUsersController {
   }
 
   @Put(':id/role')
-  @AdminOnly()
+
   @ApiOperation({ summary: 'Change user role' })
   @ApiParam({ name: 'id', description: 'User ID' })
   @ApiResponse({
@@ -133,7 +134,7 @@ export class AdminUsersController {
   }
 
   @Delete(':id')
-  @AdminOnly()
+
   @ApiOperation({ summary: 'Delete a user account' })
   @ApiParam({ name: 'id', description: 'User ID' })
   @ApiResponse({

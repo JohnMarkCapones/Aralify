@@ -1,7 +1,9 @@
 import {
   Injectable,
+  Logger,
   NotFoundException,
   ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 import { AuditAction } from '@prisma/client';
 import { AdminCoursesRepository } from '../repositories/admin-courses.repository';
@@ -27,6 +29,8 @@ import {
 
 @Injectable()
 export class AdminCoursesService {
+  private readonly logger = new Logger(AdminCoursesService.name);
+
   constructor(
     private readonly adminCoursesRepository: AdminCoursesRepository,
     private readonly auditLogService: AuditLogService,
@@ -70,7 +74,7 @@ export class AdminCoursesService {
     try {
       const course = await this.adminCoursesRepository.createCourse(dto);
 
-      await this.auditLogService.log(
+      await this.logAudit(
         AuditAction.CONTENT_CREATED,
         'Course',
         course.id,
@@ -114,7 +118,7 @@ export class AdminCoursesService {
     try {
       const updated = await this.adminCoursesRepository.updateCourse(id, dto);
 
-      await this.auditLogService.log(
+      await this.logAudit(
         AuditAction.CONTENT_UPDATED,
         'Course',
         id,
@@ -149,16 +153,21 @@ export class AdminCoursesService {
       throw new NotFoundException('Course not found');
     }
 
+    const hasProgress = await this.adminCoursesRepository.hasCourseProgress(id);
+    if (hasProgress) {
+      throw new BadRequestException(
+        'Cannot delete course with active user progress. Unpublish it instead.',
+      );
+    }
+
     await this.adminCoursesRepository.deleteCourse(id);
 
-    await this.auditLogService.log(
+    await this.logAudit(
       AuditAction.CONTENT_DELETED,
       'Course',
       id,
       context,
-      {
-        oldValue: { slug: existing.slug, title: existing.title },
-      },
+      { oldValue: { slug: existing.slug, title: existing.title } },
     );
 
     return {
@@ -177,9 +186,20 @@ export class AdminCoursesService {
       throw new NotFoundException('Course not found');
     }
 
+    if (existing.isPublished) {
+      return { success: true, message: 'Course is already published' };
+    }
+
+    const publishedLevels = await this.adminCoursesRepository.countPublishedLevels(id);
+    if (publishedLevels === 0) {
+      throw new BadRequestException(
+        'Cannot publish course without at least one published level',
+      );
+    }
+
     await this.adminCoursesRepository.publishCourse(id);
 
-    await this.auditLogService.log(
+    await this.logAudit(
       AuditAction.CONTENT_PUBLISHED,
       'Course',
       id,
@@ -206,9 +226,13 @@ export class AdminCoursesService {
       throw new NotFoundException('Course not found');
     }
 
+    if (!existing.isPublished) {
+      return { success: true, message: 'Course is already unpublished' };
+    }
+
     await this.adminCoursesRepository.unpublishCourse(id);
 
-    await this.auditLogService.log(
+    await this.logAudit(
       AuditAction.CONTENT_UNPUBLISHED,
       'Course',
       id,
@@ -236,7 +260,7 @@ export class AdminCoursesService {
     try {
       const level = await this.adminCoursesRepository.createLevel(dto);
 
-      await this.auditLogService.log(
+      await this.logAudit(
         AuditAction.CONTENT_CREATED,
         'Level',
         level.id,
@@ -277,7 +301,7 @@ export class AdminCoursesService {
     try {
       const updated = await this.adminCoursesRepository.updateLevel(id, dto);
 
-      await this.auditLogService.log(
+      await this.logAudit(
         AuditAction.CONTENT_UPDATED,
         'Level',
         id,
@@ -307,16 +331,21 @@ export class AdminCoursesService {
       throw new NotFoundException('Level not found');
     }
 
+    const hasProgress = await this.adminCoursesRepository.hasLevelProgress(id);
+    if (hasProgress) {
+      throw new BadRequestException(
+        'Cannot delete level with active user progress. Unpublish it instead.',
+      );
+    }
+
     await this.adminCoursesRepository.deleteLevel(id);
 
-    await this.auditLogService.log(
+    await this.logAudit(
       AuditAction.CONTENT_DELETED,
       'Level',
       id,
       context,
-      {
-        oldValue: { slug: existing.slug, title: existing.title },
-      },
+      { oldValue: { slug: existing.slug, title: existing.title } },
     );
 
     return {
@@ -335,9 +364,20 @@ export class AdminCoursesService {
       throw new NotFoundException('Level not found');
     }
 
+    if (existing.isPublished) {
+      return { success: true, message: 'Level is already published' };
+    }
+
+    const publishedLessons = await this.adminCoursesRepository.countPublishedLessons(id);
+    if (publishedLessons === 0) {
+      throw new BadRequestException(
+        'Cannot publish level without at least one published lesson',
+      );
+    }
+
     await this.adminCoursesRepository.publishLevel(id);
 
-    await this.auditLogService.log(
+    await this.logAudit(
       AuditAction.CONTENT_PUBLISHED,
       'Level',
       id,
@@ -364,9 +404,13 @@ export class AdminCoursesService {
       throw new NotFoundException('Level not found');
     }
 
+    if (!existing.isPublished) {
+      return { success: true, message: 'Level is already unpublished' };
+    }
+
     await this.adminCoursesRepository.unpublishLevel(id);
 
-    await this.auditLogService.log(
+    await this.logAudit(
       AuditAction.CONTENT_UNPUBLISHED,
       'Level',
       id,
@@ -394,7 +438,7 @@ export class AdminCoursesService {
     try {
       const lesson = await this.adminCoursesRepository.createLesson(dto);
 
-      await this.auditLogService.log(
+      await this.logAudit(
         AuditAction.CONTENT_CREATED,
         'Lesson',
         lesson.id,
@@ -441,7 +485,7 @@ export class AdminCoursesService {
     try {
       const updated = await this.adminCoursesRepository.updateLesson(id, dto);
 
-      await this.auditLogService.log(
+      await this.logAudit(
         AuditAction.CONTENT_UPDATED,
         'Lesson',
         id,
@@ -471,16 +515,21 @@ export class AdminCoursesService {
       throw new NotFoundException('Lesson not found');
     }
 
+    const hasProgress = await this.adminCoursesRepository.hasLessonProgress(id);
+    if (hasProgress) {
+      throw new BadRequestException(
+        'Cannot delete lesson with active user progress. Unpublish it instead.',
+      );
+    }
+
     await this.adminCoursesRepository.deleteLesson(id);
 
-    await this.auditLogService.log(
+    await this.logAudit(
       AuditAction.CONTENT_DELETED,
       'Lesson',
       id,
       context,
-      {
-        oldValue: { slug: existing.slug, title: existing.title },
-      },
+      { oldValue: { slug: existing.slug, title: existing.title } },
     );
 
     return {
@@ -499,9 +548,13 @@ export class AdminCoursesService {
       throw new NotFoundException('Lesson not found');
     }
 
+    if (existing.isPublished) {
+      return { success: true, message: 'Lesson is already published' };
+    }
+
     await this.adminCoursesRepository.publishLesson(id);
 
-    await this.auditLogService.log(
+    await this.logAudit(
       AuditAction.CONTENT_PUBLISHED,
       'Lesson',
       id,
@@ -528,9 +581,13 @@ export class AdminCoursesService {
       throw new NotFoundException('Lesson not found');
     }
 
+    if (!existing.isPublished) {
+      return { success: true, message: 'Lesson is already unpublished' };
+    }
+
     await this.adminCoursesRepository.unpublishLesson(id);
 
-    await this.auditLogService.log(
+    await this.logAudit(
       AuditAction.CONTENT_UNPUBLISHED,
       'Lesson',
       id,
@@ -545,6 +602,30 @@ export class AdminCoursesService {
       success: true,
       message: 'Lesson has been unpublished',
     };
+  }
+
+  // ============================================================================
+  // Helpers
+  // ============================================================================
+
+  private async logAudit(
+    action: AuditAction,
+    entityType: string,
+    entityId: string,
+    context: AdminRequestContext,
+    options?: {
+      oldValue?: Record<string, unknown>;
+      newValue?: Record<string, unknown>;
+      reason?: string;
+    },
+  ): Promise<void> {
+    try {
+      await this.auditLogService.log(action, entityType, entityId, context, options);
+    } catch (error) {
+      this.logger.warn(
+        `Failed to log audit: ${action} ${entityType}/${entityId}: ${error}`,
+      );
+    }
   }
 
   // ============================================================================

@@ -22,7 +22,7 @@ export class AdminCoursesRepository {
     const limit = pagination.limit || 20;
     const skip = (page - 1) * limit;
 
-    const where: Prisma.CourseWhereInput = {};
+    const where: Prisma.CourseWhereInput = { deletedAt: null };
 
     if (language) {
       where.language = language;
@@ -174,9 +174,17 @@ export class AdminCoursesRepository {
   }
 
   async deleteCourse(id: string) {
-    return this.prisma.course.delete({
+    return this.prisma.course.update({
       where: { id },
+      data: { deletedAt: new Date() },
     });
+  }
+
+  async hasCourseProgress(id: string): Promise<boolean> {
+    const count = await this.prisma.userCourseProgress.count({
+      where: { courseId: id },
+    });
+    return count > 0;
   }
 
   async publishCourse(id: string) {
@@ -248,9 +256,17 @@ export class AdminCoursesRepository {
   }
 
   async deleteLevel(id: string) {
-    return this.prisma.level.delete({
+    return this.prisma.level.update({
       where: { id },
+      data: { deletedAt: new Date() },
     });
+  }
+
+  async hasLevelProgress(id: string): Promise<boolean> {
+    const count = await this.prisma.userLevelUnlock.count({
+      where: { levelId: id },
+    });
+    return count > 0;
   }
 
   async publishLevel(id: string) {
@@ -329,9 +345,17 @@ export class AdminCoursesRepository {
   }
 
   async deleteLesson(id: string) {
-    return this.prisma.lesson.delete({
+    return this.prisma.lesson.update({
       where: { id },
+      data: { deletedAt: new Date() },
     });
+  }
+
+  async hasLessonProgress(id: string): Promise<boolean> {
+    const count = await this.prisma.userLessonProgress.count({
+      where: { lessonId: id },
+    });
+    return count > 0;
   }
 
   async publishLesson(id: string) {
@@ -374,6 +398,18 @@ export class AdminCoursesRepository {
       where.isPublished = isPublished;
     }
     return this.prisma.lesson.count({ where });
+  }
+
+  async countPublishedLevels(courseId: string) {
+    return this.prisma.level.count({
+      where: { courseId, isPublished: true, deletedAt: null },
+    });
+  }
+
+  async countPublishedLessons(levelId: string) {
+    return this.prisma.lesson.count({
+      where: { levelId, isPublished: true, deletedAt: null },
+    });
   }
 
   async countLessonCompletions() {

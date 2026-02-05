@@ -94,6 +94,7 @@ export class SocialService {
       total,
       limit: l,
       offset: o,
+      has_more: o + l < total,
     };
   }
 
@@ -116,6 +117,7 @@ export class SocialService {
       total,
       limit: l,
       offset: o,
+      has_more: o + l < total,
     };
   }
 
@@ -151,6 +153,7 @@ export class SocialService {
       total,
       limit: l,
       offset: o,
+      has_more: o + l < total,
     };
   }
 
@@ -184,6 +187,7 @@ export class SocialService {
       total,
       limit: l,
       offset: o,
+      has_more: o + l < total,
     };
   }
 
@@ -208,6 +212,7 @@ export class SocialService {
       total,
       limit: l,
       offset: o,
+      has_more: o + l < total,
     };
   }
 
@@ -226,7 +231,7 @@ export class SocialService {
       await this.socialRepository.getFollowingIds(userId);
 
     if (followingIds.length === 0) {
-      return { activities: [], total: 0, limit: l, offset: o };
+      return { activities: [], total: 0, limit: l, offset: o, has_more: false };
     }
 
     const { activities, total } =
@@ -237,6 +242,7 @@ export class SocialService {
       total,
       limit: l,
       offset: o,
+      has_more: o + l < total,
     };
   }
 
@@ -261,7 +267,7 @@ export class SocialService {
     }
 
     if (!targetUser.privacySettings?.showActivity) {
-      return { activities: [], total: 0, limit: l, offset: o };
+      return { activities: [], total: 0, limit: l, offset: o, has_more: false };
     }
 
     const { activities, total } =
@@ -272,6 +278,7 @@ export class SocialService {
       total,
       limit: l,
       offset: o,
+      has_more: o + l < total,
     };
   }
 
@@ -294,15 +301,15 @@ export class SocialService {
         return true;
 
       case ProfileVisibility.FRIENDS_ONLY:
-        // Viewer must be authenticated and be a follower of the target
+        // Viewer must be authenticated and have a mutual follow with the target
         if (!viewerId) {
           return false;
         }
-        const follow = await this.socialRepository.findFollowById(
-          viewerId,
-          targetUserId,
-        );
-        return !!follow;
+        const [viewerFollowsTarget, targetFollowsViewer] = await Promise.all([
+          this.socialRepository.findFollowById(viewerId, targetUserId),
+          this.socialRepository.findFollowById(targetUserId, viewerId),
+        ]);
+        return !!viewerFollowsTarget && !!targetFollowsViewer;
 
       case ProfileVisibility.PRIVATE:
         return false;

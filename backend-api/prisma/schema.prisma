@@ -44,6 +44,13 @@ model User {
   isActive      Boolean   @default(true)
   role          UserRole  @default(USER)
 
+  // Ban
+  isBanned      Boolean   @default(false)
+  bannedAt      DateTime?
+  bannedUntil   DateTime?
+  banReason     String?
+  bannedBy      String?
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   lastLoginAt   DateTime?
@@ -71,6 +78,7 @@ model User {
   quizAnswers          UserQuizAnswer[]
   hintUnlocks          UserHintUnlock[]
   challengeSubmissions ChallengeSubmission[]
+  auditLogs            AuditLog[]
 
   @@map("users")
 }
@@ -195,20 +203,21 @@ model PasswordResetToken {
 // ============================================
 
 model Course {
-  id           String   @id @default(cuid())
-  slug         String   @unique
+  id           String    @id @default(cuid())
+  slug         String    @unique
   title        String
   titleEn      String?
   titleFil     String?
   description  String?
-  language     String   // python, javascript, html, css
+  language     String    // python, javascript, html, css
   iconUrl      String?
   color        String?
-  orderIndex   Int      @default(0)
-  isPublished  Boolean  @default(false)
+  orderIndex   Int       @default(0)
+  isPublished  Boolean   @default(false)
+  deletedAt    DateTime?
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   // Relations
   levels       Level[]
@@ -225,11 +234,12 @@ model Level {
   slug        String
   title       String
   description String?
-  orderIndex  Int      @default(0)
-  isPublished Boolean  @default(false)
+  orderIndex  Int       @default(0)
+  isPublished Boolean   @default(false)
+  deletedAt   DateTime?
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   // Relations
   lessons     Lesson[]
@@ -251,6 +261,7 @@ model Lesson {
   xpReward    Int        @default(100)
   orderIndex  Int        @default(0)
   isPublished Boolean    @default(false)
+  deletedAt   DateTime?
   minQuizScore Int?      // Minimum quiz score (0-100) required to complete lesson
 
   createdAt   DateTime   @default(now())
@@ -651,4 +662,41 @@ model ChallengeSubmission {
 
   @@index([userId, challengeId])
   @@map("challenge_submissions")
+}
+
+// ============================================
+// ADMIN & AUDIT
+// ============================================
+
+model AuditLog {
+  id          String      @id @default(cuid())
+  adminId     String
+  admin       User        @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  action      AuditAction
+  entityType  String
+  entityId    String
+  oldValue    Json?
+  newValue    Json?
+  description String?
+  ipAddress   String?
+  userAgent   String?
+
+  createdAt   DateTime    @default(now())
+
+  @@index([adminId, createdAt])
+  @@index([entityType, entityId])
+  @@index([action, createdAt])
+  @@map("audit_logs")
+}
+
+enum AuditAction {
+  USER_BANNED
+  USER_UNBANNED
+  USER_ROLE_CHANGED
+  USER_DELETED
+  CONTENT_PUBLISHED
+  CONTENT_UNPUBLISHED
+  CONTENT_DELETED
+  CONTENT_CREATED
+  CONTENT_UPDATED
 }

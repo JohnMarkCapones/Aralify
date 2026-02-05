@@ -14,7 +14,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { User } from '@prisma/client';
-import { CurrentUser, Public } from '../auth/decorators';
+import { CurrentUser, Public, OptionalAuth } from '../auth/decorators';
 import { SocialService } from './social.service';
 import {
   ActivityFeedQueryDto,
@@ -99,7 +99,7 @@ export class SocialController {
   // ── Public Followers / Following (privacy-aware) ───────
 
   @Get('users/:username/followers')
-  @Public()
+  @OptionalAuth()
   @ApiBearerAuth()
   @ApiOperation({ summary: "Get a user's followers (privacy-aware)" })
   @ApiParam({ name: 'username', description: 'Username of the user' })
@@ -119,7 +119,7 @@ export class SocialController {
   }
 
   @Get('users/:username/following')
-  @Public()
+  @OptionalAuth()
   @ApiBearerAuth()
   @ApiOperation({ summary: "Get a user's following (privacy-aware)" })
   @ApiParam({ name: 'username', description: 'Username of the user' })
@@ -169,7 +169,7 @@ export class SocialController {
   }
 
   @Get('users/:username/activity')
-  @Public()
+  @OptionalAuth()
   @ApiBearerAuth()
   @ApiOperation({ summary: "Get a user's activity timeline (privacy-aware)" })
   @ApiParam({ name: 'username', description: 'Username of the user' })

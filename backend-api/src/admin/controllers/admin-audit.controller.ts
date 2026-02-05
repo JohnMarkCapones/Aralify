@@ -10,11 +10,12 @@ import {
 
 @ApiTags('Admin - Audit')
 @Controller('api/v1/admin/audit')
+@AdminOnly()
 export class AdminAuditController {
   constructor(private readonly auditLogService: AuditLogService) {}
 
   @Get()
-  @AdminOnly()
+
   @ApiOperation({ summary: 'Get audit logs with filtering and pagination' })
   @ApiResponse({
     status: 200,
@@ -28,7 +29,7 @@ export class AdminAuditController {
   }
 
   @Get(':id')
-  @AdminOnly()
+
   @ApiOperation({ summary: 'Get a specific audit log entry' })
   @ApiParam({ name: 'id', description: 'Audit log ID' })
   @ApiResponse({

@@ -8,10 +8,11 @@ import {
   MinLength,
   MaxLength,
   Min,
+  Max,
   IsArray,
   ValidateNested,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 import { Difficulty } from '@prisma/client';
 
 // ============================================================================
@@ -21,10 +22,17 @@ import { Difficulty } from '@prisma/client';
 export class GetAdminCoursesQueryDto {
   @ApiPropertyOptional({ example: 1, default: 1 })
   @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
   page?: number;
 
   @ApiPropertyOptional({ example: 20, default: 20 })
   @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
   limit?: number;
 
   @ApiPropertyOptional({ example: 'python', description: 'Filter by programming language' })
@@ -34,6 +42,7 @@ export class GetAdminCoursesQueryDto {
 
   @ApiPropertyOptional({ example: true, description: 'Filter by published status' })
   @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
   @IsBoolean()
   isPublished?: boolean;
 

@@ -11,11 +11,12 @@ import {
 
 @ApiTags('Admin - Dashboard')
 @Controller('api/v1/admin/dashboard')
+@ContentAdmin()
 export class AdminDashboardController {
   constructor(private readonly adminDashboardService: AdminDashboardService) {}
 
   @Get()
-  @ContentAdmin()
+
   @ApiOperation({ summary: 'Get full dashboard overview' })
   @ApiResponse({
     status: 200,
@@ -27,7 +28,7 @@ export class AdminDashboardController {
   }
 
   @Get('metrics')
-  @ContentAdmin()
+
   @ApiOperation({ summary: 'Get dashboard metrics only' })
   @ApiResponse({
     status: 200,
@@ -39,7 +40,7 @@ export class AdminDashboardController {
   }
 
   @Get('recent-signups')
-  @ContentAdmin()
+
   @ApiOperation({ summary: 'Get recent user signups' })
   @ApiQuery({ name: 'limit', required: false, example: 20, description: 'Number of results' })
   @ApiResponse({
@@ -54,7 +55,7 @@ export class AdminDashboardController {
   }
 
   @Get('health')
-  @ContentAdmin()
+
   @ApiOperation({ summary: 'Get system health status' })
   @ApiResponse({
     status: 200,

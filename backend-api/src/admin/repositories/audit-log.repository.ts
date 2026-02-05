@@ -16,7 +16,7 @@ export class AuditLogRepository {
         entityId: data.entityId,
         oldValue: data.oldValue as Prisma.InputJsonValue,
         newValue: data.newValue as Prisma.InputJsonValue,
-        reason: data.reason,
+        description: data.reason,
         ipAddress: data.ipAddress,
         userAgent: data.userAgent,
       },
