@@ -12,6 +12,8 @@ import { GamificationModule } from './gamification/gamification.module';
 import { SocialModule } from './social/social.module';
 import { LeaderboardsModule } from './leaderboards/leaderboards.module';
 import { AdminModule } from './admin/admin.module';
+import { CommentsModule } from './comments/comments.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { JwtAuthGuard } from './auth/guards';
 
 @Module({
@@ -29,6 +31,8 @@ import { JwtAuthGuard } from './auth/guards';
     SocialModule,
     LeaderboardsModule,
     AdminModule,
+    CommentsModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [

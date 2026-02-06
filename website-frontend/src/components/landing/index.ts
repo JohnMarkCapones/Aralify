@@ -1,0 +1,9 @@
+export { Navbar } from "./Navbar";
+export { Hero } from "./Hero";
+export { BentoGrids } from "./BentoGrids";
+export { LanguageSection } from "./LanguageSection";
+export { SecuritySection } from "./SecuritySection";
+export { Testimonials } from "./Testimonials";
+export { Leaderboard } from "./Leaderboard";
+export { Subscription } from "./Subscription";
+export { Footer } from "./Footer";

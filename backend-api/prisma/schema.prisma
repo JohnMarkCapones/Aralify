@@ -72,6 +72,7 @@ model User {
   badges               UserBadge[]
   comments             Comment[]
   commentLikes         CommentLike[]
+  commentReports       CommentReport[]
   activities           Activity[]
   following            Follow[]          @relation("Following")
   followers            Follow[]          @relation("Followers")
@@ -79,6 +80,8 @@ model User {
   hintUnlocks          UserHintUnlock[]
   challengeSubmissions ChallengeSubmission[]
   auditLogs            AuditLog[]
+  notifications        Notification[]
+  pushSubscriptions    PushSubscription[]
 
   @@map("users")
 }
@@ -546,23 +549,28 @@ model Follow {
 }
 
 model Comment {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   lessonId  String
-  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lesson    Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   parentId  String?
-  parent    Comment? @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
 
-  content   String
-  isEdited  Boolean  @default(false)
+  content    String
+  isEdited   Boolean   @default(false)
+  likesCount Int       @default(0)
+  isPinned   Boolean   @default(false)
+  isHidden   Boolean   @default(false)
+  deletedAt  DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
-  replies   Comment[]     @relation("CommentReplies")
+  replies   Comment[]       @relation("CommentReplies")
   likes     CommentLike[]
+  reports   CommentReport[]
 
   @@index([lessonId, createdAt])
   @@map("comments")
@@ -579,6 +587,29 @@ model CommentLike {
 
   @@unique([userId, commentId])
   @@map("comment_likes")
+}
+
+model CommentReport {
+  id        String       @id @default(cuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  commentId String
+  comment   Comment      @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  reason    ReportReason
+  details   String?
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, commentId])
+  @@index([commentId])
+  @@map("comment_reports")
+}
+
+enum ReportReason {
+  SPAM
+  HARASSMENT
+  INAPPROPRIATE
+  OTHER
 }
 
 model Activity {
@@ -603,6 +634,62 @@ enum ActivityType {
   BADGE_EARNED
   STREAK_MILESTONE
   LEVEL_UP
+}
+
+enum NotificationType {
+  ACHIEVEMENT_EARNED
+  BADGE_EARNED
+  LEVEL_UP
+  STREAK_REMINDER
+  STREAK_BROKEN
+  NEW_FOLLOWER
+  COMMENT_REPLY
+  COMMENT_LIKE
+  COURSE_UPDATE
+  SYSTEM
+}
+
+enum DeviceType {
+  IOS
+  ANDROID
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type      NotificationType
+  title     String
+  message   String
+  data      Json?
+
+  isRead    Boolean          @default(false)
+  readAt    DateTime?
+
+  createdAt DateTime         @default(now())
+
+  @@index([userId, isRead, createdAt])
+  @@index([userId, createdAt])
+  @@map("notifications")
+}
+
+model PushSubscription {
+  id          String     @id @default(cuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  deviceToken String
+  deviceType  DeviceType
+  deviceId    String?
+  isActive    Boolean    @default(true)
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@unique([userId, deviceToken])
+  @@index([userId, isActive])
+  @@map("push_subscriptions")
 }
 
 // ============================================

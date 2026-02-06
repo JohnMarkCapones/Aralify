@@ -24,6 +24,7 @@ export declare class CoursesRepository {
         iconUrl: string | null;
         color: string | null;
         orderIndex: number;
+        deletedAt: Date | null;
     })[]>;
     findBySlug(slug: string): Promise<({
         levels: ({
@@ -36,6 +37,7 @@ export declare class CoursesRepository {
                 isPublished: boolean;
                 slug: string;
                 orderIndex: number;
+                deletedAt: Date | null;
                 levelId: string;
                 difficulty: import(".prisma/client").$Enums.Difficulty;
                 xpReward: number;
@@ -50,6 +52,7 @@ export declare class CoursesRepository {
             isPublished: boolean;
             slug: string;
             orderIndex: number;
+            deletedAt: Date | null;
             courseId: string;
         })[];
     } & {
@@ -66,6 +69,7 @@ export declare class CoursesRepository {
         iconUrl: string | null;
         color: string | null;
         orderIndex: number;
+        deletedAt: Date | null;
     }) | null>;
     findById(id: string): Promise<{
         id: string;
@@ -81,6 +85,7 @@ export declare class CoursesRepository {
         iconUrl: string | null;
         color: string | null;
         orderIndex: number;
+        deletedAt: Date | null;
     } | null>;
     getLevels(courseId: string): Promise<({
         lessons: {
@@ -92,6 +97,7 @@ export declare class CoursesRepository {
             isPublished: boolean;
             slug: string;
             orderIndex: number;
+            deletedAt: Date | null;
             levelId: string;
             difficulty: import(".prisma/client").$Enums.Difficulty;
             xpReward: number;
@@ -106,6 +112,7 @@ export declare class CoursesRepository {
         isPublished: boolean;
         slug: string;
         orderIndex: number;
+        deletedAt: Date | null;
         courseId: string;
     })[]>;
     getUserProgress(userId: string, courseId: string): Promise<{
@@ -138,6 +145,7 @@ export declare class CoursesRepository {
             isPublished: boolean;
             slug: string;
             orderIndex: number;
+            deletedAt: Date | null;
             levelId: string;
             difficulty: import(".prisma/client").$Enums.Difficulty;
             xpReward: number;
