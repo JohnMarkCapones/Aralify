@@ -66,6 +66,11 @@ export declare class AuthService {
         isVerified: boolean;
         isActive: boolean;
         role: import(".prisma/client").$Enums.UserRole;
+        isBanned: boolean;
+        bannedAt: Date | null;
+        bannedUntil: Date | null;
+        banReason: string | null;
+        bannedBy: string | null;
         createdAt: Date;
         updatedAt: Date;
         lastLoginAt: Date | null;

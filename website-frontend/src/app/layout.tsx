@@ -1,11 +1,17 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Archivo_Black, Lexend, Geist_Mono } from "next/font/google";
 import { Providers } from "@/providers";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const archivoBlack = Archivo_Black({
+  weight: "400",
   subsets: ["latin"],
+  variable: "--font-archivo-black",
+});
+
+const lexend = Lexend({
+  subsets: ["latin"],
+  variable: "--font-lexend",
 });
 
 const geistMono = Geist_Mono({
@@ -31,7 +37,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${archivoBlack.variable} ${lexend.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>{children}</Providers>
       </body>

@@ -47,6 +47,7 @@ export declare class LessonsRepository {
         isPublished: boolean;
         slug: string;
         orderIndex: number;
+        deletedAt: Date | null;
         levelId: string;
         difficulty: import(".prisma/client").$Enums.Difficulty;
         xpReward: number;
@@ -97,6 +98,7 @@ export declare class LessonsRepository {
             isPublished: boolean;
             slug: string;
             orderIndex: number;
+            deletedAt: Date | null;
             levelId: string;
             difficulty: import(".prisma/client").$Enums.Difficulty;
             xpReward: number;
@@ -221,6 +223,7 @@ export declare class LessonsRepository {
         isPublished: boolean;
         slug: string;
         orderIndex: number;
+        deletedAt: Date | null;
         courseId: string;
     } | null>;
     unlockLevel(userId: string, levelId: string): Promise<{
@@ -439,6 +442,7 @@ export declare class LessonsRepository {
         isPublished: boolean;
         slug: string;
         orderIndex: number;
+        deletedAt: Date | null;
         levelId: string;
         difficulty: import(".prisma/client").$Enums.Difficulty;
         xpReward: number;

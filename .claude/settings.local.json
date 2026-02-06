@@ -8,7 +8,8 @@
       "Bash(npx prisma generate:*)",
       "Bash(npm run build:*)",
       "Bash(npx prisma db pull:*)",
-      "Bash(node -e:*)"
+      "Bash(node -e:*)",
+      "Bash(cd:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

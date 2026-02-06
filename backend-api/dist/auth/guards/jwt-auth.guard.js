@@ -14,6 +14,7 @@ const common_1 = require("@nestjs/common");
 const passport_1 = require("@nestjs/passport");
 const core_1 = require("@nestjs/core");
 const public_decorator_1 = require("../decorators/public.decorator");
+const optional_auth_decorator_1 = require("../decorators/optional-auth.decorator");
 let JwtAuthGuard = class JwtAuthGuard extends (0, passport_1.AuthGuard)('jwt') {
     constructor(reflector) {
         super();
@@ -27,9 +28,29 @@ let JwtAuthGuard = class JwtAuthGuard extends (0, passport_1.AuthGuard)('jwt') {
         if (isPublic) {
             return true;
         }
+        const isOptionalAuth = this.reflector.getAllAndOverride(optional_auth_decorator_1.IS_OPTIONAL_AUTH_KEY, [
+            context.getHandler(),
+            context.getClass(),
+        ]);
+        if (isOptionalAuth) {
+            const request = context.switchToHttp().getRequest();
+            const authHeader = request.headers?.authorization;
+            if (!authHeader) {
+                request.user = null;
+                return true;
+            }
+            return super.canActivate(context);
+        }
         return super.canActivate(context);
     }
-    handleRequest(err, user, info) {
+    handleRequest(err, user, info, context) {
+        const isOptionalAuth = this.reflector.getAllAndOverride(optional_auth_decorator_1.IS_OPTIONAL_AUTH_KEY, [
+            context.getHandler(),
+            context.getClass(),
+        ]);
+        if (isOptionalAuth) {
+            return user || null;
+        }
         if (err || !user) {
             throw err || new common_1.UnauthorizedException('Authentication required');
         }

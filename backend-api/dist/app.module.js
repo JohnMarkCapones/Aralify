@@ -18,6 +18,11 @@ const courses_module_1 = require("./courses/courses.module");
 const lessons_module_1 = require("./lessons/lessons.module");
 const users_module_1 = require("./users/users.module");
 const gamification_module_1 = require("./gamification/gamification.module");
+const social_module_1 = require("./social/social.module");
+const leaderboards_module_1 = require("./leaderboards/leaderboards.module");
+const admin_module_1 = require("./admin/admin.module");
+const comments_module_1 = require("./comments/comments.module");
+const notifications_module_1 = require("./notifications/notifications.module");
 const guards_1 = require("./auth/guards");
 let AppModule = class AppModule {
 };
@@ -35,6 +40,11 @@ exports.AppModule = AppModule = __decorate([
             lessons_module_1.LessonsModule,
             users_module_1.UsersModule,
             gamification_module_1.GamificationModule,
+            social_module_1.SocialModule,
+            leaderboards_module_1.LeaderboardsModule,
+            admin_module_1.AdminModule,
+            comments_module_1.CommentsModule,
+            notifications_module_1.NotificationsModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [
