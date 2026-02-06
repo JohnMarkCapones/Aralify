@@ -29,10 +29,10 @@ const NeoButton = React.forwardRef<HTMLButtonElement, NeoButtonProps>(
     return (
       <motion.button
         ref={ref}
-        whileHover={{ scale: 1.02, x: -2, y: -2, boxShadow: "7px 7px 0px 0px rgba(0,0,0,1)" }}
-        whileTap={{ scale: 0.98, x: 0, y: 0, boxShadow: "2px 2px 0px 0px rgba(0,0,0,1)" }}
+        whileHover={{ scale: 1.02, x: -2, y: -2 }}
+        whileTap={{ scale: 0.98, x: 0, y: 0 }}
         className={cn(
-          "relative inline-flex items-center justify-center font-display font-bold uppercase tracking-wider transition-colors neo-brutal-border neo-brutal-shadow rounded-full",
+          "relative inline-flex items-center justify-center font-display font-bold uppercase tracking-wider transition-all neo-brutal-border neo-brutal-shadow rounded-full hover:neo-brutal-shadow-lg active:shadow-[2px_2px_0px_0px_hsl(var(--border))]",
           variants[variant],
           sizes[size],
           className

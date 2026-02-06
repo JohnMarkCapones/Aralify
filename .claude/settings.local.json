@@ -9,7 +9,10 @@
       "Bash(npm run build:*)",
       "Bash(npx prisma db pull:*)",
       "Bash(node -e:*)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(npx next build:*)",
+      "Bash(npx tsc:*)",
+      "Bash(wc:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

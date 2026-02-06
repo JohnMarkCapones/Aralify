@@ -1,9 +1,9 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useRef } from "react";
 import { Award, Star, Zap } from "lucide-react";
+import { FloatingShapes, GradientOrbs } from "@/components/effects";
 
 const leaderboardData = [
   { rank: 1, name: "CyberNinja", xp: 15400, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" },
@@ -12,119 +12,110 @@ const leaderboardData = [
 ];
 
 export function Leaderboard() {
-  const containerRef = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start end", "end start"]
-  });
-
-  const rotateX = useTransform(scrollYProgress, [0, 1], [20, -20]);
-  const skewX = useTransform(scrollYProgress, [0, 1], [-10, 10]);
-
   return (
-    <section ref={containerRef} className="py-32 bg-primary/10 overflow-hidden">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-24 relative">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-            className="absolute -top-20 left-1/2 -translate-x-1/2 opacity-10"
-          >
-            <Star size={200} className="fill-primary" />
-          </motion.div>
-          <h2 className="text-7xl md:text-9xl font-black mb-6 tracking-tighter italic">HALL OF FAME</h2>
-          <div className="inline-block bg-black text-white px-6 py-2 neo-brutal-border rotate-2 font-black text-xl">TOP PERFORMERS THIS WEEK</div>
-        </div>
-
+    <section className="py-32 bg-primary/10 overflow-hidden relative">
+      <GradientOrbs orbs={[
+        { color: "bg-primary/15", size: 300, x: "10%", y: "20%", delay: 0, duration: 16 },
+        { color: "bg-accent/10", size: 200, x: "80%", y: "60%", delay: 2, duration: 14 },
+      ]} />
+      <FloatingShapes shapes={[
+        { type: "diamond", size: 30, x: "5%", y: "15%", color: "bg-accent", delay: 0, duration: 10 },
+        { type: "circle", size: 20, x: "92%", y: "25%", color: "bg-primary", delay: 1, duration: 8 },
+        { type: "cross", size: 22, x: "88%", y: "80%", color: "bg-secondary", delay: 2, duration: 12 },
+        { type: "square", size: 18, x: "8%", y: "75%", color: "bg-primary", delay: 1.5, duration: 9, rotate: 45 },
+      ]} />
+      <div className="container mx-auto px-4 relative z-10">
         <motion.div
-          style={{ rotateX, skewX }}
-          className="flex flex-col md:flex-row items-end justify-center gap-8 h-full min-h-[500px] perspective-1000"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-20"
         >
-             {/* 2nd Place */}
-            <motion.div
-                whileHover={{ y: -20, scale: 1.05 }}
-                className="w-full md:w-1/4 bg-white neo-brutal-border neo-brutal-shadow h-[350px] flex flex-col items-center justify-end p-8 relative rounded-3xl"
-            >
-                <div className="absolute -top-16">
-                   <div className="p-2 bg-secondary rounded-full neo-brutal-border">
-                        <Avatar className="w-24 h-24 border-3 border-black shadow-xl">
-                                <AvatarImage src={leaderboardData[1].avatar} />
-                                <AvatarFallback>2</AvatarFallback>
-                        </Avatar>
-                   </div>
-                </div>
-                <div className="text-center mb-8">
-                    <Award className="mx-auto mb-2 text-secondary" size={32} />
-                    <h3 className="text-3xl font-black">{leaderboardData[1].name}</h3>
-                    <p className="font-mono text-xl font-bold bg-secondary/20 px-4 rounded-full">{leaderboardData[1].xp} XP</p>
-                </div>
-                <div className="absolute bottom-4 right-4 text-6xl font-black opacity-10">#2</div>
-            </motion.div>
-
-             {/* 1st Place */}
-             <motion.div
-                whileHover={{ y: -30, scale: 1.1 }}
-                className="w-full md:w-1/3 bg-accent neo-brutal-border neo-brutal-shadow-lg h-[450px] flex flex-col items-center justify-end p-8 relative z-10 rounded-3xl"
-            >
-                 <div className="absolute -top-20">
-                    <motion.div
-                        animate={{ scale: [1, 1.1, 1] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="p-3 bg-white rounded-full neo-brutal-border"
-                    >
-                        <Avatar className="w-32 h-32 border-4 border-black shadow-2xl">
-                                <AvatarImage src={leaderboardData[0].avatar} />
-                                <AvatarFallback>1</AvatarFallback>
-                        </Avatar>
-                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-6xl rotate-12">👑</div>
-                    </motion.div>
-                </div>
-                <div className="text-center mb-12">
-                    <Star className="mx-auto mb-2 fill-black" size={48} />
-                    <h3 className="text-4xl font-black">{leaderboardData[0].name}</h3>
-                    <p className="font-mono text-2xl font-black bg-black text-white px-6 py-1 rounded-full">{leaderboardData[0].xp} XP</p>
-                </div>
-                <div className="absolute top-10 right-10 flex gap-2">
-                    <Zap className="fill-black" />
-                    <Zap className="fill-black" />
-                </div>
-                <div className="absolute bottom-6 left-6 text-8xl font-black opacity-20">#1</div>
-            </motion.div>
-
-             {/* 3rd Place */}
-             <motion.div
-                whileHover={{ y: -20, scale: 1.05 }}
-                className="w-full md:w-1/4 bg-muted neo-brutal-border neo-brutal-shadow h-[300px] flex flex-col items-center justify-end p-8 relative rounded-3xl"
-            >
-                <div className="absolute -top-16">
-                   <div className="p-2 bg-primary rounded-full neo-brutal-border">
-                        <Avatar className="w-20 h-20 border-3 border-black shadow-xl">
-                                <AvatarImage src={leaderboardData[2].avatar} />
-                                <AvatarFallback>3</AvatarFallback>
-                        </Avatar>
-                   </div>
-                </div>
-                <div className="text-center mb-6">
-                    <h3 className="text-2xl font-black">{leaderboardData[2].name}</h3>
-                    <p className="font-mono text-lg font-bold bg-primary/20 px-4 rounded-full">{leaderboardData[2].xp} XP</p>
-                </div>
-                <div className="absolute bottom-4 right-4 text-5xl font-black opacity-10">#3</div>
-            </motion.div>
+          <h2 className="text-5xl md:text-8xl font-black mb-4 tracking-tighter">LEADERBOARD</h2>
+          <div className="inline-block bg-foreground text-background px-6 py-2 neo-brutal-border rotate-1 font-black text-lg">TOP PERFORMERS THIS WEEK</div>
         </motion.div>
 
-        {/* Geometry Floating Particles */}
-        <div className="flex justify-center gap-12 mt-20">
-             {[1,2,3,4,5].map(i => (
-                 <motion.div
-                    key={i}
-                    animate={{
-                        y: [0, -20, 0],
-                        rotate: [0, 180, 360]
-                    }}
-                    transition={{ duration: 5 + i, repeat: Infinity }}
-                    className={`w-8 h-8 neo-brutal-border ${i % 2 === 0 ? 'rounded-full' : 'rotate-45'} bg-primary opacity-20`}
-                 />
-             ))}
+        <div className="flex flex-col md:flex-row items-end justify-center gap-6 min-h-[420px] max-w-4xl mx-auto">
+          {/* 2nd Place */}
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            whileHover={{ y: -8 }}
+            className="w-full md:w-1/4 bg-card neo-brutal-border neo-brutal-shadow h-[320px] flex flex-col items-center justify-end p-6 relative rounded-2xl"
+          >
+            <div className="absolute -top-14">
+              <div className="p-2 bg-secondary rounded-full neo-brutal-border">
+                <Avatar className="w-20 h-20 border-3 border-border">
+                  <AvatarImage src={leaderboardData[1].avatar} />
+                  <AvatarFallback>2</AvatarFallback>
+                </Avatar>
+              </div>
+            </div>
+            <div className="text-center mb-6">
+              <Award className="mx-auto mb-2 text-secondary" size={28} />
+              <h3 className="text-2xl font-black">{leaderboardData[1].name}</h3>
+              <p className="font-mono text-lg font-bold bg-secondary/20 px-4 rounded-full mt-1">{leaderboardData[1].xp.toLocaleString()} XP</p>
+            </div>
+            <div className="absolute bottom-4 right-4 text-5xl font-black opacity-10">#2</div>
+          </motion.div>
+
+          {/* 1st Place */}
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            whileHover={{ y: -12 }}
+            className="w-full md:w-1/3 bg-accent neo-brutal-border neo-brutal-shadow-lg h-[400px] flex flex-col items-center justify-end p-6 relative z-10 rounded-2xl"
+          >
+            <motion.div
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute -top-16"
+            >
+              <div className="p-2.5 bg-card rounded-full neo-brutal-border">
+                <Avatar className="w-28 h-28 border-4 border-border">
+                  <AvatarImage src={leaderboardData[0].avatar} />
+                  <AvatarFallback>1</AvatarFallback>
+                </Avatar>
+              </div>
+            </motion.div>
+            <div className="text-center mb-8">
+              <Star className="mx-auto mb-2 fill-foreground" size={40} />
+              <h3 className="text-3xl font-black">{leaderboardData[0].name}</h3>
+              <p className="font-mono text-xl font-black bg-foreground text-background px-6 py-1 rounded-full mt-1">{leaderboardData[0].xp.toLocaleString()} XP</p>
+            </div>
+            <div className="absolute top-8 right-8 flex gap-1">
+              <Zap size={20} className="fill-foreground" />
+              <Zap size={20} className="fill-foreground" />
+            </div>
+            <div className="absolute bottom-4 left-4 text-7xl font-black opacity-15">#1</div>
+          </motion.div>
+
+          {/* 3rd Place */}
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            whileHover={{ y: -8 }}
+            className="w-full md:w-1/4 bg-muted neo-brutal-border neo-brutal-shadow h-[280px] flex flex-col items-center justify-end p-6 relative rounded-2xl"
+          >
+            <div className="absolute -top-14">
+              <div className="p-2 bg-primary rounded-full neo-brutal-border">
+                <Avatar className="w-18 h-18 border-3 border-border">
+                  <AvatarImage src={leaderboardData[2].avatar} />
+                  <AvatarFallback>3</AvatarFallback>
+                </Avatar>
+              </div>
+            </div>
+            <div className="text-center mb-4">
+              <h3 className="text-xl font-black">{leaderboardData[2].name}</h3>
+              <p className="font-mono text-base font-bold bg-primary/20 px-4 rounded-full mt-1">{leaderboardData[2].xp.toLocaleString()} XP</p>
+            </div>
+            <div className="absolute bottom-4 right-4 text-4xl font-black opacity-10">#3</div>
+          </motion.div>
         </div>
       </div>
     </section>

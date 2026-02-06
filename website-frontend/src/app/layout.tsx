@@ -26,7 +26,23 @@ export const metadata: Metadata = {
   },
   description:
     "Learn to code through interactive challenges at your own pace and difficulty.",
-  keywords: ["learn to code", "programming", "coding", "education", "tutorial"],
+  keywords: ["learn to code", "programming", "coding", "education", "tutorial", "Filipino", "Philippines"],
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    siteName: "Aralify",
+    title: "Aralify - Learn to Code",
+    description: "Learn to code through interactive challenges at your own pace and difficulty.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Aralify - Learn to Code",
+    description: "Learn to code through interactive challenges at your own pace and difficulty.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({

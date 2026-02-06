@@ -1,145 +1,114 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "framer-motion";
-import { Cpu, Globe, Database, Binary, Code2, Plus, Play } from "lucide-react";
-import { useRef } from "react";
+import { motion } from "framer-motion";
+import { Cpu, Globe, Database, Binary, Code2, Play } from "lucide-react";
+import { DotPattern } from "@/components/effects";
 
 const bentoItems = [
   {
-    title: "COMPILER ENGINE",
-    desc: "Blazing fast cloud-based execution for 50+ languages.",
-    icon: <Cpu className="w-8 h-8" />,
+    title: "CODE PLAYGROUND",
+    desc: "Write and run code in 50+ languages with our cloud-based editor.",
+    icon: <Cpu className="w-7 h-7" />,
     color: "bg-primary",
-    size: "col-span-1 md:col-span-2 row-span-2",
-    rotate: "-1deg"
+    size: "md:col-span-2 md:row-span-2",
   },
   {
-    title: "GLOBAL RANK",
-    desc: "Compare your code efficiency with elite engineers.",
-    icon: <Globe className="w-8 h-8" />,
+    title: "GLOBAL LEADERBOARD",
+    desc: "Compete with learners worldwide and climb the ranks.",
+    icon: <Globe className="w-7 h-7" />,
     color: "bg-secondary",
-    size: "col-span-1 row-span-1",
-    rotate: "2deg"
+    size: "md:col-span-1 md:row-span-1",
   },
   {
     title: "SQL VISUALIZER",
-    desc: "Master complex queries with interactive diagrams.",
-    icon: <Database className="w-8 h-8" />,
+    desc: "Master database queries with interactive diagrams.",
+    icon: <Database className="w-7 h-7" />,
     color: "bg-accent",
-    size: "col-span-1 row-span-1",
-    rotate: "-2deg"
+    size: "md:col-span-1 md:row-span-1",
   },
   {
-    title: "L-ARCH DESIGN",
-    desc: "New L-shaped architecture for high density scaling.",
-    icon: <Plus className="w-8 h-8" />,
-    color: "bg-white",
-    size: "col-span-1 md:col-span-1 row-span-2",
-    rotate: "1deg",
-    isL: true
-  },
-  {
-    title: "DEBUGGING PRO",
-    desc: "Visual debugger that turns bugs into logic patterns.",
-    icon: <Binary className="w-8 h-8" />,
-    color: "bg-white",
-    size: "col-span-1 row-span-1",
-    rotate: "1deg"
+    title: "DEBUGGING TOOLS",
+    desc: "Visual debugger that helps you understand error patterns.",
+    icon: <Binary className="w-7 h-7" />,
+    color: "bg-card",
+    size: "md:col-span-1 md:row-span-1",
   },
   {
     title: "SYSTEM DESIGN",
-    desc: "Learn to architect scalable microservices from scratch.",
-    icon: <Code2 className="w-8 h-8" />,
+    desc: "Learn to architect scalable applications from scratch.",
+    icon: <Code2 className="w-7 h-7" />,
     color: "bg-muted",
-    size: "col-span-1 md:col-span-2 row-span-1",
-    rotate: "-1deg"
-  }
+    size: "md:col-span-2 md:row-span-1",
+  },
 ];
 
 export function BentoGrids() {
-  const containerRef = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start end", "end start"]
-  });
-
-  const y = useTransform(scrollYProgress, [0, 1], [100, -100]);
-  const rotate = useTransform(scrollYProgress, [0, 1], [-5, 5]);
-
   return (
-    <section ref={containerRef} className="py-32 container mx-auto px-4 overflow-hidden perspective-1000">
+    <section className="py-32 container mx-auto px-4 relative">
+      <DotPattern />
       <motion.div
-        style={{ y, rotate }}
-        className="text-center mb-20"
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="text-center mb-16"
       >
-        <h2 className="text-6xl md:text-9xl font-black mb-6 uppercase leading-none tracking-tighter">
-          ADVANCED <br/>
-          <span className="text-stroke">CURRICULUM</span>
+        <h2 className="text-5xl md:text-8xl font-black mb-4 uppercase leading-none tracking-tighter">
+          EVERYTHING YOU NEED
         </h2>
+        <p className="text-lg font-medium text-muted-foreground max-w-2xl mx-auto">
+          A complete toolkit for learning to code, from interactive lessons to real-world projects.
+        </p>
       </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-8 max-w-7xl mx-auto auto-rows-[300px]">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto auto-rows-[250px]">
         {bentoItems.map((item, i) => (
           <motion.div
             key={i}
-            initial={{ opacity: 0, y: 50 }}
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            whileHover={{
-              scale: 1.05,
-              rotateX: 5,
-              rotateY: 5,
-              z: 50,
-              boxShadow: "15px 15px 0px 0px rgba(0,0,0,1)"
-            }}
-            transition={{ type: "spring", stiffness: 300 }}
             viewport={{ once: true }}
+            transition={{ delay: i * 0.08 }}
+            whileHover={{ y: -4, boxShadow: "8px 8px 0px 0px hsl(var(--border))" }}
             className={`
               ${item.size} ${item.color}
-              neo-brutal-border neo-brutal-shadow p-10
+              neo-brutal-border neo-brutal-shadow p-8
               flex flex-col justify-between group cursor-pointer
-              rounded-[2rem] relative overflow-hidden preserve-3d
-              ${item.isL ? 'bg-primary/5' : ''}
+              rounded-2xl relative overflow-hidden
             `}
           >
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-150 transition-transform">
-               {item.icon}
-            </div>
-
-            <div className="bg-black text-white p-4 w-fit rounded-2xl border-3 border-black group-hover:rotate-[360deg] transition-transform duration-700">
+            <div className="bg-foreground text-background p-3 w-fit rounded-xl group-hover:bg-primary group-hover:text-white group-hover:rotate-12 group-hover:scale-110 transition-all duration-300">
               {item.icon}
             </div>
 
             <div className="z-10">
-              <h3 className="text-3xl font-black mb-3 uppercase leading-none">{item.title}</h3>
-              <p className="font-bold text-xl opacity-90 leading-tight">{item.desc}</p>
+              <h3 className="text-2xl font-black mb-2 uppercase leading-none">{item.title}</h3>
+              <p className="font-medium text-lg opacity-80 leading-snug">{item.desc}</p>
             </div>
           </motion.div>
         ))}
-        {/* Placeholder to fill the gap if needed */}
-        <div className="hidden lg:block bg-accent/20 neo-brutal-border rounded-[2rem] opacity-30 border-dashed" />
       </div>
 
-      {/* Video Section Mockup */}
+      {/* Video Section */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        whileInView={{ opacity: 1, scale: 1 }}
-        className="mt-32 max-w-6xl mx-auto relative group"
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="mt-24 max-w-5xl mx-auto relative group"
       >
-        <div className="absolute -inset-4 bg-primary neo-brutal-border -z-10 rounded-3xl rotate-1 group-hover:rotate-0 transition-transform" />
-        <div className="relative aspect-video bg-black rounded-2xl neo-brutal-border neo-brutal-shadow-lg overflow-hidden flex items-center justify-center cursor-pointer">
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-8">
-                <div className="text-white">
-                    <h4 className="text-3xl font-black mb-2 uppercase tracking-tighter">ARALIFY PLATFORM DEMO</h4>
-                    <p className="font-bold opacity-70">Watch how Aralify transforms your coding experience.</p>
-                </div>
+        <div className="absolute -inset-3 bg-primary neo-brutal-border -z-10 rounded-2xl rotate-1 group-hover:rotate-0 transition-transform" />
+        <div className="relative aspect-video bg-foreground rounded-xl neo-brutal-border neo-brutal-shadow-lg overflow-hidden flex items-center justify-center cursor-pointer">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-8">
+            <div className="text-white">
+              <h4 className="text-2xl font-black mb-1 uppercase tracking-tighter">SEE ARALIFY IN ACTION</h4>
+              <p className="font-medium opacity-70">Watch how learners go from zero to building real projects.</p>
             </div>
-            <motion.div
-                whileHover={{ scale: 1.2 }}
-                className="w-24 h-24 bg-white rounded-full flex items-center justify-center neo-brutal-border-white neo-brutal-shadow z-20"
-            >
-                <Play className="fill-black ml-2" size={40} />
-            </motion.div>
-            <div className="absolute inset-0 opacity-20 pointer-events-none mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+          </div>
+          <motion.div
+            whileHover={{ scale: 1.1 }}
+            className="w-20 h-20 bg-white rounded-full flex items-center justify-center neo-brutal-border z-20"
+          >
+            <Play className="fill-foreground ml-1" size={32} />
+          </motion.div>
         </div>
       </motion.div>
     </section>

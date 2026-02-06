@@ -2,8 +2,9 @@
 
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { NeoButton } from "@/components/ui/neo-button";
-import { Code, Sparkles, Box, Binary, Cpu, Layout, Layers, Terminal, ChevronRight, ChevronLeft, ArrowRight, Globe } from "lucide-react";
+import { Code, Sparkles, CheckCircle, Terminal, ChevronRight, ChevronLeft, ArrowRight, Trophy, BookOpen, Flame } from "lucide-react";
 import { useRef, useState } from "react";
+import { GradientOrbs, FloatingShapes, GridPattern, MagneticButton, CardTilt } from "@/components/effects";
 
 export function Hero() {
   const containerRef = useRef(null);
@@ -16,185 +17,228 @@ export function Hero() {
 
   const heroSlides = [
     {
-      title: "COMPILE.SUCCESS()",
-      icon: <Code size={24}/>,
-      stats: { label: "Cluster_Health", value: "98%" },
-      grid: [
-        { icon: <Cpu size={32} />, label: "Core_9", color: "bg-muted hover:bg-primary group-hover:text-white" },
-        { icon: <Binary size={32} />, label: "Stream_X", color: "bg-accent" }
-      ],
-      pill: "ELITE_DEV"
+      title: "Interactive Lessons",
+      icon: <BookOpen size={24} />,
+      description: "Choose your difficulty: Easy, Medium, or Hard. Every lesson adapts to your skill level.",
+      preview: {
+        label: "Python Basics",
+        difficulty: "EASY",
+        code: 'print("Hello, World!")',
+        output: "Hello, World!",
+        xp: "+50 XP"
+      },
+      color: "bg-primary"
     },
     {
-      title: "SYSTEM.DEPLOY()",
-      icon: <Layers size={24}/>,
-      stats: { label: "Edge_Latency", value: "12ms" },
-      grid: [
-        { icon: <Globe size={32} />, label: "Global_v4", color: "bg-secondary" },
-        { icon: <Layout size={32} />, label: "Frame_OS", color: "bg-muted" }
-      ],
-      pill: "CLOUD_ARCH"
+      title: "Real Code Execution",
+      icon: <Terminal size={24} />,
+      description: "Write and run real code in 50+ languages directly in your browser. No setup needed.",
+      preview: {
+        label: "JavaScript",
+        difficulty: "MEDIUM",
+        code: "const sum = [1,2,3].reduce((a,b) => a + b, 0);",
+        output: "6",
+        xp: "+100 XP (2x)"
+      },
+      color: "bg-secondary"
     },
     {
-      title: "NEURAL.INIT()",
-      icon: <Sparkles size={24}/>,
-      stats: { label: "Model_Load", value: "100%" },
-      grid: [
-        { icon: <Terminal size={32} />, label: "AI_Prompt", color: "bg-primary text-white" },
-        { icon: <Box size={32} />, label: "Tensor_X", color: "bg-accent" }
-      ],
-      pill: "AI_GEN_V2"
+      title: "Earn & Compete",
+      icon: <Trophy size={24} />,
+      description: "Gain XP, maintain streaks, unlock achievements, and climb the leaderboard.",
+      preview: {
+        label: "Daily Challenge",
+        difficulty: "HARD",
+        code: "function fibonacci(n) { ... }",
+        output: "All tests passed!",
+        xp: "+150 XP (3x)"
+      },
+      color: "bg-accent"
     }
   ];
 
   const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
   const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
 
-  const y1 = useTransform(scrollYProgress, [0, 1], [0, 200]);
-  const y2 = useTransform(scrollYProgress, [0, 1], [0, -150]);
-  const rotate = useTransform(scrollYProgress, [0, 1], [0, 45]);
-  const textScale = useTransform(scrollYProgress, [0, 0.5], [1, 1.1]);
+  const y1 = useTransform(scrollYProgress, [0, 1], [0, 150]);
+  const y2 = useTransform(scrollYProgress, [0, 1], [0, -100]);
 
   const slide = heroSlides[currentSlide];
 
   return (
-    <section ref={containerRef} className="relative min-h-[100vh] flex items-center pt-24 overflow-hidden bg-background">
-      <div className="absolute inset-0 pointer-events-none">
-        <motion.div style={{ y: y1, rotate }} className="absolute top-[10%] left-[5%] w-32 h-32 bg-primary neo-brutal-border opacity-20" />
-        <motion.div style={{ y: y2, rotate: -rotate }} className="absolute bottom-[20%] right-[10%] w-48 h-48 bg-secondary rounded-full neo-brutal-border opacity-10" />
-        <motion.div animate={{ rotate: 360 }} transition={{ duration: 20, repeat: Infinity, ease: "linear" }} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] border-2 border-primary/5 rounded-full" />
-      </div>
+    <section ref={containerRef} className="relative min-h-[100vh] flex items-center pt-24 pb-12 overflow-hidden bg-background">
+      <GridPattern />
+      <GradientOrbs orbs={[
+        { color: "bg-primary/20", size: 400, x: "0%", y: "20%", delay: 0, duration: 18 },
+        { color: "bg-secondary/15", size: 300, x: "70%", y: "50%", delay: 2, duration: 14 },
+        { color: "bg-accent/10", size: 200, x: "40%", y: "80%", delay: 4, duration: 16 },
+      ]} />
+      <FloatingShapes shapes={[
+        { type: "circle", size: 50, x: "5%", y: "15%", color: "bg-primary", delay: 0, duration: 10 },
+        { type: "square", size: 35, x: "85%", y: "20%", color: "bg-secondary", delay: 1, duration: 12, rotate: 45 },
+        { type: "ring", size: 70, x: "90%", y: "70%", color: "border-primary", delay: 2, duration: 14 },
+        { type: "cross", size: 28, x: "15%", y: "85%", color: "bg-accent", delay: 0.5, duration: 9 },
+        { type: "diamond", size: 30, x: "75%", y: "10%", color: "bg-muted", delay: 3, duration: 11 },
+        { type: "circle", size: 20, x: "50%", y: "5%", color: "bg-secondary", delay: 1.5, duration: 8 },
+      ]} />
 
-      <div className="container mx-auto px-4 grid lg:grid-cols-2 gap-16 items-center relative z-10">
+      <div className="container mx-auto px-4 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center relative z-10">
+        {/* Left: Copy */}
         <motion.div
-          style={{ scale: textScale }}
-          initial={{ opacity: 0, x: -100 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="space-y-10 text-center lg:text-left"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="space-y-8 text-center lg:text-left"
         >
           <motion.div
-            whileHover={{ scale: 1.05, rotate: 1 }}
-            className="inline-flex items-center gap-2 bg-secondary px-6 py-2 neo-brutal-border neo-brutal-shadow-sm rotate-[-1deg] mb-4 cursor-pointer"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="inline-flex items-center gap-2 bg-accent px-5 py-2 neo-brutal-border neo-brutal-shadow-sm rotate-[-1deg] cursor-default"
           >
-            <Binary size={18} />
-            <span className="font-display font-black text-sm uppercase tracking-widest">ARALIFY.VERSION(2.0)</span>
+            <Flame size={18} />
+            <span className="font-display font-black text-sm uppercase tracking-widest">Now in Open Beta</span>
           </motion.div>
 
-          <h1 className="text-7xl md:text-9xl font-black leading-[0.8] tracking-tighter">
-            CODE THE <br/>
-            <span className="text-primary underline decoration-[12px] decoration-black">IMPOSSIBLE</span> <br/>
-            <span className="text-stroke">WITH ARALIFY</span>
+          <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black leading-[0.85] tracking-tighter">
+            LEARN TO CODE.<br />
+            <span className="text-primary">LEVEL UP.</span><br />
+            GET HIRED.
           </h1>
 
-          <p className="text-2xl font-bold max-w-xl mx-auto lg:mx-0 leading-tight opacity-80">
-            Aralify isn&apos;t just a platform—it&apos;s a high-performance ecosystem. Master production engineering with interactive 3D systems and the world&apos;s fastest cloud IDE.
+          <p className="text-lg sm:text-xl font-medium max-w-xl mx-auto lg:mx-0 leading-relaxed text-muted-foreground">
+            Interactive programming courses with difficulty tiers, XP rewards, streaks, and real code execution. Master coding at your own pace -- from beginner to job-ready.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-6 justify-center lg:justify-start">
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <NeoButton size="lg" variant="primary" className="text-2xl h-24 px-16 uppercase tracking-widest group">
-                Enter Portal <ArrowRight className="ml-2 group-hover:translate-x-2 transition-transform" />
+          <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+            <MagneticButton>
+              <NeoButton size="lg" variant="primary" className="text-lg sm:text-xl h-16 sm:h-20 px-10 sm:px-14 uppercase tracking-wider group relative animate-pulse-ring">
+                Start Learning Free <ArrowRight className="ml-2 group-hover:translate-x-2 transition-transform" size={20} />
               </NeoButton>
-            </motion.div>
-            <NeoButton size="lg" variant="outline" className="text-2xl h-24 px-16 uppercase tracking-widest">View Curriculum</NeoButton>
+            </MagneticButton>
+            <MagneticButton>
+              <NeoButton size="lg" variant="outline" className="text-lg sm:text-xl h-16 sm:h-20 px-10 sm:px-14 uppercase tracking-wider">
+                View Courses
+              </NeoButton>
+            </MagneticButton>
           </div>
 
-          <div className="flex items-center justify-center lg:justify-start gap-10 pt-10">
-            <div className="flex -space-x-6">
-               {[1,2,3,4,5].map(i => (
-                 <motion.div
-                    key={i}
-                    whileHover={{ y: -15, scale: 1.1, zIndex: 50 }}
-                    className="w-16 h-16 rounded-full border-4 border-black bg-white neo-brutal-shadow-sm overflow-hidden cursor-pointer"
-                 >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=aralify${i}`} alt="user" />
-                 </motion.div>
-               ))}
+          {/* Social proof */}
+          <div className="flex items-center justify-center lg:justify-start gap-6 pt-4">
+            <div className="flex -space-x-4">
+              {[1, 2, 3, 4, 5].map(i => (
+                <div
+                  key={i}
+                  className="w-12 h-12 rounded-full border-3 border-border bg-card neo-brutal-shadow-sm overflow-hidden"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=aralify${i}`} alt="Community member" loading="lazy" />
+                </div>
+              ))}
             </div>
-            <div className="font-display font-black">
-              <span className="text-4xl block leading-none">850K+</span>
-              ENG_ACTIVE
+            <div className="text-left">
+              <div className="font-display font-black text-2xl leading-none">2,500+</div>
+              <div className="text-sm font-medium text-muted-foreground">learners enrolled</div>
             </div>
           </div>
         </motion.div>
 
+        {/* Right: Product Preview Card */}
         <motion.div
-            initial={{ opacity: 0, scale: 0.5, rotateY: 45 }}
-            animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-            transition={{ duration: 1, type: "spring" }}
-            className="relative h-[600px] w-full hidden lg:flex items-center justify-center perspective-1000"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="relative flex items-center justify-center"
         >
-            <div className="absolute left-0 right-0 flex justify-between px-4 z-50">
-              <button onClick={prevSlide} className="p-3 bg-white neo-brutal-border neo-brutal-shadow hover:bg-primary transition-colors">
-                <ChevronLeft size={24} />
-              </button>
-              <button onClick={nextSlide} className="p-3 bg-white neo-brutal-border neo-brutal-shadow hover:bg-primary transition-colors">
-                <ChevronRight size={24} />
-              </button>
-            </div>
+          {/* Desktop carousel controls */}
+          <div className="absolute left-0 right-0 flex justify-between px-2 z-50 hidden lg:flex">
+            <button onClick={prevSlide} className="p-2.5 bg-card neo-brutal-border neo-brutal-shadow hover:bg-primary hover:text-white transition-colors rounded-xl" aria-label="Previous slide">
+              <ChevronLeft size={20} />
+            </button>
+            <button onClick={nextSlide} className="p-2.5 bg-card neo-brutal-border neo-brutal-shadow hover:bg-primary hover:text-white transition-colors rounded-xl" aria-label="Next slide">
+              <ChevronRight size={20} />
+            </button>
+          </div>
 
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentSlide}
-                initial={{ opacity: 0, x: 100, rotateY: 45 }}
-                animate={{ opacity: 1, x: 0, rotateY: 0 }}
-                exit={{ opacity: 0, x: -100, rotateY: -45 }}
-                whileHover={{ rotateY: 10, rotateX: 5 }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                className="w-[480px] h-[480px] bg-white neo-brutal-border neo-brutal-shadow-lg rounded-[3.5rem] p-12 relative preserve-3d group cursor-crosshair"
-              >
-                <div className="absolute top-0 left-0 w-full h-14 bg-black flex items-center px-8 gap-3 rounded-t-[3.3rem]">
-                    <div className="w-3 h-3 rounded-full bg-secondary animate-pulse" />
-                    <div className="w-3 h-3 rounded-full bg-accent" />
-                    <div className="w-3 h-3 rounded-full bg-muted" />
-                    <span className="ml-auto text-white font-mono text-xs opacity-50 tracking-widest flex items-center gap-2">
-                      <Terminal size={14} /> {slide.title}
-                    </span>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentSlide}
+              initial={{ opacity: 0, x: 60 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -60 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="w-full max-w-[480px] bg-card neo-brutal-border neo-brutal-shadow-lg rounded-3xl overflow-hidden animate-shimmer"
+            >
+              {/* Terminal header */}
+              <div className="w-full h-12 bg-foreground flex items-center px-6 gap-2.5">
+                <div className="w-3 h-3 rounded-full bg-destructive" />
+                <div className="w-3 h-3 rounded-full bg-accent" />
+                <div className="w-3 h-3 rounded-full bg-green-500" />
+                <span className="ml-auto text-background font-mono text-xs tracking-wider flex items-center gap-2">
+                  <Terminal size={14} /> {slide.preview.label}
+                </span>
+              </div>
+
+              <div className="p-8 space-y-6">
+                {/* Lesson header */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2.5 ${slide.color} text-white rounded-xl neo-brutal-border`}>
+                      {slide.icon}
+                    </div>
+                    <div>
+                      <div className="font-black text-lg">{slide.title}</div>
+                      <div className="text-sm text-muted-foreground font-medium">{slide.description.slice(0, 50)}...</div>
+                    </div>
+                  </div>
+                  <span className={`px-3 py-1 text-xs font-black uppercase neo-brutal-border rounded-full ${
+                    slide.preview.difficulty === "EASY" ? "bg-green-200 text-green-800" :
+                    slide.preview.difficulty === "MEDIUM" ? "bg-yellow-200 text-yellow-800" :
+                    "bg-red-200 text-red-800"
+                  }`}>
+                    {slide.preview.difficulty}
+                  </span>
                 </div>
 
-                <div className="mt-10 flex flex-col gap-8 font-mono font-bold text-xl">
-                    <div className="flex items-center justify-between text-primary">
-                        <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">{slide.icon}</div>
-                          <span>{slide.title}</span>
-                        </div>
-                        <Sparkles className="text-accent animate-spin" style={{ animationDuration: '3s' }} />
-                    </div>
-
-                    <div className="space-y-3">
-                      <div className="flex justify-between text-xs opacity-50 uppercase tracking-widest">
-                        <span>{slide.stats.label}</span>
-                        <span>{slide.stats.value}</span>
-                      </div>
-                      <div className="h-5 bg-gray-100 rounded-full w-full relative overflow-hidden border-2 border-black">
-                          <motion.div
-                              initial={{ width: 0 }}
-                              animate={{ width: slide.stats.value }}
-                              className="absolute top-0 left-0 h-full bg-primary"
-                          />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-6">
-                        {slide.grid.map((g, i) => (
-                          <motion.div key={i} whileHover={{ scale: 1.05 }} className={`h-28 ${g.color} neo-brutal-border rounded-3xl flex items-center justify-center flex-col gap-2 transition-colors`}>
-                              {g.icon}
-                              <span className="text-xs uppercase font-black">{g.label}</span>
-                          </motion.div>
-                        ))}
-                    </div>
+                {/* Code preview */}
+                <div className="bg-foreground text-background rounded-xl p-5 font-mono text-sm neo-brutal-border">
+                  <div className="text-muted opacity-60 mb-1">// Your code</div>
+                  <div className="text-primary font-bold">{slide.preview.code}</div>
                 </div>
 
-                <motion.div
-                    animate={{ y: [0, -50, 0], rotate: [5, -10, 5] }}
-                    transition={{ duration: 5, repeat: Infinity }}
-                    className="absolute -right-20 top-24 w-48 h-20 bg-primary neo-brutal-border neo-brutal-shadow-lg flex items-center justify-center rounded-full text-white font-black italic text-2xl z-50"
-                >
-                    {slide.pill}
-                </motion.div>
-              </motion.div>
-            </AnimatePresence>
+                {/* Output */}
+                <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-950/30 rounded-xl neo-brutal-border border-green-500">
+                  <CheckCircle size={20} className="text-green-600 shrink-0" />
+                  <div className="font-mono font-bold text-green-700 dark:text-green-400 text-sm">{slide.preview.output}</div>
+                  <div className="ml-auto flex items-center gap-1 text-primary font-black text-sm">
+                    <Sparkles size={14} /> {slide.preview.xp}
+                  </div>
+                </div>
+
+                {/* Progress dots */}
+                <div className="flex items-center justify-center gap-2 pt-2">
+                  {heroSlides.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setCurrentSlide(i)}
+                      className={`w-3 h-3 rounded-full neo-brutal-border transition-colors ${i === currentSlide ? "bg-primary" : "bg-muted"}`}
+                      aria-label={`Go to slide ${i + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Mobile swipe controls */}
+          <div className="flex lg:hidden justify-center gap-4 absolute -bottom-14">
+            <button onClick={prevSlide} className="p-2 bg-card neo-brutal-border neo-brutal-shadow-sm rounded-xl" aria-label="Previous slide">
+              <ChevronLeft size={18} />
+            </button>
+            <button onClick={nextSlide} className="p-2 bg-card neo-brutal-border neo-brutal-shadow-sm rounded-xl" aria-label="Next slide">
+              <ChevronRight size={18} />
+            </button>
+          </div>
         </motion.div>
       </div>
     </section>
