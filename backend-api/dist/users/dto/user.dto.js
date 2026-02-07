@@ -71,6 +71,10 @@ __decorate([
     __metadata("design:type", Boolean)
 ], UserProfileDto.prototype, "isVerified", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)({ example: false }),
+    __metadata("design:type", Boolean)
+], UserProfileDto.prototype, "onboardingCompleted", void 0);
+__decorate([
     (0, swagger_1.ApiProperty)({ example: '2024-01-01T00:00:00.000Z' }),
     __metadata("design:type", String)
 ], UserProfileDto.prototype, "createdAt", void 0);

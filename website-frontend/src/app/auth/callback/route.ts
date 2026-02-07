@@ -21,6 +21,18 @@ export async function GET(request: Request) {
 
     if (!error && data?.session) {
       console.log('Session token (first 50):', data.session.access_token?.substring(0, 50));
+
+      // Check if this is a new user (created within the last 10 seconds)
+      const createdAt = data.user?.created_at;
+      const isNewUser =
+        createdAt &&
+        Date.now() - new Date(createdAt).getTime() < 10_000;
+
+      if (isNewUser) {
+        console.log('=== NEW USER - Redirecting to onboarding ===');
+        return NextResponse.redirect(`${origin}/onboarding`);
+      }
+
       console.log('=== AUTH CALLBACK SUCCESS - Redirecting to', redirect, '===');
       return NextResponse.redirect(`${origin}${redirect}`);
     }

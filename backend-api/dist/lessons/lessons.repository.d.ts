@@ -6,8 +6,8 @@ export declare class LessonsRepository {
     findById(id: string): Promise<({
         level: {
             id: string;
-            title: string;
             slug: string;
+            title: string;
             orderIndex: number;
             courseId: string;
         };
@@ -43,9 +43,9 @@ export declare class LessonsRepository {
         createdAt: Date;
         updatedAt: Date;
         content: import("@prisma/client/runtime/library").JsonValue | null;
-        title: string;
         isPublished: boolean;
         slug: string;
+        title: string;
         orderIndex: number;
         deletedAt: Date | null;
         levelId: string;
@@ -57,8 +57,8 @@ export declare class LessonsRepository {
         lesson: {
             level: {
                 id: string;
-                title: string;
                 slug: string;
+                title: string;
                 orderIndex: number;
                 courseId: string;
             };
@@ -94,9 +94,9 @@ export declare class LessonsRepository {
             createdAt: Date;
             updatedAt: Date;
             content: import("@prisma/client/runtime/library").JsonValue | null;
-            title: string;
             isPublished: boolean;
             slug: string;
+            title: string;
             orderIndex: number;
             deletedAt: Date | null;
             levelId: string;
@@ -219,9 +219,9 @@ export declare class LessonsRepository {
         createdAt: Date;
         updatedAt: Date;
         description: string | null;
-        title: string;
         isPublished: boolean;
         slug: string;
+        title: string;
         orderIndex: number;
         deletedAt: Date | null;
         courseId: string;
@@ -438,9 +438,9 @@ export declare class LessonsRepository {
         createdAt: Date;
         updatedAt: Date;
         content: import("@prisma/client/runtime/library").JsonValue | null;
-        title: string;
         isPublished: boolean;
         slug: string;
+        title: string;
         orderIndex: number;
         deletedAt: Date | null;
         levelId: string;

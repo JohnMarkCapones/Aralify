@@ -1,3 +1,21 @@
+export type LessonTopic = {
+  title: string;
+  duration: string; // e.g. "3 min"
+  type: "video" | "reading" | "exercise" | "quiz" | "project";
+};
+
+export type SyllabusLesson = {
+  title: string;
+  topics?: LessonTopic[];
+};
+
+export type SyllabusModule = {
+  title: string;
+  lessons: number;
+  description?: string;
+  lessonList?: SyllabusLesson[];
+};
+
 export type Course = {
   slug: string;
   title: string;
@@ -13,7 +31,23 @@ export type Course = {
   students: number;
   topics: string[];
   prerequisites: string[];
-  syllabus: { title: string; lessons: number }[];
+  syllabus: SyllabusModule[];
+  learningOutcomes?: string[];
+  instructor?: {
+    name: string;
+    avatar: string;
+    title: string;
+    bio: string;
+    courses: number;
+    students: number;
+  };
+  reviews?: {
+    name: string;
+    avatar: string;
+    rating: number;
+    date: string;
+    comment: string;
+  }[];
 };
 
 export const courses: Course[] = [
@@ -151,13 +185,230 @@ export const courses: Course[] = [
     students: 1580,
     topics: ["HTML", "CSS", "Beginner", "Frontend"],
     prerequisites: ["No prior experience needed"],
+    learningOutcomes: [
+      "Build complete web pages from scratch using semantic HTML5",
+      "Style any layout with CSS Flexbox and CSS Grid",
+      "Create fully responsive designs that work on all devices",
+      "Add smooth transitions and keyframe animations",
+      "Understand the CSS cascade, specificity, and inheritance",
+      "Deploy a professional portfolio site to the web",
+    ],
+    instructor: {
+      name: "Maria Santos",
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=maria",
+      title: "Senior Frontend Engineer",
+      bio: "Maria has 8 years of experience building accessible, beautiful web interfaces. She has taught over 5,000 students and previously worked at Vercel and Shopify.",
+      courses: 4,
+      students: 5200,
+    },
+    reviews: [
+      { name: "Carlos R.", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=carlos", rating: 5, date: "2 weeks ago", comment: "Best HTML/CSS course I've ever taken. The difficulty tiers are genius -- I started on Easy and now I'm doing Hard challenges!" },
+      { name: "Aiko T.", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=aiko", rating: 5, date: "1 month ago", comment: "The portfolio project at the end was amazing. I actually used it as my real portfolio for job applications." },
+      { name: "Jame P.", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=james", rating: 4, date: "1 month ago", comment: "Great content and the code execution sandbox is really helpful. Would love even more CSS Grid exercises." },
+    ],
     syllabus: [
-      { title: "HTML Structure & Semantics", lessons: 3 },
-      { title: "CSS Basics & Selectors", lessons: 3 },
-      { title: "Flexbox & Layout", lessons: 3 },
-      { title: "CSS Grid", lessons: 3 },
-      { title: "Responsive Design", lessons: 3 },
-      { title: "Final Project: Portfolio Site", lessons: 3 },
+      {
+        title: "HTML Structure & Semantics",
+        lessons: 3,
+        description: "Learn the building blocks of every web page -- tags, elements, attributes, and semantic structure.",
+        lessonList: [
+          {
+            title: "Your First Web Page",
+            topics: [
+              { title: "What is HTML?", duration: "3 min", type: "reading" },
+              { title: "Setting up your editor", duration: "5 min", type: "video" },
+              { title: "Hello World page", duration: "8 min", type: "exercise" },
+              { title: "Knowledge check", duration: "3 min", type: "quiz" },
+            ],
+          },
+          {
+            title: "Tags, Elements & Attributes",
+            topics: [
+              { title: "Anatomy of an HTML element", duration: "4 min", type: "reading" },
+              { title: "Common attributes (id, class, href)", duration: "6 min", type: "video" },
+              { title: "Build a structured page", duration: "10 min", type: "exercise" },
+              { title: "Attribute quiz", duration: "3 min", type: "quiz" },
+            ],
+          },
+          {
+            title: "Semantic HTML5",
+            topics: [
+              { title: "Why semantics matter", duration: "4 min", type: "reading" },
+              { title: "header, nav, main, section, footer", duration: "7 min", type: "video" },
+              { title: "Refactor a page with semantic tags", duration: "10 min", type: "exercise" },
+              { title: "Accessibility check", duration: "4 min", type: "quiz" },
+            ],
+          },
+        ],
+      },
+      {
+        title: "CSS Basics & Selectors",
+        lessons: 3,
+        description: "Master CSS selectors, the box model, colors, typography, and how styles cascade.",
+        lessonList: [
+          {
+            title: "Linking CSS & First Styles",
+            topics: [
+              { title: "Inline, internal, external CSS", duration: "4 min", type: "reading" },
+              { title: "Colors, fonts, and text styling", duration: "6 min", type: "video" },
+              { title: "Style a blog post", duration: "10 min", type: "exercise" },
+              { title: "CSS basics quiz", duration: "3 min", type: "quiz" },
+            ],
+          },
+          {
+            title: "Selectors & Specificity",
+            topics: [
+              { title: "Element, class, ID selectors", duration: "5 min", type: "reading" },
+              { title: "Combinators and pseudo-classes", duration: "7 min", type: "video" },
+              { title: "Specificity calculator challenge", duration: "10 min", type: "exercise" },
+              { title: "Selector battle quiz", duration: "4 min", type: "quiz" },
+            ],
+          },
+          {
+            title: "The Box Model",
+            topics: [
+              { title: "Content, padding, border, margin", duration: "5 min", type: "reading" },
+              { title: "box-sizing: border-box", duration: "4 min", type: "video" },
+              { title: "Box model debugging challenge", duration: "12 min", type: "exercise" },
+              { title: "Box model quiz", duration: "3 min", type: "quiz" },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Flexbox & Layout",
+        lessons: 3,
+        description: "Tame complex layouts with Flexbox -- alignment, distribution, wrapping, and real patterns.",
+        lessonList: [
+          {
+            title: "Flexbox Fundamentals",
+            topics: [
+              { title: "display: flex and axes", duration: "5 min", type: "reading" },
+              { title: "justify-content & align-items", duration: "7 min", type: "video" },
+              { title: "Build a navbar", duration: "12 min", type: "exercise" },
+              { title: "Flex direction quiz", duration: "3 min", type: "quiz" },
+            ],
+          },
+          {
+            title: "Flex Wrapping & Ordering",
+            topics: [
+              { title: "flex-wrap and gap", duration: "4 min", type: "reading" },
+              { title: "flex-grow, flex-shrink, flex-basis", duration: "8 min", type: "video" },
+              { title: "Card layout challenge", duration: "12 min", type: "exercise" },
+              { title: "Flex properties quiz", duration: "3 min", type: "quiz" },
+            ],
+          },
+          {
+            title: "Real Flexbox Patterns",
+            topics: [
+              { title: "Common layout patterns", duration: "5 min", type: "reading" },
+              { title: "Holy grail layout walkthrough", duration: "8 min", type: "video" },
+              { title: "Build a pricing page", duration: "15 min", type: "exercise" },
+              { title: "Layout patterns quiz", duration: "3 min", type: "quiz" },
+            ],
+          },
+        ],
+      },
+      {
+        title: "CSS Grid",
+        lessons: 3,
+        description: "Two-dimensional layouts made easy -- grid templates, areas, auto-fit, and responsive grids.",
+        lessonList: [
+          {
+            title: "Grid Fundamentals",
+            topics: [
+              { title: "display: grid and grid lines", duration: "5 min", type: "reading" },
+              { title: "grid-template-columns/rows", duration: "7 min", type: "video" },
+              { title: "Photo gallery grid", duration: "12 min", type: "exercise" },
+              { title: "Grid basics quiz", duration: "3 min", type: "quiz" },
+            ],
+          },
+          {
+            title: "Grid Areas & Placement",
+            topics: [
+              { title: "grid-area and named lines", duration: "5 min", type: "reading" },
+              { title: "Complex page layout", duration: "8 min", type: "video" },
+              { title: "Dashboard layout challenge", duration: "14 min", type: "exercise" },
+              { title: "Grid placement quiz", duration: "3 min", type: "quiz" },
+            ],
+          },
+          {
+            title: "Auto-fit & Responsive Grid",
+            topics: [
+              { title: "auto-fit, auto-fill, minmax()", duration: "5 min", type: "reading" },
+              { title: "Responsive grid without media queries", duration: "6 min", type: "video" },
+              { title: "Build a responsive portfolio grid", duration: "14 min", type: "exercise" },
+              { title: "Responsive grid quiz", duration: "3 min", type: "quiz" },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Responsive Design",
+        lessons: 3,
+        description: "Make your sites look great on any device -- media queries, mobile-first, and fluid typography.",
+        lessonList: [
+          {
+            title: "Media Queries & Breakpoints",
+            topics: [
+              { title: "Viewport meta and media queries", duration: "5 min", type: "reading" },
+              { title: "Mobile-first approach", duration: "7 min", type: "video" },
+              { title: "Make a page responsive", duration: "12 min", type: "exercise" },
+              { title: "Breakpoints quiz", duration: "3 min", type: "quiz" },
+            ],
+          },
+          {
+            title: "Fluid Typography & Units",
+            topics: [
+              { title: "rem, em, vw, vh, clamp()", duration: "5 min", type: "reading" },
+              { title: "Fluid type scale walkthrough", duration: "6 min", type: "video" },
+              { title: "Fluid typography challenge", duration: "10 min", type: "exercise" },
+              { title: "CSS units quiz", duration: "3 min", type: "quiz" },
+            ],
+          },
+          {
+            title: "Images & Modern Responsive",
+            topics: [
+              { title: "Responsive images and srcset", duration: "5 min", type: "reading" },
+              { title: "Container queries and :has()", duration: "7 min", type: "video" },
+              { title: "Responsive landing page challenge", duration: "15 min", type: "exercise" },
+              { title: "Responsive design quiz", duration: "4 min", type: "quiz" },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Final Project: Portfolio Site",
+        lessons: 3,
+        description: "Bring it all together -- build and deploy a complete, responsive portfolio website.",
+        lessonList: [
+          {
+            title: "Planning & Structure",
+            topics: [
+              { title: "Design wireframe walkthrough", duration: "5 min", type: "reading" },
+              { title: "Setting up the project", duration: "6 min", type: "video" },
+              { title: "Build the HTML skeleton", duration: "15 min", type: "exercise" },
+            ],
+          },
+          {
+            title: "Styling & Animations",
+            topics: [
+              { title: "Transitions & keyframes", duration: "6 min", type: "reading" },
+              { title: "Scroll animations with CSS", duration: "8 min", type: "video" },
+              { title: "Style the complete portfolio", duration: "20 min", type: "project" },
+            ],
+          },
+          {
+            title: "Polish & Deploy",
+            topics: [
+              { title: "Performance and accessibility audit", duration: "5 min", type: "reading" },
+              { title: "Deploy to Vercel/Netlify", duration: "6 min", type: "video" },
+              { title: "Final polish and submission", duration: "15 min", type: "project" },
+              { title: "Course completion quiz", duration: "5 min", type: "quiz" },
+            ],
+          },
+        ],
+      },
     ],
   },
   {

@@ -37,6 +37,15 @@ let UsersController = class UsersController {
     async getStats(user) {
         return this.usersService.getStats(user.id);
     }
+    async getOnboardingStatus(user) {
+        return this.usersService.getOnboardingStatus(user.id);
+    }
+    async completeOnboarding(user, dto) {
+        return this.usersService.completeOnboarding(user.id, dto);
+    }
+    async skipOnboarding(user) {
+        return this.usersService.skipOnboarding(user.id);
+    }
     async getPublicProfile(username, user) {
         return this.usersService.getPublicProfile(username, user?.id);
     }
@@ -122,6 +131,50 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "getStats", null);
+__decorate([
+    (0, common_1.Get)('users/onboarding/status'),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Get onboarding status' }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'Returns onboarding completion state',
+        type: dto_1.OnboardingStatusDto,
+    }),
+    (0, swagger_1.ApiResponse)({ status: 401, description: 'Unauthorized' }),
+    __param(0, (0, decorators_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "getOnboardingStatus", null);
+__decorate([
+    (0, common_1.Put)('users/onboarding/complete'),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Complete onboarding with preferences' }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'Onboarding completed, XP awarded',
+    }),
+    (0, swagger_1.ApiResponse)({ status: 401, description: 'Unauthorized' }),
+    __param(0, (0, decorators_1.CurrentUser)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, dto_1.CompleteOnboardingDto]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "completeOnboarding", null);
+__decorate([
+    (0, common_1.Put)('users/onboarding/skip'),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Skip onboarding' }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'Onboarding skipped',
+    }),
+    (0, swagger_1.ApiResponse)({ status: 401, description: 'Unauthorized' }),
+    __param(0, (0, decorators_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "skipOnboarding", null);
 __decorate([
     (0, common_1.Get)('users/:username'),
     (0, decorators_1.Public)(),

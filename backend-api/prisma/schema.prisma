@@ -44,6 +44,15 @@ model User {
   isActive      Boolean   @default(true)
   role          UserRole  @default(USER)
 
+  // Onboarding
+  onboardingCompleted   Boolean     @default(false)
+  onboardingStep        Int         @default(0)
+  skillLevel            SkillLevel?
+  interestedLanguages   Json?       // ["python", "javascript"]
+  learningGoals         Json?       // ["web-dev", "get-job"]
+  dailyCommitmentMins   Int?
+  onboardingCompletedAt DateTime?
+
   // Ban
   isBanned      Boolean   @default(false)
   bannedAt      DateTime?
@@ -90,6 +99,13 @@ enum UserRole {
   USER
   ADMIN
   MODERATOR
+}
+
+enum SkillLevel {
+  COMPLETE_BEGINNER
+  SOME_EXPERIENCE
+  INTERMEDIATE
+  ADVANCED
 }
 
 model UserSettings {

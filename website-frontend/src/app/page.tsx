@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useScroll, useSpring } from "framer-motion";
+import { useState } from "react";
+import { motion } from "framer-motion";
 import { Cpu, Zap, Shield, Rocket, ArrowRight, GraduationCap, Code2, Globe, Flame, Trophy, Target, Users, BarChart3, Sparkles } from "lucide-react";
 import {
   Navbar,
@@ -21,27 +22,21 @@ import {
 } from "@/components/landing";
 import { NeoButton } from "@/components/ui/neo-button";
 import { CursorGlow, FloatingShapes, GradientOrbs, DotPattern, AnimatedCounter, MagneticButton } from "@/components/effects";
+import { MobileBottomNav } from "@/components/navigation";
 
 export default function Home() {
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001
-  });
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-background font-body text-foreground selection:bg-primary selection:text-white scroll-smooth overflow-x-hidden">
       <CursorGlow />
 
-      <motion.div
-        className="fixed top-0 left-0 right-0 h-1 bg-primary z-[110] origin-left"
-        style={{ scaleX }}
+      <Navbar
+        mobileMenuOpen={mobileMenuOpen}
+        setMobileMenuOpen={setMobileMenuOpen}
       />
 
-      <Navbar />
-
-      <main className="relative">
+      <main className="relative pb-20 lg:pb-0">
         <Hero />
 
         {/* Marquee Banner */}
@@ -340,6 +335,7 @@ export default function Home() {
         <FinalCTA />
         <Footer />
       </main>
+      <MobileBottomNav onMorePress={() => setMobileMenuOpen(true)} />
     </div>
   );
 }

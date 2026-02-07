@@ -127,6 +127,42 @@ let UsersService = class UsersService {
         }
         return this.formatPublicStats(stats, privacySettings);
     }
+    async getOnboardingStatus(userId) {
+        const status = await this.usersRepository.getOnboardingStatus(userId);
+        if (!status) {
+            throw new common_1.NotFoundException('User not found');
+        }
+        return {
+            onboardingCompleted: status.onboardingCompleted,
+            onboardingStep: status.onboardingStep,
+        };
+    }
+    async completeOnboarding(userId, dto) {
+        const user = await this.usersRepository.findById(userId);
+        if (!user) {
+            throw new common_1.NotFoundException('User not found');
+        }
+        const avatarUrl = dto.avatarPreset
+            ? `https://api.dicebear.com/7.x/avataaars/svg?seed=${dto.avatarPreset}`
+            : undefined;
+        await this.usersRepository.completeOnboarding(userId, {
+            displayName: dto.displayName,
+            avatarUrl,
+            skillLevel: dto.skillLevel,
+            interestedLanguages: dto.interestedLanguages,
+            learningGoals: dto.learningGoals,
+            dailyCommitmentMins: dto.dailyCommitmentMins,
+        });
+        return { success: true, xpAwarded: 100 };
+    }
+    async skipOnboarding(userId) {
+        const user = await this.usersRepository.findById(userId);
+        if (!user) {
+            throw new common_1.NotFoundException('User not found');
+        }
+        await this.usersRepository.skipOnboarding(userId);
+        return { success: true };
+    }
     async canViewProfile(viewerId, targetUserId, privacySettings) {
         const visibility = privacySettings?.profileVisibility ?? client_1.ProfileVisibility.PUBLIC;
         if (visibility === client_1.ProfileVisibility.PUBLIC) {
@@ -160,6 +196,7 @@ let UsersService = class UsersService {
             streakLongest: user.streakLongest,
             role: user.role,
             isVerified: user.isVerified,
+            onboardingCompleted: user.onboardingCompleted,
             createdAt: user.createdAt.toISOString(),
             lastActiveAt: user.lastActiveAt?.toISOString() ?? null,
         };

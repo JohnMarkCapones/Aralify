@@ -13,6 +13,7 @@ export declare class UserProfileDto {
     streakLongest: number;
     role: string;
     isVerified: boolean;
+    onboardingCompleted: boolean;
     createdAt: string;
     lastActiveAt?: string | null;
 }

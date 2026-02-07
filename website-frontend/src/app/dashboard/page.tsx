@@ -29,6 +29,11 @@ export default async function DashboardPage() {
     } catch {
       // API unavailable — dashboard will use defaults
     }
+
+    // Check if user needs onboarding
+    if (profile && profile.onboardingCompleted === false) {
+      redirect('/onboarding');
+    }
   }
 
   return (
