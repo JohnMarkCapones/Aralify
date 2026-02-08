@@ -13,7 +13,7 @@ export class ExecuteCodeDto {
 
   @ApiProperty({
     example: 71,
-    description: 'Judge0 language ID (e.g., 71 = Python 3)',
+    description: 'Language ID (e.g., 71 = Python 3)',
   })
   @IsInt()
   languageId!: number;

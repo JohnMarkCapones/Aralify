@@ -1,0 +1,243 @@
+{
+  "client": "Thunder Client",
+  "collectionName": "Piston & Aralify Code Execution",
+  "dateExported": "2026-02-08",
+  "version": "1.1",
+  "folders": [
+    {
+      "_id": "folder-piston-direct",
+      "name": "Piston Direct",
+      "containerId": "",
+      "created": "2026-02-08",
+      "sortNum": 10000
+    },
+    {
+      "_id": "folder-aralify-api",
+      "name": "Aralify Backend",
+      "containerId": "",
+      "created": "2026-02-08",
+      "sortNum": 20000
+    }
+  ],
+  "requests": [
+    {
+      "_id": "req-01-runtimes",
+      "colId": "",
+      "containerId": "folder-piston-direct",
+      "name": "1. List Runtimes (Health Check)",
+      "url": "http://localhost:2000/api/v2/runtimes",
+      "method": "GET",
+      "sortNum": 10000,
+      "created": "2026-02-08",
+      "modified": "2026-02-08",
+      "headers": [],
+      "params": [],
+      "body": { "type": "none" },
+      "tests": []
+    },
+    {
+      "_id": "req-02-python-hello",
+      "colId": "",
+      "containerId": "folder-piston-direct",
+      "name": "2. Python - Hello World",
+      "url": "http://localhost:2000/api/v2/execute",
+      "method": "POST",
+      "sortNum": 20000,
+      "created": "2026-02-08",
+      "modified": "2026-02-08",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"language\": \"python\",\n  \"version\": \"3.10.0\",\n  \"files\": [{\"content\": \"print('Hello from Piston!')\"}]\n}"
+      },
+      "tests": []
+    },
+    {
+      "_id": "req-03-python-stdin",
+      "colId": "",
+      "containerId": "folder-piston-direct",
+      "name": "3. Python - Add Two Numbers (stdin)",
+      "url": "http://localhost:2000/api/v2/execute",
+      "method": "POST",
+      "sortNum": 30000,
+      "created": "2026-02-08",
+      "modified": "2026-02-08",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"language\": \"python\",\n  \"version\": \"3.10.0\",\n  \"files\": [{\"content\": \"a = int(input())\\nb = int(input())\\nprint(a + b)\"}],\n  \"stdin\": \"5\\n3\"\n}"
+      },
+      "tests": []
+    },
+    {
+      "_id": "req-04-python-error",
+      "colId": "",
+      "containerId": "folder-piston-direct",
+      "name": "4. Python - Runtime Error",
+      "url": "http://localhost:2000/api/v2/execute",
+      "method": "POST",
+      "sortNum": 40000,
+      "created": "2026-02-08",
+      "modified": "2026-02-08",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"language\": \"python\",\n  \"version\": \"3.10.0\",\n  \"files\": [{\"content\": \"print(1/0)\"}]\n}"
+      },
+      "tests": []
+    },
+    {
+      "_id": "req-05-python-tle",
+      "colId": "",
+      "containerId": "folder-piston-direct",
+      "name": "5. Python - Time Limit Exceeded",
+      "url": "http://localhost:2000/api/v2/execute",
+      "method": "POST",
+      "sortNum": 50000,
+      "created": "2026-02-08",
+      "modified": "2026-02-08",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"language\": \"python\",\n  \"version\": \"3.10.0\",\n  \"files\": [{\"content\": \"while True: pass\"}],\n  \"run_timeout\": 2000\n}"
+      },
+      "tests": []
+    },
+    {
+      "_id": "req-06-js-hello",
+      "colId": "",
+      "containerId": "folder-piston-direct",
+      "name": "6. JavaScript - Hello World",
+      "url": "http://localhost:2000/api/v2/execute",
+      "method": "POST",
+      "sortNum": 60000,
+      "created": "2026-02-08",
+      "modified": "2026-02-08",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"language\": \"javascript\",\n  \"version\": \"15.10.0\",\n  \"files\": [{\"content\": \"console.log('Hello from Node.js!')\"}]\n}"
+      },
+      "tests": []
+    },
+    {
+      "_id": "req-07-java-hello",
+      "colId": "",
+      "containerId": "folder-piston-direct",
+      "name": "7. Java - Hello World",
+      "url": "http://localhost:2000/api/v2/execute",
+      "method": "POST",
+      "sortNum": 70000,
+      "created": "2026-02-08",
+      "modified": "2026-02-08",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"language\": \"java\",\n  \"version\": \"15.0.2\",\n  \"files\": [{\"content\": \"public class Main { public static void main(String[] args) { System.out.println(\\\"Hello from Java!\\\"); } }\"}]\n}"
+      },
+      "tests": []
+    },
+    {
+      "_id": "req-08-execute",
+      "colId": "",
+      "containerId": "folder-aralify-api",
+      "name": "8. Test Run (no save)",
+      "url": "http://localhost:3001/api/v1/challenges/{{challengeId}}/execute",
+      "method": "POST",
+      "sortNum": 80000,
+      "created": "2026-02-08",
+      "modified": "2026-02-08",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{token}}" }
+      ],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"code\": \"a = int(input())\\nb = int(input())\\nprint(a + b)\",\n  \"languageId\": 71\n}"
+      },
+      "tests": []
+    },
+    {
+      "_id": "req-09-submit",
+      "colId": "",
+      "containerId": "folder-aralify-api",
+      "name": "9. Submit Solution (saves + XP)",
+      "url": "http://localhost:3001/api/v1/challenges/{{challengeId}}/submit",
+      "method": "POST",
+      "sortNum": 90000,
+      "created": "2026-02-08",
+      "modified": "2026-02-08",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{token}}" }
+      ],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"code\": \"a = int(input())\\nb = int(input())\\nprint(a + b)\",\n  \"languageId\": 71,\n  \"timeSpentSeconds\": 45\n}"
+      },
+      "tests": []
+    },
+    {
+      "_id": "req-10-submit-again",
+      "colId": "",
+      "containerId": "folder-aralify-api",
+      "name": "10. Submit Again (no double XP)",
+      "url": "http://localhost:3001/api/v1/challenges/{{challengeId}}/submit",
+      "method": "POST",
+      "sortNum": 100000,
+      "created": "2026-02-08",
+      "modified": "2026-02-08",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{token}}" }
+      ],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"code\": \"a = int(input())\\nb = int(input())\\nprint(a + b)\",\n  \"languageId\": 71\n}"
+      },
+      "tests": []
+    },
+    {
+      "_id": "req-11-wrong",
+      "colId": "",
+      "containerId": "folder-aralify-api",
+      "name": "11. Submit Wrong Answer",
+      "url": "http://localhost:3001/api/v1/challenges/{{challengeId}}/submit",
+      "method": "POST",
+      "sortNum": 110000,
+      "created": "2026-02-08",
+      "modified": "2026-02-08",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{token}}" }
+      ],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"code\": \"print('wrong')\",\n  \"languageId\": 71\n}"
+      },
+      "tests": []
+    }
+  ]
+}

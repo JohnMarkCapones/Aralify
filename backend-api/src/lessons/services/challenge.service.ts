@@ -13,7 +13,7 @@ export class ChallengeService {
 
   /**
    * Submit code for a challenge (storage only, no code execution)
-   * Judge0 integration will update status/testResults later
+   * Piston integration will update status/testResults later
    */
   async submitChallenge(
     lessonId: string,
@@ -43,7 +43,7 @@ export class ChallengeService {
     const attemptNumber = attemptCount + 1;
 
     // Create submission with SUBMITTED status
-    // XP will be awarded when Judge0 updates status to PASSED
+    // XP will be awarded when Piston updates status to PASSED
     const submission = await this.lessonsRepository.createChallengeSubmission({
       userId,
       challengeId,

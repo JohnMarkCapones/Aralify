@@ -19,7 +19,10 @@
       "WebSearch",
       "WebFetch(domain:lottiefiles.com)",
       "Bash(dir:*)",
-      "Bash(npx nest build:*)"
+      "Bash(npx nest build:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:piston.readthedocs.io)",
+      "Bash(git mv:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

@@ -1,2 +1,2 @@
-export * from './judge0.interfaces';
+export * from './piston.interfaces';
 export * from './execution.interfaces';

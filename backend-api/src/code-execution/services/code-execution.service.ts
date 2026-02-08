@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { XpSource } from '@prisma/client';
-import { Judge0Service } from './judge0.service';
+import { PistonService } from './piston.service';
 import { LessonsRepository } from '../../lessons/lessons.repository';
 import { XpService } from '../../gamification/services';
 import {
@@ -14,10 +14,8 @@ import {
   XP_DIFFICULTY_MULTIPLIERS,
 } from '../../gamification/constants';
 import {
-  Judge0SubmissionRequest,
-  Judge0SubmissionResponse,
-  Judge0StatusId,
-  isRuntimeError,
+  PistonExecuteRequest,
+  PistonExecuteResponse,
   TestCaseDefinition,
   TestCaseResult,
   ExecutionResult,
@@ -27,22 +25,22 @@ import {
 @Injectable()
 export class CodeExecutionService {
   private readonly logger = new Logger(CodeExecutionService.name);
-  private readonly maxExecutionTimeSec: number;
-  private readonly maxMemoryKb: number;
+  private readonly runTimeoutMs: number;
+  private readonly runMemoryLimit: number;
 
   constructor(
-    private readonly judge0Service: Judge0Service,
+    private readonly pistonService: PistonService,
     private readonly lessonsRepository: LessonsRepository,
     private readonly xpService: XpService,
     private readonly configService: ConfigService,
   ) {
-    this.maxExecutionTimeSec = this.configService.get<number>(
-      'JUDGE0_MAX_EXECUTION_TIME_SEC',
-      5,
+    this.runTimeoutMs = this.configService.get<number>(
+      'PISTON_RUN_TIMEOUT_MS',
+      10000,
     );
-    this.maxMemoryKb = this.configService.get<number>(
-      'JUDGE0_MAX_MEMORY_KB',
-      131072,
+    this.runMemoryLimit = this.configService.get<number>(
+      'PISTON_RUN_MEMORY_LIMIT',
+      134217728,
     );
   }
 
@@ -190,25 +188,31 @@ export class CodeExecutionService {
     languageId: number,
     testCases: TestCaseDefinition[],
   ): Promise<ExecutionResult> {
-    // Build batch requests
-    const requests: Judge0SubmissionRequest[] = testCases.map((tc) => ({
-      source_code: Buffer.from(code, 'utf-8').toString('base64'),
-      language_id: languageId,
-      stdin: Buffer.from(tc.input, 'utf-8').toString('base64'),
-      cpu_time_limit: this.maxExecutionTimeSec,
-      memory_limit: this.maxMemoryKb,
+    // Map numeric language ID to Piston language + version
+    const { language, version } =
+      this.pistonService.mapLanguageId(languageId);
+
+    // Build Piston requests — no base64, just raw strings
+    const requests: PistonExecuteRequest[] = testCases.map((tc) => ({
+      language,
+      version,
+      files: [{ content: code }],
+      stdin: tc.input,
+      run_timeout: this.runTimeoutMs,
+      compile_timeout: this.runTimeoutMs,
+      run_memory_limit: this.runMemoryLimit,
     }));
 
-    // Execute via Judge0
-    const responses = await this.judge0Service.submitBatch(requests);
+    // Execute via Piston (sequential — no batch endpoint)
+    const responses = await this.pistonService.executeAll(requests);
 
     // Map responses to test results
     const testResults: TestCaseResult[] = responses.map((response, index) => {
       const tc = testCases[index];
-      const actualOutput = response.stdout?.trim() ?? null;
+      const actualOutput = response.run.stdout?.trim() ?? null;
       const expectedOutput = tc.expectedOutput.trim();
       const passed =
-        response.status.id === Judge0StatusId.ACCEPTED &&
+        response.run.code === 0 &&
         actualOutput === expectedOutput;
 
       return {
@@ -217,12 +221,10 @@ export class CodeExecutionService {
         expectedOutput: tc.expectedOutput,
         actualOutput,
         passed,
-        executionTimeMs: response.time
-          ? Math.round(parseFloat(response.time) * 1000)
-          : null,
-        memoryUsedKb: response.memory,
+        executionTimeMs: null,
+        memoryUsedKb: null,
         status: this.getStatusDescription(response),
-        errorOutput: response.stderr || response.compile_output || null,
+        errorOutput: response.run.stderr || response.compile?.stderr || null,
       };
     });
 
@@ -230,14 +232,13 @@ export class CodeExecutionService {
     const failed = testResults.filter((r) => !r.passed).length;
     const hasError = responses.some(
       (r) =>
-        r.status.id === Judge0StatusId.COMPILATION_ERROR ||
-        isRuntimeError(r.status.id) ||
-        r.status.id === Judge0StatusId.INTERNAL_ERROR,
+        (r.compile && r.compile.code !== 0) ||
+        (r.run.code !== null && r.run.code !== 0),
     );
 
     return {
-      stdout: responses[0]?.stdout ?? null,
-      stderr: responses[0]?.stderr ?? null,
+      stdout: responses[0]?.run.stdout ?? null,
+      stderr: responses[0]?.run.stderr ?? null,
       testResults,
       passed,
       failed,
@@ -247,23 +248,27 @@ export class CodeExecutionService {
     };
   }
 
-  private getStatusDescription(response: Judge0SubmissionResponse): string {
-    switch (response.status.id) {
-      case Judge0StatusId.ACCEPTED:
-        return 'Accepted';
-      case Judge0StatusId.WRONG_ANSWER:
-        return 'Wrong Answer';
-      case Judge0StatusId.TIME_LIMIT_EXCEEDED:
-        return 'Time Limit Exceeded';
-      case Judge0StatusId.COMPILATION_ERROR:
-        return 'Compilation Error';
-      case Judge0StatusId.INTERNAL_ERROR:
-        return 'Internal Error';
-      default:
-        if (isRuntimeError(response.status.id)) {
-          return `Runtime Error (${response.status.description})`;
-        }
-        return response.status.description;
+  private getStatusDescription(response: PistonExecuteResponse): string {
+    // Compilation error
+    if (response.compile && response.compile.code !== 0) {
+      return 'Compilation Error';
     }
+
+    // Successful execution
+    if (response.run.code === 0) {
+      return 'Accepted';
+    }
+
+    // Killed by signal (typically SIGKILL from timeout)
+    if (response.run.signal === 'SIGKILL') {
+      return 'Time Limit Exceeded';
+    }
+
+    // Other non-zero exit code = runtime error
+    if (response.run.code !== null && response.run.code !== 0) {
+      return `Runtime Error (exit code ${response.run.code})`;
+    }
+
+    return 'Unknown Error';
   }
 }
