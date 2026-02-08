@@ -16,7 +16,10 @@
       "Bash(npm ls:*)",
       "Bash(ls:*)",
       "Bash(pnpm build:*)",
-      "WebSearch"
+      "WebSearch",
+      "WebFetch(domain:lottiefiles.com)",
+      "Bash(dir:*)",
+      "Bash(npx nest build:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

@@ -116,9 +116,9 @@ export default function CoursesPage() {
                       <div>
                         <h3 className="font-black text-base leading-tight">{course.title}</h3>
                         <span className={`text-xs font-black uppercase px-2 py-0.5 rounded-full neo-brutal-border inline-block mt-0.5 ${
-                          course.difficulty === "Beginner" ? "bg-green-100 text-green-800" :
-                          course.difficulty === "Intermediate" ? "bg-yellow-100 text-yellow-800" :
-                          "bg-red-100 text-red-800"
+                          course.difficulty === "Beginner" ? "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300" :
+                          course.difficulty === "Intermediate" ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300" :
+                          "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300"
                         }`}>
                           {course.difficulty}
                         </span>

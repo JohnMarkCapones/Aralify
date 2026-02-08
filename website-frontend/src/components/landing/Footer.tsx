@@ -28,7 +28,7 @@ const socials = [
 
 export function Footer() {
   return (
-    <footer className="bg-foreground text-background py-24 border-t-4 border-border relative overflow-hidden">
+    <footer className="surface-inverted py-24 border-t-4 border-border relative overflow-hidden">
       <div className="container mx-auto px-4 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-20">
           <div className="lg:col-span-2 space-y-8">
@@ -46,7 +46,7 @@ export function Footer() {
                 <a
                   key={i}
                   href="#"
-                  className={`w-12 h-12 bg-background text-foreground neo-brutal-border-white flex items-center justify-center rounded-xl transition-all hover:-translate-y-1 ${social.color} hover:text-white`}
+                  className={`w-12 h-12 bg-white/90 text-[hsl(222,47%,11%)] neo-brutal-border-white flex items-center justify-center rounded-xl transition-all hover:-translate-y-1 ${social.color} hover:text-white`}
                   aria-label={social.label}
                 >
                   {social.icon}
@@ -72,7 +72,7 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="flex flex-col md:flex-row items-center justify-between pt-12 border-t-2 border-background/10 gap-6">
+        <div className="flex flex-col md:flex-row items-center justify-between pt-12 border-t-2 border-white/10 gap-6">
           <div className="opacity-40 font-bold text-lg">&copy; 2026 ARALIFY. ALL RIGHTS RESERVED.</div>
           <div className="flex items-center gap-2">
             <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse" />

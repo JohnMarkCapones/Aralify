@@ -133,7 +133,7 @@ export function CoursePreview() {
                     <div>
                       <h3 className="font-black text-lg leading-tight">{course.title}</h3>
                       <span className={`text-xs font-black uppercase px-2 py-0.5 rounded-full neo-brutal-border mt-1 inline-block ${
-                        course.difficulty === "Beginner" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
+                        course.difficulty === "Beginner" ? "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300" : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300"
                       }`}>
                         {course.difficulty}
                       </span>

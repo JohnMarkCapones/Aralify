@@ -32,7 +32,7 @@ export function Leaderboard() {
           className="text-center mb-20"
         >
           <h2 className="text-5xl md:text-8xl font-black mb-4 tracking-tighter">LEADERBOARD</h2>
-          <div className="inline-block bg-foreground text-background px-6 py-2 neo-brutal-border rotate-1 font-black text-lg">TOP PERFORMERS THIS WEEK</div>
+          <div className="inline-block bg-[hsl(222,47%,11%)] text-white px-6 py-2 neo-brutal-border rotate-1 font-black text-lg">TOP PERFORMERS THIS WEEK</div>
         </motion.div>
 
         <div className="flex flex-col md:flex-row items-end justify-center gap-6 min-h-[420px] max-w-4xl mx-auto">
@@ -84,7 +84,7 @@ export function Leaderboard() {
             <div className="text-center mb-8">
               <Star className="mx-auto mb-2 fill-foreground" size={40} />
               <h3 className="text-3xl font-black">{leaderboardData[0].name}</h3>
-              <p className="font-mono text-xl font-black bg-foreground text-background px-6 py-1 rounded-full mt-1">{leaderboardData[0].xp.toLocaleString()} XP</p>
+              <p className="font-mono text-xl font-black bg-[hsl(222,47%,11%)] text-white px-6 py-1 rounded-full mt-1">{leaderboardData[0].xp.toLocaleString()} XP</p>
             </div>
             <div className="absolute top-8 right-8 flex gap-1">
               <Zap size={20} className="fill-foreground" />

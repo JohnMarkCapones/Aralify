@@ -6,7 +6,7 @@ import { FloatingShapes } from "@/components/effects";
 
 export function MobilePreview() {
   return (
-    <section className="py-32 bg-foreground text-background overflow-hidden relative noise-overlay">
+    <section className="py-32 surface-inverted overflow-hidden relative noise-overlay">
       <FloatingShapes shapes={[
         { type: "ring", size: 70, x: "5%", y: "10%", color: "border-white", delay: 0, duration: 14 },
         { type: "circle", size: 25, x: "92%", y: "20%", color: "bg-white", delay: 1, duration: 10 },

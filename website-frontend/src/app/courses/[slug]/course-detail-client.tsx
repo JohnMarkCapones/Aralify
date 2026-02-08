@@ -62,13 +62,13 @@ function topicTypeLabel(type: string) {
 
 function topicTypeColor(type: string) {
   const map: Record<string, string> = {
-    video: "text-blue-600 bg-blue-100",
-    reading: "text-purple-600 bg-purple-100",
-    exercise: "text-green-600 bg-green-100",
-    quiz: "text-orange-600 bg-orange-100",
-    project: "text-pink-600 bg-pink-100",
+    video: "text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-900/40",
+    reading: "text-purple-600 bg-purple-100 dark:text-purple-400 dark:bg-purple-900/40",
+    exercise: "text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-900/40",
+    quiz: "text-orange-600 bg-orange-100 dark:text-orange-400 dark:bg-orange-900/40",
+    project: "text-pink-600 bg-pink-100 dark:text-pink-400 dark:bg-pink-900/40",
   };
-  return map[type] || "text-gray-600 bg-gray-100";
+  return map[type] || "text-gray-600 bg-gray-100 dark:text-gray-400 dark:bg-gray-900/40";
 }
 
 // ─── Level 3: Topic row (innermost) ─────────────────────────────────────────
@@ -515,7 +515,7 @@ export function CourseDetailClient({ course }: { course: Course }) {
                       >
                         <motion.div
                           whileHover={{ scale: 1.2, rotate: 10 }}
-                          className="w-6 h-6 bg-green-100 text-green-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 neo-brutal-border group-hover:bg-green-200 transition-colors"
+                          className="w-6 h-6 bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 neo-brutal-border group-hover:bg-green-200 dark:group-hover:bg-green-900/50 transition-colors"
                         >
                           <CheckCircle size={14} />
                         </motion.div>
@@ -538,25 +538,25 @@ export function CourseDetailClient({ course }: { course: Course }) {
                     value: course.syllabus.length,
                     label: "Modules",
                     icon: <Layers size={20} />,
-                    color: "bg-blue-100 text-blue-600",
+                    color: "bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400",
                   },
                   {
                     value: course.lessons,
                     label: "Lessons",
                     icon: <BookOpen size={20} />,
-                    color: "bg-purple-100 text-purple-600",
+                    color: "bg-purple-100 text-purple-600 dark:bg-purple-900/40 dark:text-purple-400",
                   },
                   {
                     value: totalTopics,
                     label: "Activities",
                     icon: <Target size={20} />,
-                    color: "bg-green-100 text-green-600",
+                    color: "bg-green-100 text-green-600 dark:bg-green-900/40 dark:text-green-400",
                   },
                   {
                     value: course.hours,
                     label: "Hours",
                     icon: <Clock size={20} />,
-                    color: "bg-orange-100 text-orange-600",
+                    color: "bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400",
                   },
                 ].map((stat, i) => (
                   <CardTilt key={i} intensity={5}>
@@ -636,24 +636,24 @@ export function CourseDetailClient({ course }: { course: Course }) {
                       xp: "1x",
                       xpAmount: 100,
                       desc: "Core concepts, guided examples, straightforward challenges.",
-                      color: "border-l-green-500 bg-green-50",
-                      iconColor: "bg-green-100 text-green-600",
+                      color: "border-l-green-500 bg-green-50 dark:bg-green-950/30",
+                      iconColor: "bg-green-100 text-green-600 dark:bg-green-900/40 dark:text-green-400",
                     },
                     {
                       tier: "MEDIUM",
                       xp: "2x",
                       xpAmount: 200,
                       desc: "Less hand-holding, real-world scenarios, multi-step problems.",
-                      color: "border-l-yellow-500 bg-yellow-50",
-                      iconColor: "bg-yellow-100 text-yellow-600",
+                      color: "border-l-yellow-500 bg-yellow-50 dark:bg-yellow-950/30",
+                      iconColor: "bg-yellow-100 text-yellow-600 dark:bg-yellow-900/40 dark:text-yellow-400",
                     },
                     {
                       tier: "HARD",
                       xp: "3x",
                       xpAmount: 300,
                       desc: "Production-level challenges, edge cases, performance constraints.",
-                      color: "border-l-red-500 bg-red-50",
-                      iconColor: "bg-red-100 text-red-600",
+                      color: "border-l-red-500 bg-red-50 dark:bg-red-950/30",
+                      iconColor: "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400",
                     },
                   ].map((t, i) => (
                     <CardTilt key={t.tier} intensity={6}>
@@ -883,7 +883,7 @@ export function CourseDetailClient({ course }: { course: Course }) {
                     <span className="font-medium text-muted-foreground">
                       Skill Level
                     </span>
-                    <span className="font-black text-xs px-2 py-0.5 rounded-full neo-brutal-border bg-green-100 text-green-800">
+                    <span className="font-black text-xs px-2 py-0.5 rounded-full neo-brutal-border bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300">
                       {course.difficulty}
                     </span>
                   </div>

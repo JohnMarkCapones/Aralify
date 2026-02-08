@@ -13,3 +13,6 @@ export { Subscription } from "./Subscription";
 export { FAQ } from "./FAQ";
 export { FinalCTA } from "./FinalCTA";
 export { Footer } from "./Footer";
+export { StudentJourney } from "./StudentJourney";
+export { CommunityHighlights } from "./CommunityHighlights";
+export { Partners } from "./Partners";

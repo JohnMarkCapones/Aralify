@@ -19,6 +19,9 @@ import {
   FAQ,
   FinalCTA,
   Footer,
+  StudentJourney,
+  CommunityHighlights,
+  Partners,
 } from "@/components/landing";
 import { NeoButton } from "@/components/ui/neo-button";
 import { CursorGlow, FloatingShapes, GradientOrbs, DotPattern, AnimatedCounter, MagneticButton } from "@/components/effects";
@@ -40,7 +43,7 @@ export default function Home() {
         <Hero />
 
         {/* Marquee Banner */}
-        <div className="bg-foreground text-background py-5 border-y-4 border-border overflow-hidden rotate-[-1deg] scale-[1.02] z-20 relative noise-overlay">
+        <div className="surface-inverted py-5 border-y-4 border-border overflow-hidden rotate-[-1deg] scale-[1.02] z-20 relative noise-overlay">
           <div className="animate-marquee whitespace-nowrap font-display font-black text-2xl sm:text-3xl flex gap-12 items-center w-max">
             {Array(2).fill(null).map((_, setIdx) => (
               <span key={setIdx} className="flex items-center gap-12 uppercase tracking-widest">
@@ -179,11 +182,11 @@ export default function Home() {
 
                 <div className="bg-card neo-brutal-border neo-brutal-shadow-lg rounded-3xl overflow-hidden">
                   {/* Dashboard header */}
-                  <div className="bg-foreground px-6 py-4 flex items-center gap-3">
+                  <div className="bg-[hsl(222,47%,11%)] dark:bg-[hsl(222,47%,6%)] px-6 py-4 flex items-center gap-3">
                     <div className="w-3 h-3 rounded-full bg-destructive" />
                     <div className="w-3 h-3 rounded-full bg-accent" />
                     <div className="w-3 h-3 rounded-full bg-green-500" />
-                    <span className="ml-auto text-background font-mono text-xs tracking-wider flex items-center gap-2">
+                    <span className="ml-auto text-white font-mono text-xs tracking-wider flex items-center gap-2">
                       <BarChart3 size={14} /> Learner Dashboard
                     </span>
                   </div>
@@ -326,10 +329,13 @@ export default function Home() {
           </div>
         </section>
 
+        <StudentJourney />
         <Comparison />
+        <CommunityHighlights />
         <Testimonials />
         <Leaderboard />
         <MobilePreview />
+        <Partners />
         <Subscription />
         <FAQ />
         <FinalCTA />

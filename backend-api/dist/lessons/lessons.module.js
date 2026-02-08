@@ -25,7 +25,7 @@ exports.LessonsModule = LessonsModule = __decorate([
         imports: [prisma_module_1.PrismaModule, gamification_module_1.GamificationModule, auth_module_1.AuthModule],
         controllers: [lessons_controller_1.LessonsController, admin_quiz_controller_1.AdminQuizController],
         providers: [lessons_service_1.LessonsService, lessons_repository_1.LessonsRepository, quiz_service_1.QuizService, challenge_service_1.ChallengeService],
-        exports: [lessons_service_1.LessonsService, quiz_service_1.QuizService, challenge_service_1.ChallengeService],
+        exports: [lessons_service_1.LessonsService, lessons_repository_1.LessonsRepository, quiz_service_1.QuizService, challenge_service_1.ChallengeService],
     })
 ], LessonsModule);
 //# sourceMappingURL=lessons.module.js.map

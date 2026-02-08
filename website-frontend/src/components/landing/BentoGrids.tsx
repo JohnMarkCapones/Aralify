@@ -105,7 +105,7 @@ export function BentoGrids() {
           </div>
           <motion.div
             whileHover={{ scale: 1.1 }}
-            className="w-20 h-20 bg-white rounded-full flex items-center justify-center neo-brutal-border z-20"
+            className="w-20 h-20 bg-white dark:bg-card rounded-full flex items-center justify-center neo-brutal-border z-20"
           >
             <Play className="fill-foreground ml-1" size={32} />
           </motion.div>

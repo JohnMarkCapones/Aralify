@@ -107,12 +107,12 @@ export declare class UsersRepository {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            userId: string;
             theme: string;
             codeEditorTheme: string;
             fontSize: number;
             dailyGoalMins: number;
             difficultyPref: import(".prisma/client").$Enums.Difficulty;
+            userId: string;
         } | null;
     } & {
         level: number;
@@ -179,12 +179,12 @@ export declare class UsersRepository {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            userId: string;
             theme: string;
             codeEditorTheme: string;
             fontSize: number;
             dailyGoalMins: number;
             difficultyPref: import(".prisma/client").$Enums.Difficulty;
+            userId: string;
         } | null;
     } & {
         level: number;
@@ -280,12 +280,12 @@ export declare class UsersRepository {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
         theme: string;
         codeEditorTheme: string;
         fontSize: number;
         dailyGoalMins: number;
         difficultyPref: import(".prisma/client").$Enums.Difficulty;
+        userId: string;
     }>;
     updateNotificationSettings(userId: string, data: {
         emailEnabled?: boolean;

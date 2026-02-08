@@ -100,43 +100,43 @@
 }
 
 .dark {
-  --background: 222 47% 4%;
+  --background: 222 47% 5%;
   --foreground: 210 40% 98%;
 
-  --card: 222 47% 8%;
+  --card: 222 47% 10%;
   --card-foreground: 210 40% 98%;
 
-  --popover: 222 47% 8%;
+  --popover: 222 47% 12%;
   --popover-foreground: 210 40% 98%;
 
-  --primary: 217 91% 60%;
+  --primary: 217 91% 65%;
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 199 89% 48%;
+  --secondary: 199 89% 55%;
   --secondary-foreground: 0 0% 100%;
 
-  --muted: 217 32% 17%;
-  --muted-foreground: 210 40% 98%;
+  --muted: 217 32% 20%;
+  --muted-foreground: 215 20% 65%;
 
-  --accent: 45 100% 50%;
+  --accent: 45 100% 55%;
   --accent-foreground: 0 0% 0%;
 
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 0 0% 98%;
 
-  --border: 0 0% 100%;
-  --input: 222 47% 8%;
-  --ring: 217 91% 60%;
+  --border: 215 20% 30%;
+  --input: 222 47% 12%;
+  --ring: 217 91% 65%;
 
   /* Sidebar colors - dark mode */
-  --sidebar: 222 47% 8%;
+  --sidebar: 222 47% 10%;
   --sidebar-foreground: 210 40% 98%;
-  --sidebar-primary: 217 91% 60%;
+  --sidebar-primary: 217 91% 65%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 217 32% 17%;
+  --sidebar-accent: 217 32% 20%;
   --sidebar-accent-foreground: 210 40% 98%;
-  --sidebar-border: 0 0% 100%;
-  --sidebar-ring: 217 91% 60%;
+  --sidebar-border: 215 20% 30%;
+  --sidebar-ring: 217 91% 65%;
 }
 
 @layer base {
@@ -169,6 +169,26 @@
   }
   .neo-brutal-border-white {
     border: 3px solid white;
+  }
+
+  /* Dark mode shadow overrides */
+  .dark .neo-brutal-shadow {
+    box-shadow: 5px 5px 0px 0px hsl(215 20% 20%);
+  }
+  .dark .neo-brutal-shadow-lg {
+    box-shadow: 8px 8px 0px 0px hsl(215 20% 20%);
+  }
+  .dark .neo-brutal-shadow-sm {
+    box-shadow: 3px 3px 0px 0px hsl(215 20% 20%);
+  }
+  .dark .neo-brutal-shadow-blue {
+    box-shadow: 8px 8px 0px 0px hsl(217 91% 45%);
+  }
+
+  /* Always-dark surface for inverted sections */
+  .surface-inverted {
+    background-color: hsl(222 47% 6%);
+    color: hsl(210 40% 98%);
   }
 
   .text-stroke {

@@ -10,6 +10,8 @@ exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const core_1 = require("@nestjs/core");
+const throttler_1 = require("@nestjs/throttler");
+const event_emitter_1 = require("@nestjs/event-emitter");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
 const prisma_module_1 = require("./prisma/prisma.module");
@@ -23,6 +25,7 @@ const leaderboards_module_1 = require("./leaderboards/leaderboards.module");
 const admin_module_1 = require("./admin/admin.module");
 const comments_module_1 = require("./comments/comments.module");
 const notifications_module_1 = require("./notifications/notifications.module");
+const code_execution_module_1 = require("./code-execution/code-execution.module");
 const guards_1 = require("./auth/guards");
 let AppModule = class AppModule {
 };
@@ -34,6 +37,11 @@ exports.AppModule = AppModule = __decorate([
                 isGlobal: true,
                 envFilePath: '.env',
             }),
+            throttler_1.ThrottlerModule.forRoot([{
+                    ttl: 60000,
+                    limit: 60,
+                }]),
+            event_emitter_1.EventEmitterModule.forRoot(),
             prisma_module_1.PrismaModule,
             auth_module_1.AuthModule,
             courses_module_1.CoursesModule,
@@ -45,6 +53,7 @@ exports.AppModule = AppModule = __decorate([
             admin_module_1.AdminModule,
             comments_module_1.CommentsModule,
             notifications_module_1.NotificationsModule,
+            code_execution_module_1.CodeExecutionModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [
@@ -52,6 +61,10 @@ exports.AppModule = AppModule = __decorate([
             {
                 provide: core_1.APP_GUARD,
                 useClass: guards_1.JwtAuthGuard,
+            },
+            {
+                provide: core_1.APP_GUARD,
+                useClass: throttler_1.ThrottlerGuard,
             },
         ],
     })
