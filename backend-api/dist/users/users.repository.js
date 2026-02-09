@@ -140,6 +140,58 @@ let UsersRepository = class UsersRepository {
             badgesEarned: badgesCount,
         };
     }
+    async getOnboardingStatus(userId) {
+        return this.prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+                onboardingCompleted: true,
+                onboardingStep: true,
+            },
+        });
+    }
+    async completeOnboarding(userId, data) {
+        const [user] = await this.prisma.$transaction([
+            this.prisma.user.update({
+                where: { id: userId },
+                data: {
+                    displayName: data.displayName,
+                    avatarUrl: data.avatarUrl,
+                    onboardingCompleted: true,
+                    onboardingStep: 7,
+                    skillLevel: data.skillLevel,
+                    interestedLanguages: data.interestedLanguages,
+                    learningGoals: data.learningGoals,
+                    dailyCommitmentMins: data.dailyCommitmentMins,
+                    onboardingCompletedAt: new Date(),
+                    xpTotal: { increment: 100 },
+                },
+            }),
+            this.prisma.userSettings.upsert({
+                where: { userId },
+                update: { dailyGoalMins: data.dailyCommitmentMins },
+                create: { userId, dailyGoalMins: data.dailyCommitmentMins },
+            }),
+            this.prisma.xpTransaction.create({
+                data: {
+                    userId,
+                    amount: 100,
+                    source: client_1.XpSource.EVENT,
+                    description: 'Welcome bonus - Onboarding completed',
+                },
+            }),
+        ]);
+        return user;
+    }
+    async skipOnboarding(userId) {
+        return this.prisma.user.update({
+            where: { id: userId },
+            data: {
+                onboardingCompleted: true,
+                onboardingStep: 7,
+                onboardingCompletedAt: new Date(),
+            },
+        });
+    }
     async getPrivacySettings(userId) {
         return this.prisma.privacySettings.findUnique({
             where: { userId },

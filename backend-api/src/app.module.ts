@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
@@ -14,6 +16,7 @@ import { LeaderboardsModule } from './leaderboards/leaderboards.module';
 import { AdminModule } from './admin/admin.module';
 import { CommentsModule } from './comments/comments.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { CodeExecutionModule } from './code-execution/code-execution.module';
 import { JwtAuthGuard } from './auth/guards';
 
 @Module({
@@ -22,6 +25,11 @@ import { JwtAuthGuard } from './auth/guards';
       isGlobal: true,
       envFilePath: '.env',
     }),
+    ThrottlerModule.forRoot([{
+      ttl: 60000,
+      limit: 60,
+    }]),
+    EventEmitterModule.forRoot(),
     PrismaModule,
     AuthModule,
     CoursesModule,
@@ -33,6 +41,7 @@ import { JwtAuthGuard } from './auth/guards';
     AdminModule,
     CommentsModule,
     NotificationsModule,
+    CodeExecutionModule,
   ],
   controllers: [AppController],
   providers: [
@@ -42,6 +51,10 @@ import { JwtAuthGuard } from './auth/guards';
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
   ],
 })

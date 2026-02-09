@@ -1,7 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Difficulty, ProfileVisibility, AllowMessages } from '@prisma/client';
+import { Difficulty, ProfileVisibility, AllowMessages, SkillLevel } from '@prisma/client';
 import { UsersRepository } from './users.repository';
-import { UpdateProfileDto, UpdateSettingsDto } from './dto';
+import {
+  UpdateProfileDto,
+  UpdateSettingsDto,
+  CompleteOnboardingDto,
+  OnboardingStatusDto,
+} from './dto';
 import {
   UserProfileDto,
   PublicUserProfileDto,
@@ -204,6 +209,61 @@ export class UsersService {
   }
 
   // ============================================================================
+  // Onboarding Operations
+  // ============================================================================
+
+  async getOnboardingStatus(userId: string): Promise<OnboardingStatusDto> {
+    const status = await this.usersRepository.getOnboardingStatus(userId);
+
+    if (!status) {
+      throw new NotFoundException('User not found');
+    }
+
+    return {
+      onboardingCompleted: status.onboardingCompleted,
+      onboardingStep: status.onboardingStep,
+    };
+  }
+
+  async completeOnboarding(
+    userId: string,
+    dto: CompleteOnboardingDto,
+  ): Promise<{ success: boolean; xpAwarded: number }> {
+    const user = await this.usersRepository.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const avatarUrl = dto.avatarPreset
+      ? `https://api.dicebear.com/7.x/avataaars/svg?seed=${dto.avatarPreset}`
+      : undefined;
+
+    await this.usersRepository.completeOnboarding(userId, {
+      displayName: dto.displayName,
+      avatarUrl,
+      skillLevel: dto.skillLevel as SkillLevel,
+      interestedLanguages: dto.interestedLanguages,
+      learningGoals: dto.learningGoals,
+      dailyCommitmentMins: dto.dailyCommitmentMins,
+    });
+
+    return { success: true, xpAwarded: 100 };
+  }
+
+  async skipOnboarding(userId: string): Promise<{ success: boolean }> {
+    const user = await this.usersRepository.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    await this.usersRepository.skipOnboarding(userId);
+
+    return { success: true };
+  }
+
+  // ============================================================================
   // Private Helper Methods
   // ============================================================================
 
@@ -248,6 +308,7 @@ export class UsersService {
       streakLongest: user.streakLongest,
       role: user.role,
       isVerified: user.isVerified,
+      onboardingCompleted: user.onboardingCompleted,
       createdAt: user.createdAt.toISOString(),
       lastActiveAt: user.lastActiveAt?.toISOString() ?? null,
     };

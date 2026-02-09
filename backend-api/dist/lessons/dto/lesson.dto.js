@@ -73,7 +73,7 @@ __decorate([
     __metadata("design:type", Object)
 ], ChallengeSummaryDto.prototype, "starterCode", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: 71, description: 'Judge0 language ID' }),
+    (0, swagger_1.ApiProperty)({ example: 71, description: 'Language ID' }),
     __metadata("design:type", Number)
 ], ChallengeSummaryDto.prototype, "languageId", void 0);
 class HintDto {

@@ -13,6 +13,6 @@ import { AuthModule } from '../auth/auth.module';
   imports: [PrismaModule, GamificationModule, AuthModule],
   controllers: [LessonsController, AdminQuizController],
   providers: [LessonsService, LessonsRepository, QuizService, ChallengeService],
-  exports: [LessonsService, QuizService, ChallengeService],
+  exports: [LessonsService, LessonsRepository, QuizService, ChallengeService],
 })
 export class LessonsModule {}

@@ -57,7 +57,7 @@ export class ChallengeSummaryDto {
   @ApiPropertyOptional({ example: 'def add(a, b):\n    # Your code here\n    pass', nullable: true })
   starterCode?: string | null;
 
-  @ApiProperty({ example: 71, description: 'Judge0 language ID' })
+  @ApiProperty({ example: 71, description: 'Language ID' })
   languageId!: number;
 }
 

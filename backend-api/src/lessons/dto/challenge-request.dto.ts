@@ -11,7 +11,7 @@ export class SubmitChallengeDto {
 
   @ApiProperty({
     example: 71,
-    description: 'Judge0 language ID',
+    description: 'Language ID',
   })
   @IsInt()
   languageId!: number;

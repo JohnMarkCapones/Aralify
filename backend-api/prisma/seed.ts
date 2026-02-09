@@ -201,7 +201,7 @@ async function main() {
   const courseLevelsMap = [
     { course: pythonCourse, levels: pythonLevels, langId: 71 }, // Python 3
     { course: jsCourse, levels: jsLevels, langId: 63 }, // JavaScript
-    { course: htmlCssCourse, levels: htmlCssLevels, langId: 63 }, // HTML uses JS for Judge0
+    { course: htmlCssCourse, levels: htmlCssLevels, langId: 63 }, // HTML uses JS for code execution
   ];
 
   let totalLessons = 0;

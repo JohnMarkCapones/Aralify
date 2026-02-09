@@ -9,7 +9,20 @@
       "Bash(npm run build:*)",
       "Bash(npx prisma db pull:*)",
       "Bash(node -e:*)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(npx next build:*)",
+      "Bash(npx tsc:*)",
+      "Bash(wc:*)",
+      "Bash(npm ls:*)",
+      "Bash(ls:*)",
+      "Bash(pnpm build:*)",
+      "WebSearch",
+      "WebFetch(domain:lottiefiles.com)",
+      "Bash(dir:*)",
+      "Bash(npx nest build:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:piston.readthedocs.io)",
+      "Bash(git mv:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

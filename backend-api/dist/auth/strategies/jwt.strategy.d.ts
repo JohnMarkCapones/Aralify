@@ -39,6 +39,13 @@ export declare class JwtStrategy extends JwtStrategy_base {
         isVerified: boolean;
         isActive: boolean;
         role: import(".prisma/client").$Enums.UserRole;
+        onboardingCompleted: boolean;
+        onboardingStep: number;
+        skillLevel: import(".prisma/client").$Enums.SkillLevel | null;
+        interestedLanguages: import("@prisma/client/runtime/library").JsonValue | null;
+        learningGoals: import("@prisma/client/runtime/library").JsonValue | null;
+        dailyCommitmentMins: number | null;
+        onboardingCompletedAt: Date | null;
         isBanned: boolean;
         bannedAt: Date | null;
         bannedUntil: Date | null;

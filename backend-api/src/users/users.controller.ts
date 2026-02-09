@@ -17,6 +17,8 @@ import {
   PublicUserStatsDto,
   UpdateProfileDto,
   UpdateSettingsDto,
+  CompleteOnboardingDto,
+  OnboardingStatusDto,
 } from './dto';
 
 @ApiTags('Users')
@@ -97,6 +99,54 @@ export class UsersController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getStats(@CurrentUser() user: User): Promise<UserStatsDto> {
     return this.usersService.getStats(user.id);
+  }
+
+  // ============================================================================
+  // Onboarding Endpoints (/api/v1/users/onboarding/*)
+  // ============================================================================
+
+  @Get('users/onboarding/status')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get onboarding status' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns onboarding completion state',
+    type: OnboardingStatusDto,
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getOnboardingStatus(
+    @CurrentUser() user: User,
+  ): Promise<OnboardingStatusDto> {
+    return this.usersService.getOnboardingStatus(user.id);
+  }
+
+  @Put('users/onboarding/complete')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Complete onboarding with preferences' })
+  @ApiResponse({
+    status: 200,
+    description: 'Onboarding completed, XP awarded',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async completeOnboarding(
+    @CurrentUser() user: User,
+    @Body() dto: CompleteOnboardingDto,
+  ): Promise<{ success: boolean; xpAwarded: number }> {
+    return this.usersService.completeOnboarding(user.id, dto);
+  }
+
+  @Put('users/onboarding/skip')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Skip onboarding' })
+  @ApiResponse({
+    status: 200,
+    description: 'Onboarding skipped',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async skipOnboarding(
+    @CurrentUser() user: User,
+  ): Promise<{ success: boolean }> {
+    return this.usersService.skipOnboarding(user.id);
   }
 
   // ============================================================================

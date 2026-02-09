@@ -1,5 +1,5 @@
 import { UsersRepository } from './users.repository';
-import { UpdateProfileDto, UpdateSettingsDto } from './dto';
+import { UpdateProfileDto, UpdateSettingsDto, CompleteOnboardingDto, OnboardingStatusDto } from './dto';
 import { UserProfileDto, PublicUserProfileDto, UserSettingsDto, UserStatsDto, PublicUserStatsDto } from './dto';
 export declare class UsersService {
     private readonly usersRepository;
@@ -11,6 +11,14 @@ export declare class UsersService {
     updateSettings(userId: string, dto: UpdateSettingsDto): Promise<UserSettingsDto>;
     getStats(userId: string): Promise<UserStatsDto>;
     getPublicStats(username: string, viewerId?: string): Promise<PublicUserStatsDto>;
+    getOnboardingStatus(userId: string): Promise<OnboardingStatusDto>;
+    completeOnboarding(userId: string, dto: CompleteOnboardingDto): Promise<{
+        success: boolean;
+        xpAwarded: number;
+    }>;
+    skipOnboarding(userId: string): Promise<{
+        success: boolean;
+    }>;
     private canViewProfile;
     private formatUserProfile;
     private formatPublicProfile;

@@ -6,13 +6,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Aralify (internally "CodeForge") is an interactive programming education platform with a unique difficulty tier system (Easy/Medium/Hard) per lesson. Learners can progress at their own pace while earning XP multipliers (1x/2x/3x) for harder challenges.
 
-**Core features:** Real code execution (Judge0 sandbox), gamification (XP, streaks, badges, leaderboards), cross-platform (Next.js web + React Native mobile), offline support, multilingual (EN/FIL).
+**Core features:** Real code execution (Piston sandbox), gamification (XP, streaks, badges, leaderboards), cross-platform (Next.js web + React Native mobile), offline support, multilingual (EN/FIL).
 
 ## Tech Stack
 
 - **Frontend:** Next.js 14+ (App Router), React Native + Expo, TypeScript, Tailwind CSS, Zustand + TanStack Query, Monaco Editor
 - **Backend:** NestJS, Node.js 20+, Prisma ORM, PostgreSQL (Supabase), Redis (Upstash), Bull Queue, Socket.io
-- **Code Execution:** Judge0 API (sandboxed execution)
+- **Code Execution:** Piston API (sandboxed execution)
 - **Infrastructure:** Vercel (web), Expo EAS (mobile), Sentry (monitoring), PostHog (analytics)
 
 ## Commands
@@ -44,7 +44,7 @@ Uses Controller → Service → Repository pattern:
 
 ### Key Services
 - `LearningFlowService`: Orchestrates lesson completion → XP award → achievement check
-- `CodeExecutionService`: Judge0 integration with rate limiting and circuit breaker
+- `CodeExecutionService`: Piston integration with rate limiting and circuit breaker
 - `GamificationService` + `XpService` + `AchievementsService`: XP calculations, streak updates, achievement evaluation
 
 ### Database Schema (Prisma + PostgreSQL)
