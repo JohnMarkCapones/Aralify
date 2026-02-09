@@ -17,6 +17,7 @@ import { AdminModule } from './admin/admin.module';
 import { CommentsModule } from './comments/comments.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { CodeExecutionModule } from './code-execution/code-execution.module';
+import { RecommendationModule } from './recommendation/recommendation.module';
 import { JwtAuthGuard } from './auth/guards';
 
 @Module({
@@ -42,6 +43,7 @@ import { JwtAuthGuard } from './auth/guards';
     CommentsModule,
     NotificationsModule,
     CodeExecutionModule,
+    RecommendationModule,
   ],
   controllers: [AppController],
   providers: [

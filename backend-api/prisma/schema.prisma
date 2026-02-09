@@ -92,6 +92,12 @@ model User {
   notifications        Notification[]
   pushSubscriptions    PushSubscription[]
 
+  // Recommendation engine
+  learningProfile      UserLearningProfile?
+  careerPaths          UserCareerPath[]
+  recommendations      Recommendation[]
+  studyPlans           StudyPlan[]
+
   @@map("users")
 }
 
@@ -241,6 +247,7 @@ model Course {
   // Relations
   levels       Level[]
   progress     UserCourseProgress[]
+  pathNodes    PathNode[]
 
   @@map("courses")
 }
@@ -802,4 +809,216 @@ enum AuditAction {
   CONTENT_DELETED
   CONTENT_CREATED
   CONTENT_UPDATED
+}
+
+// ============================================
+// RECOMMENDATION ENGINE
+// ============================================
+
+model CareerPath {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  title           String
+  description     String
+  shortDescription String?
+  iconUrl         String?
+  color           String?
+  industry        String   // web, mobile, data, ai, games, devops, security
+  estimatedHours  Int      @default(200)
+  marketDemand    Int      @default(50)  // 1-100
+  salaryImpact    Int      @default(50)  // 1-100
+  analyticalReq   Int      @default(50)  // 1-100 how much logic/math needed
+  outcomes        Json?    // ["career_change","freelance","startup"] - what goals this path serves
+  tags            Json?    // ["frontend","ui","design"] - for interest matching
+  isPublished     Boolean  @default(false)
+  orderIndex      Int      @default(0)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  nodes           PathNode[]
+  enrollments     UserCareerPath[]
+
+  @@map("career_paths")
+}
+
+model PathNode {
+  id              String     @id @default(cuid())
+  careerPathId    String
+  careerPath      CareerPath @relation(fields: [careerPathId], references: [id], onDelete: Cascade)
+
+  skillName       String
+  description     String?
+  orderIndex      Int        @default(0)
+  isRequired      Boolean    @default(true)
+  estimatedHours  Int        @default(20)
+  courseId         String?
+  course          Course?    @relation(fields: [courseId], references: [id], onDelete: SetNull)
+
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  // Dependency graph edges
+  prerequisites   PathNodeDependency[] @relation("DependentNode")
+  dependents      PathNodeDependency[] @relation("PrerequisiteNode")
+
+  @@index([careerPathId, orderIndex])
+  @@map("path_nodes")
+}
+
+model PathNodeDependency {
+  id              String   @id @default(cuid())
+  prerequisiteId  String
+  prerequisite    PathNode @relation("PrerequisiteNode", fields: [prerequisiteId], references: [id], onDelete: Cascade)
+  dependentId     String
+  dependent       PathNode @relation("DependentNode", fields: [dependentId], references: [id], onDelete: Cascade)
+
+  @@unique([prerequisiteId, dependentId])
+  @@map("path_node_dependencies")
+}
+
+enum PathStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  ABANDONED
+}
+
+model UserCareerPath {
+  id              String     @id @default(cuid())
+  userId          String
+  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  careerPathId    String
+  careerPath      CareerPath @relation(fields: [careerPathId], references: [id], onDelete: Cascade)
+
+  status          PathStatus @default(ACTIVE)
+  startedAt       DateTime   @default(now())
+  completedAt     DateTime?
+  currentNodeId   String?
+
+  @@unique([userId, careerPathId])
+  @@index([userId, status])
+  @@map("user_career_paths")
+}
+
+model UserLearningProfile {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Profiling quiz responses
+  motivation          Json?    // ["career_change","freelance","hobby","school","startup","automate_work"]
+  dreamProject        Json?    // ["personal_website","mobile_app","game","chatbot","data_dashboard","automation","social_platform","hardware_project"]
+  subjectInterests    Json?    // ["math","art_design","science","writing","music","business","puzzles","social_studies"]
+  personalityType     String?  // creative, analytical, organizer, communicator, builder
+  industryInterests   Json?    // ["web","mobile","data_science","ai_ml","games","devops","cybersecurity","embedded"]
+  workStyle           String?  // structured_path, explore_freely, project_based, challenge_driven
+  mathComfort         String?  // love_it, comfortable, neutral, avoid, struggle
+  dailyRoutine        String?  // student_full, working_full, working_part, stay_home, busy_parent
+  timeHorizon         String?  // 1_month, 3_months, 6_months, 1_year, no_rush
+  background          String?  // never, tried_once, some_tutorials, school_course, professional
+  contentPreference   String?  // video_first, read_first, hands_on, mixed
+  analyticalScore     Int      @default(50)  // 0-100 from mini assessment
+  contextProfile      String?  // student_hs, student_college, career_changer, professional_upskill, parent_returner
+
+  // Adaptive difficulty calibration (ADC) output
+  difficultyScore     Float    @default(0.5)  // 0.0-1.0 dynamic difficulty level
+  lastCalibrationAt   DateTime?
+
+  // Algorithm metadata
+  profileVersion      Int      @default(1)
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@map("user_learning_profiles")
+}
+
+enum RecommendationType {
+  CAREER_PATH
+  COURSE
+  LESSON
+  CHALLENGE
+}
+
+model Recommendation {
+  id              String             @id @default(cuid())
+  userId          String
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type            RecommendationType
+  targetId        String             // ID of recommended career path, course, lesson, etc.
+  score           Float              // 0.0-1.0 confidence score
+  reasoning       Json               // { interestScore, goalScore, skillGapScore, ... }
+  rank            Int                @default(0) // position in recommendation list
+
+  isAccepted      Boolean?           // null = not acted on, true = accepted, false = rejected
+  isDismissed     Boolean            @default(false)
+
+  createdAt       DateTime           @default(now())
+  expiresAt       DateTime?
+
+  @@index([userId, type, isDismissed])
+  @@index([userId, createdAt])
+  @@map("recommendations")
+}
+
+enum PlanStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+}
+
+enum PlanItemType {
+  LEARN
+  REVIEW
+  CHALLENGE
+  REST
+  MILESTONE
+}
+
+model StudyPlan {
+  id              String          @id @default(cuid())
+  userId          String
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  careerPathId    String?
+  title           String?
+  startDate       DateTime        @default(now())
+  endDate         DateTime?
+  dailyMinutes    Int             @default(30)
+  status          PlanStatus      @default(ACTIVE)
+  totalDays       Int             @default(0)
+  completedDays   Int             @default(0)
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // Relations
+  items           StudyPlanItem[]
+
+  @@index([userId, status])
+  @@map("study_plans")
+}
+
+model StudyPlanItem {
+  id              String       @id @default(cuid())
+  studyPlanId     String
+  studyPlan       StudyPlan    @relation(fields: [studyPlanId], references: [id], onDelete: Cascade)
+
+  dayNumber       Int
+  lessonId        String?
+  courseId         String?
+  type            PlanItemType @default(LEARN)
+  title           String?
+  description     String?
+  estimatedMins   Int          @default(25)
+  orderIndex      Int          @default(0)
+
+  isCompleted     Boolean      @default(false)
+  completedAt     DateTime?
+
+  @@index([studyPlanId, dayNumber])
+  @@map("study_plan_items")
 }

@@ -26,6 +26,7 @@ const admin_module_1 = require("./admin/admin.module");
 const comments_module_1 = require("./comments/comments.module");
 const notifications_module_1 = require("./notifications/notifications.module");
 const code_execution_module_1 = require("./code-execution/code-execution.module");
+const recommendation_module_1 = require("./recommendation/recommendation.module");
 const guards_1 = require("./auth/guards");
 let AppModule = class AppModule {
 };
@@ -54,6 +55,7 @@ exports.AppModule = AppModule = __decorate([
             comments_module_1.CommentsModule,
             notifications_module_1.NotificationsModule,
             code_execution_module_1.CodeExecutionModule,
+            recommendation_module_1.RecommendationModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [
