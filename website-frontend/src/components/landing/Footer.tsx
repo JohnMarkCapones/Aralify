@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Code2, Github, Twitter, Youtube, Instagram, ArrowRight } from "lucide-react";
+import Image from "next/image";
+import { Github, Twitter, Youtube, Instagram, ArrowRight } from "lucide-react";
 
 const footerLinks = [
   {
@@ -32,11 +33,16 @@ export function Footer() {
       <div className="container mx-auto px-4 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-20">
           <div className="lg:col-span-2 space-y-8">
-            <Link href="/" className="text-4xl font-display font-black tracking-tighter uppercase flex items-center gap-3 group">
-              <div className="bg-primary p-2.5 neo-brutal-border-white">
-                <Code2 size={32} className="text-white" />
-              </div>
-              <span>ARAL<span className="text-primary">IFY</span></span>
+            <Link href="/" className="flex items-center group">
+              <Image
+                src="/logo.png"
+                alt="Aralify"
+                width={381}
+                height={154}
+                className="object-contain"
+                style={{ height: "88px", width: "auto" }}
+                unoptimized
+              />
             </Link>
             <p className="text-xl font-medium opacity-60 max-w-md leading-relaxed">
               Learn to code at your own pace with interactive lessons, real code execution, and a supportive community.

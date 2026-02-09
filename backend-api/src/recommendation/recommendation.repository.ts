@@ -14,10 +14,16 @@ export class RecommendationRepository {
     userId: string,
     data: {
       motivation?: any;
+      dreamProject?: any;
+      subjectInterests?: any;
+      personalityType?: string | null;
       industryInterests?: any;
       workStyle?: string;
+      mathComfort?: string | null;
+      dailyRoutine?: string | null;
       timeHorizon?: string;
       background?: string;
+      contentPreference?: string | null;
       analyticalScore?: number;
       contextProfile?: string;
       difficultyScore?: number;
@@ -29,12 +35,16 @@ export class RecommendationRepository {
       update: {
         ...data,
         motivation: data.motivation as Prisma.InputJsonValue,
+        dreamProject: data.dreamProject as Prisma.InputJsonValue,
+        subjectInterests: data.subjectInterests as Prisma.InputJsonValue,
         industryInterests: data.industryInterests as Prisma.InputJsonValue,
       },
       create: {
         userId,
         ...data,
         motivation: data.motivation as Prisma.InputJsonValue,
+        dreamProject: data.dreamProject as Prisma.InputJsonValue,
+        subjectInterests: data.subjectInterests as Prisma.InputJsonValue,
         industryInterests: data.industryInterests as Prisma.InputJsonValue,
       },
     });

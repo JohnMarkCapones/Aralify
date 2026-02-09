@@ -18,12 +18,7 @@ import {
 import { User } from '@prisma/client';
 import { AuthService } from './auth.service';
 import { CurrentUser, Public } from './decorators';
-import {
-  UserProfileDto,
-  UpdateProfileDto,
-  SessionInfoDto,
-  AuthStatusDto,
-} from './dto';
+import { AuthUpdateProfileDto, AuthUserProfileDto, SessionInfoDto, AuthStatusDto } from './dto';
 
 @ApiTags('Auth')
 @Controller('api/v1/auth')
@@ -52,10 +47,10 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'Returns user profile',
-    type: UserProfileDto,
+    type: AuthUserProfileDto,
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getMe(@CurrentUser() user: User): Promise<UserProfileDto> {
+  async getMe(@CurrentUser() user: User): Promise<AuthUserProfileDto> {
     this.logger.log(`=== GET /auth/me called ===`);
     this.logger.log(`User from token: ${user?.email || 'NO USER'}`);
     this.logger.log(`User ID: ${user?.id || 'NO ID'}`);
@@ -72,12 +67,12 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'Profile updated successfully',
-    type: UserProfileDto,
+    type: AuthUserProfileDto,
   })
   async updateMe(
     @CurrentUser() user: User,
-    @Body() updateDto: UpdateProfileDto,
-  ): Promise<UserProfileDto> {
+    @Body() updateDto: AuthUpdateProfileDto,
+  ): Promise<AuthUserProfileDto> {
     const updated = await this.authService.updateProfile(user.id, updateDto);
     return this.mapToProfileDto(updated);
   }
@@ -160,7 +155,7 @@ export class AuthController {
     await this.authService.deleteAccount(user.id);
   }
 
-  private mapToProfileDto(user: any): UserProfileDto {
+  private mapToProfileDto(user: any): AuthUserProfileDto {
     return {
       id: user.id,
       email: user.email,

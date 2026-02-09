@@ -1,46 +1,34 @@
-import { redirect } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
-import { DashboardClient } from './dashboard-client';
+"use client";
 
-export default async function DashboardPage() {
-  const supabase = await createClient();
+import { CharacterZone } from "./_components/character-zone";
+import { QuestBoard } from "./_components/quest-board";
+import { DailyChallengeBanner } from "./_components/daily-challenge-banner";
+import { LobbyActionCards } from "./_components/lobby-action-cards";
+import { ActivityTicker } from "./_components/activity-ticker";
+import {
+  mockUserProfile as user,
+  mockEnrolledCourses,
+  mockDailyChallenge,
+  mockActivities,
+} from "@/lib/data/dashboard";
 
-  const { data: { user }, error } = await supabase.auth.getUser();
-
-  if (error || !user) {
-    redirect('/login');
-  }
-
-  const token = (await supabase.auth.getSession()).data.session?.access_token;
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-
-  let profile = null;
-
-  if (apiUrl && token) {
-    try {
-      const res = await fetch(`${apiUrl}/api/v1/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-        cache: 'no-store',
-      });
-
-      if (res.ok) {
-        profile = await res.json();
-      }
-    } catch {
-      // API unavailable — dashboard will use defaults
-    }
-
-    // Check if user needs onboarding
-    if (profile && profile.onboardingCompleted === false) {
-      redirect('/onboarding');
-    }
-  }
-
+export default function DashboardHomePage() {
   return (
-    <DashboardClient
-      userEmail={user.email || ''}
-      profile={profile}
-      token={token}
-    />
+    <div className="space-y-8">
+      {/* Zone 1: Character Zone */}
+      <CharacterZone user={user} />
+
+      {/* Zone 2: Quest Board */}
+      <QuestBoard courses={mockEnrolledCourses} />
+
+      {/* Zone 3: Daily Challenge Banner */}
+      <DailyChallengeBanner challenge={mockDailyChallenge} />
+
+      {/* Zone 4: Lobby Action Cards */}
+      <LobbyActionCards user={user} />
+
+      {/* Zone 5: Activity Ticker */}
+      <ActivityTicker activities={mockActivities} />
+    </div>
   );
 }

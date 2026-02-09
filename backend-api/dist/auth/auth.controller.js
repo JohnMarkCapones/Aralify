@@ -122,7 +122,7 @@ __decorate([
     (0, swagger_1.ApiResponse)({
         status: 200,
         description: 'Returns user profile',
-        type: dto_1.UserProfileDto,
+        type: dto_1.AuthUserProfileDto,
     }),
     (0, swagger_1.ApiResponse)({ status: 401, description: 'Unauthorized' }),
     __param(0, (0, decorators_1.CurrentUser)()),
@@ -137,12 +137,12 @@ __decorate([
     (0, swagger_1.ApiResponse)({
         status: 200,
         description: 'Profile updated successfully',
-        type: dto_1.UserProfileDto,
+        type: dto_1.AuthUserProfileDto,
     }),
     __param(0, (0, decorators_1.CurrentUser)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, dto_1.UpdateProfileDto]),
+    __metadata("design:paramtypes", [Object, dto_1.AuthUpdateProfileDto]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "updateMe", null);
 __decorate([

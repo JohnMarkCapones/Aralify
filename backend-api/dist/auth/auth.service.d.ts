@@ -1,7 +1,7 @@
 import { PrismaService } from '../prisma/prisma.service';
 import { User } from '@prisma/client';
 import { JwtPayload } from './strategies/jwt.strategy';
-import { UpdateProfileDto } from './dto';
+import { AuthUpdateProfileDto } from './dto';
 export declare class AuthService {
     private readonly prisma;
     private readonly logger;
@@ -83,7 +83,7 @@ export declare class AuthService {
         lastLoginAt: Date | null;
         lastActiveAt: Date | null;
     }) | null>;
-    updateProfile(userId: string, data: UpdateProfileDto): Promise<User>;
+    updateProfile(userId: string, data: AuthUpdateProfileDto): Promise<User>;
     createSession(userId: string, data: {
         deviceInfo?: string;
         ipAddress?: string;

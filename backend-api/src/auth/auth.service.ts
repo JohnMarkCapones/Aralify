@@ -2,7 +2,7 @@ import { Injectable, Logger, NotFoundException, ConflictException } from '@nestj
 import { PrismaService } from '../prisma/prisma.service';
 import { User } from '@prisma/client';
 import { JwtPayload } from './strategies/jwt.strategy';
-import { UpdateProfileDto } from './dto';
+import { AuthUpdateProfileDto } from './dto';
 
 @Injectable()
 export class AuthService {
@@ -192,7 +192,7 @@ export class AuthService {
   /**
    * Update user profile
    */
-  async updateProfile(userId: string, data: UpdateProfileDto): Promise<User> {
+  async updateProfile(userId: string, data: AuthUpdateProfileDto): Promise<User> {
     // Check username uniqueness if updating
     if (data.username) {
       const existing = await this.prisma.user.findUnique({

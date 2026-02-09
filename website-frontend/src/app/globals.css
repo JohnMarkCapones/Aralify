@@ -287,6 +287,60 @@
     animation: border-dance 4s linear infinite;
   }
 
+  /* Flame flicker for streak icon */
+  @keyframes flame {
+    0%, 100% { transform: scaleY(1) rotate(0deg); }
+    25% { transform: scaleY(1.1) rotate(-3deg); }
+    50% { transform: scaleY(0.95) rotate(2deg); }
+    75% { transform: scaleY(1.05) rotate(-1deg); }
+  }
+  .animate-flame {
+    animation: flame 0.8s ease-in-out infinite;
+    transform-origin: bottom center;
+  }
+
+  /* XP bar shimmer */
+  @keyframes xp-shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  .animate-xp-shimmer {
+    animation: xp-shimmer 2s ease-in-out infinite;
+  }
+
+  /* Level-up pulse */
+  @keyframes level-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4); }
+    50% { box-shadow: 0 0 0 8px hsl(var(--primary) / 0); }
+  }
+  .animate-level-pulse {
+    animation: level-pulse 2s ease-in-out infinite;
+  }
+
+  /* Soft card elevation utilities (polished gamified dashboard) */
+  .card-elevated {
+    border: 1px solid hsl(var(--border) / 0.15);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06);
+  }
+  .card-elevated-md {
+    border: 1px solid hsl(var(--border) / 0.15);
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.07);
+  }
+  .card-elevated-hover {
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.08);
+  }
+  .dark .card-elevated {
+    border-color: hsl(var(--border) / 0.25);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.15), 0 1px 2px -1px rgb(0 0 0 / 0.15);
+  }
+  .dark .card-elevated-md {
+    border-color: hsl(var(--border) / 0.25);
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.2), 0 2px 4px -2px rgb(0 0 0 / 0.2);
+  }
+  .dark .card-elevated-hover {
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.25), 0 4px 6px -4px rgb(0 0 0 / 0.25);
+  }
+
   /* Noise texture overlay */
   .noise-overlay::after {
     content: "";

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 import { ChevronDown, Rocket, BookOpen, Code2, Terminal, Shield, Zap, Cpu, Globe, Layers, Database, Sparkles, MessageSquare, X } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence, useSpring } from "framer-motion";
@@ -103,30 +104,21 @@ export function Navbar({ mobileMenuOpen, setMobileMenuOpen }: NavbarProps) {
           isScrolled ? "h-16" : "h-20"
         }`}
       >
-        {/* Animated Logo */}
+        {/* Logo */}
         <Link
           href="/"
-          className="font-display font-black tracking-tighter hover:scale-105 transition-transform cursor-pointer flex items-center gap-3 group"
+          className="hover:scale-105 transition-transform cursor-pointer flex items-center"
         >
-          <motion.div
-            className={`bg-primary neo-brutal-border neo-brutal-shadow-sm transition-all duration-300 ${
-              isScrolled ? "p-1.5" : "p-2"
-            }`}
-            whileHover={{ rotate: 12, scale: 1.1 }}
-            transition={{ type: "spring", stiffness: 300, damping: 15 }}
-          >
-            <Code2
-              size={isScrolled ? 20 : 24}
-              className="text-white transition-all duration-300"
-            />
-          </motion.div>
-          <span
-            className={`transition-all duration-300 ${
-              isScrolled ? "text-2xl" : "text-3xl"
-            }`}
-          >
-            ARAL<span className="text-primary">IFY</span>
-          </span>
+          <Image
+            src="/logo.png"
+            alt="Aralify"
+            width={381}
+            height={154}
+            className="object-contain transition-all duration-300"
+            style={{ height: isScrolled ? "56px" : "72px", width: "auto" }}
+            unoptimized
+            priority
+          />
         </Link>
 
         {/* Desktop Menu */}
@@ -279,12 +271,17 @@ export function Navbar({ mobileMenuOpen, setMobileMenuOpen }: NavbarProps) {
               <Link
                 href="/"
                 onClick={() => setIsOpen(false)}
-                className="font-display font-black text-2xl tracking-tighter flex items-center gap-2"
+                className="flex items-center"
               >
-                <div className="bg-primary p-1.5 neo-brutal-border">
-                  <Code2 size={18} className="text-white" />
-                </div>
-                ARAL<span className="text-primary">IFY</span>
+                <Image
+                  src="/logo.png"
+                  alt="Aralify"
+                  width={381}
+                  height={154}
+                  className="object-contain"
+                  style={{ height: "56px", width: "auto" }}
+                  unoptimized
+                />
               </Link>
               <button
                 onClick={() => setIsOpen(false)}

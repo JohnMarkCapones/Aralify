@@ -16,7 +16,10 @@ export class AuthStatusDto {
   timestamp!: string;
 }
 
-export class UserSettingsDto {
+// Auth-specific lightweight snapshot of user settings for the /auth/me response.
+// We keep this separate from the richer Users `UserSettingsDto` to avoid
+// Swagger schema name collisions and to keep the payload focused on auth needs.
+export class AuthUserSettingsDto {
   @ApiProperty({ example: 'dark' })
   theme!: string;
 
@@ -33,7 +36,9 @@ export class UserSettingsDto {
   difficultyPref!: string;
 }
 
-export class UserProfileDto {
+// Auth-specific view of the user profile used by the Auth module.
+// This intentionally differs from the Users `UserProfileDto` shape and name.
+export class AuthUserProfileDto {
   @ApiProperty({ example: 'user_123' })
   id!: string;
 
@@ -79,8 +84,8 @@ export class UserProfileDto {
   @ApiProperty({ example: '2024-01-01T00:00:00.000Z' })
   createdAt!: string;
 
-  @ApiPropertyOptional({ type: UserSettingsDto })
-  settings?: UserSettingsDto;
+  @ApiPropertyOptional({ type: AuthUserSettingsDto })
+  settings?: AuthUserSettingsDto;
 }
 
 export class SessionInfoDto {
@@ -101,7 +106,9 @@ export class SessionInfoDto {
 // Request DTOs
 // ============================================================================
 
-export class UpdateProfileDto {
+// Auth-specific profile update payload (allows username + avatar updates).
+// Named differently from Users `UpdateProfileDto` to keep Swagger schemas unique.
+export class AuthUpdateProfileDto {
   @ApiPropertyOptional({ example: 'johndoe', minLength: 3, maxLength: 30 })
   @IsOptional()
   @IsString()
@@ -135,31 +142,6 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsString()
   timezone?: string;
-}
-
-export class UpdateSettingsDto {
-  @ApiPropertyOptional({ example: 'dark', enum: ['light', 'dark', 'auto'] })
-  @IsOptional()
-  @IsString()
-  theme?: string;
-
-  @ApiPropertyOptional({ example: 'vs-dark' })
-  @IsOptional()
-  @IsString()
-  codeEditorTheme?: string;
-
-  @ApiPropertyOptional({ example: 14 })
-  @IsOptional()
-  fontSize?: number;
-
-  @ApiPropertyOptional({ example: 30 })
-  @IsOptional()
-  dailyGoalMins?: number;
-
-  @ApiPropertyOptional({ example: 'MEDIUM', enum: ['EASY', 'MEDIUM', 'HARD'] })
-  @IsOptional()
-  @IsString()
-  difficultyPref?: string;
 }
 
 export class RegisterSessionDto {

@@ -16,3 +16,4 @@ export { Footer } from "./Footer";
 export { StudentJourney } from "./StudentJourney";
 export { CommunityHighlights } from "./CommunityHighlights";
 export { Partners } from "./Partners";
+export { PathFinderCTA } from "./PathFinderCTA";

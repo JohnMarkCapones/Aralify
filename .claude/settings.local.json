@@ -22,7 +22,14 @@
       "Bash(npx nest build:*)",
       "WebFetch(domain:github.com)",
       "WebFetch(domain:piston.readthedocs.io)",
-      "Bash(git mv:*)"
+      "Bash(git mv:*)",
+      "Bash(for file in \"C:\\\\Users\\\\John Mark\\\\Desktop\\\\Aralify\\\\website-frontend\\\\src\\\\app\\\\dashboard\\\\dashboard-client.tsx\" \"C:\\\\Users\\\\John Mark\\\\Desktop\\\\Aralify\\\\website-frontend\\\\src\\\\app\\\\dashboard\\\\copy-token.tsx\" \"C:\\\\Users\\\\John Mark\\\\Desktop\\\\Aralify\\\\website-frontend\\\\src\\\\app\\\\dashboard\\\\loading.tsx\" \"C:\\\\Users\\\\John Mark\\\\Desktop\\\\Aralify\\\\website-frontend\\\\src\\\\app\\\\dashboard\\\\logout-button.tsx\" \"C:\\\\Users\\\\John Mark\\\\Desktop\\\\Aralify\\\\website-frontend\\\\src\\\\app\\\\dashboard\\\\page.tsx\" \"C:\\\\Users\\\\John Mark\\\\Desktop\\\\Aralify\\\\website-frontend\\\\src\\\\app\\\\dashboard\\\\activity\\\\activity-client.tsx\" \"C:\\\\Users\\\\John Mark\\\\Desktop\\\\Aralify\\\\website-frontend\\\\src\\\\app\\\\dashboard\\\\activity\\\\page.tsx\" \"C:\\\\Users\\\\John Mark\\\\Desktop\\\\Aralify\\\\website-frontend\\\\src\\\\app\\\\dashboard\\\\certificates\\\\certificates-client.tsx\" \"C:\\\\Users\\\\John Mark\\\\Desktop\\\\Aralify\\\\website-frontend\\\\src\\\\app\\\\dashboard\\\\certificates\\\\page.tsx\" \"C:\\\\Users\\\\John Mark\\\\Desktop\\\\Aralify\\\\website-frontend\\\\src\\\\app\\\\dashboard\\\\progress\\\\page.tsx\" \"C:\\\\Users\\\\John Mark\\\\Desktop\\\\Aralify\\\\website-frontend\\\\src\\\\app\\\\dashboard\\\\progress\\\\progress-client.tsx\")",
+      "Bash(do if [ -f \"$file\" ])",
+      "Bash(then wc -l \"$file\")",
+      "Bash(fi)",
+      "Bash(done)",
+      "Bash(magick identify:*)",
+      "Bash(python:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

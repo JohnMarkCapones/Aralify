@@ -22,6 +22,7 @@ import {
   StudentJourney,
   CommunityHighlights,
   Partners,
+  PathFinderCTA,
 } from "@/components/landing";
 import { NeoButton } from "@/components/ui/neo-button";
 import { CursorGlow, FloatingShapes, GradientOrbs, DotPattern, AnimatedCounter, MagneticButton } from "@/components/effects";
@@ -91,6 +92,7 @@ export default function Home() {
         </section>
 
         <HowItWorks />
+        <PathFinderCTA />
         <LanguageSection />
         <CoursePreview />
         <BentoGrids />

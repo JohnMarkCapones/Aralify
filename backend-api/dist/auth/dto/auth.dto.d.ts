@@ -3,14 +3,14 @@ export declare class AuthStatusDto {
     message: string;
     timestamp: string;
 }
-export declare class UserSettingsDto {
+export declare class AuthUserSettingsDto {
     theme: string;
     codeEditorTheme: string;
     fontSize: number;
     dailyGoalMins: number;
     difficultyPref: string;
 }
-export declare class UserProfileDto {
+export declare class AuthUserProfileDto {
     id: string;
     email: string;
     username: string;
@@ -26,7 +26,7 @@ export declare class UserProfileDto {
     role: string;
     isVerified: boolean;
     createdAt: string;
-    settings?: UserSettingsDto;
+    settings?: AuthUserSettingsDto;
 }
 export declare class SessionInfoDto {
     sessionId: string;
@@ -34,20 +34,13 @@ export declare class SessionInfoDto {
     expiresAt: string;
     deviceInfo?: string;
 }
-export declare class UpdateProfileDto {
+export declare class AuthUpdateProfileDto {
     username?: string;
     displayName?: string;
     avatarUrl?: string;
     bio?: string;
     locale?: string;
     timezone?: string;
-}
-export declare class UpdateSettingsDto {
-    theme?: string;
-    codeEditorTheme?: string;
-    fontSize?: number;
-    dailyGoalMins?: number;
-    difficultyPref?: string;
 }
 export declare class RegisterSessionDto {
     deviceId?: string;
