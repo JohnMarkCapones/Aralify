@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { BookOpen, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "../_components/page-header";
@@ -40,9 +41,10 @@ export default function CoursesPage() {
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredCourses.map((course) => (
-          <div
+          <Link
             key={course.id}
-            className="bg-background rounded-xl border border-border/50 shadow-sm overflow-hidden hover:border-border transition-colors"
+            href={`/dashboard/courses/${course.id}`}
+            className="bg-background rounded-xl border border-border/50 shadow-sm overflow-hidden hover:border-border transition-colors block"
           >
             <div className="h-1.5" style={{ backgroundColor: course.color }} />
             <div className="p-5">
@@ -88,9 +90,9 @@ export default function CoursesPage() {
                       <p className="text-[10px] text-muted-foreground">Current lesson</p>
                       <p className="text-xs font-medium">{course.currentLesson}</p>
                     </div>
-                    <button className="flex items-center gap-1 text-xs font-medium text-primary hover:underline">
+                    <span className="flex items-center gap-1 text-xs font-medium text-primary hover:underline">
                       Continue <ChevronRight size={12} />
-                    </button>
+                    </span>
                   </div>
                 </div>
               )}
@@ -99,7 +101,7 @@ export default function CoursesPage() {
                 Last studied: {new Date(course.lastStudied).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
               </p>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
 

@@ -106,6 +106,39 @@ export interface ChallengeHistoryEntry {
   timeTaken: number;
 }
 
+export interface ChallengeItem {
+  id: string;
+  title: string;
+  description: string;
+  difficulty: "easy" | "medium" | "hard";
+  category: "daily" | "weekly" | "practice";
+  language: string;
+  xpReward: number;
+  timeLimit: number;
+  tags: string[];
+  completions: number;
+  successRate: number;
+  isNew?: boolean;
+  isFeatured?: boolean;
+}
+
+export interface ChallengeDetail {
+  id: string;
+  title: string;
+  difficulty: "easy" | "medium" | "hard";
+  category: "daily" | "weekly" | "practice";
+  language: string;
+  xpReward: number;
+  timeLimit: number;
+  tags: string[];
+  instructions: string;
+  starterCode: string;
+  testCases: TestCase[];
+  hints: string[];
+  constraints: string[];
+  examples: { input: string; output: string; explanation?: string }[];
+}
+
 export interface ActivityItem {
   id: string;
   type: "lesson" | "challenge" | "achievement" | "social" | "badge" | "streak" | "xp";
@@ -369,6 +402,208 @@ export const mockChallengeHistory: ChallengeHistoryEntry[] = [
   { id: "ch_007", title: "Matrix Rotation", difficulty: "hard", language: "Python", xpEarned: 450, completed: true, completedAt: "2026-02-02T20:10:00Z", timeTaken: 28 },
 ];
 
+export const mockChallenges: ChallengeItem[] = [
+  // Daily
+  { id: "chal_001", title: "Reverse a Linked List", description: "Write a function that reverses a singly linked list in-place.", difficulty: "medium", category: "daily", language: "Python", xpReward: 150, timeLimit: 30, tags: ["Linked List", "Pointers"], completions: 1_240, successRate: 68, isFeatured: true },
+  // Weekly
+  { id: "chal_002", title: "Build a Mini Calculator", description: "Implement a stack-based calculator that handles +, -, *, / with proper operator precedence.", difficulty: "hard", category: "weekly", language: "Python", xpReward: 500, timeLimit: 60, tags: ["Stack", "Parsing", "Math"], completions: 340, successRate: 42, isNew: true },
+  { id: "chal_003", title: "URL Shortener Logic", description: "Design the encoding/decoding logic for a URL shortener using base62.", difficulty: "medium", category: "weekly", language: "JavaScript", xpReward: 350, timeLimit: 45, tags: ["Hashing", "Design"], completions: 580, successRate: 55 },
+  // Practice — Easy
+  { id: "chal_004", title: "FizzBuzz", description: "Print numbers 1-100, replacing multiples of 3 with 'Fizz', 5 with 'Buzz', both with 'FizzBuzz'.", difficulty: "easy", category: "practice", language: "Python", xpReward: 50, timeLimit: 10, tags: ["Loops", "Conditionals"], completions: 5_800, successRate: 95 },
+  { id: "chal_005", title: "Palindrome String", description: "Check if a given string reads the same forwards and backwards (ignoring case & spaces).", difficulty: "easy", category: "practice", language: "JavaScript", xpReward: 50, timeLimit: 10, tags: ["Strings"], completions: 4_200, successRate: 91 },
+  { id: "chal_006", title: "Count Vowels", description: "Return the count of vowels in a string.", difficulty: "easy", category: "practice", language: "Python", xpReward: 30, timeLimit: 5, tags: ["Strings", "Loops"], completions: 6_100, successRate: 97 },
+  // Practice — Medium
+  { id: "chal_007", title: "Anagram Grouper", description: "Given a list of words, group anagrams together and return them as nested arrays.", difficulty: "medium", category: "practice", language: "Python", xpReward: 200, timeLimit: 25, tags: ["Hash Map", "Sorting"], completions: 1_800, successRate: 62 },
+  { id: "chal_008", title: "Flatten Nested Arrays", description: "Write a function that deeply flattens a nested array of arbitrary depth.", difficulty: "medium", category: "practice", language: "JavaScript", xpReward: 150, timeLimit: 20, tags: ["Recursion", "Arrays"], completions: 2_300, successRate: 71 },
+  { id: "chal_009", title: "Debounce Function", description: "Implement a debounce utility function from scratch.", difficulty: "medium", category: "practice", language: "JavaScript", xpReward: 200, timeLimit: 20, tags: ["Closures", "Timers"], completions: 1_500, successRate: 58, isNew: true },
+  // Practice — Hard
+  { id: "chal_010", title: "LRU Cache", description: "Implement a Least Recently Used cache with O(1) get and put operations.", difficulty: "hard", category: "practice", language: "Python", xpReward: 400, timeLimit: 45, tags: ["Hash Map", "Doubly Linked List"], completions: 620, successRate: 35 },
+  { id: "chal_011", title: "Serialize Binary Tree", description: "Serialize and deserialize a binary tree to/from a string.", difficulty: "hard", category: "practice", language: "Python", xpReward: 450, timeLimit: 50, tags: ["Trees", "BFS/DFS"], completions: 410, successRate: 30 },
+  { id: "chal_012", title: "Rate Limiter", description: "Implement a sliding window rate limiter that allows N requests per time window.", difficulty: "hard", category: "practice", language: "JavaScript", xpReward: 400, timeLimit: 40, tags: ["Design", "Queue"], completions: 380, successRate: 38 },
+];
+
+export const mockChallengeDetails: Record<string, ChallengeDetail> = {
+  chal_001: {
+    id: "chal_001",
+    title: "Reverse a Linked List",
+    difficulty: "medium",
+    category: "daily",
+    language: "Python",
+    xpReward: 150,
+    timeLimit: 30,
+    tags: ["Linked List", "Pointers"],
+    instructions: `# Reverse a Linked List
+
+Given the head of a singly linked list, reverse the list and return the reversed list's head.
+
+## Description
+
+You are given a singly linked list where each node contains a value and a pointer to the next node. Your task is to reverse the list **in-place** — meaning you should not create a new list, but instead rearrange the existing node pointers.
+
+## Input
+
+- \`head\` — the head node of a singly linked list (can be \`None\` for an empty list)
+
+## Output
+
+- Return the new head of the reversed list
+
+## Approach
+
+Think about maintaining three pointers as you traverse the list:
+- **prev**: the previous node (starts as \`None\`)
+- **curr**: the current node being processed
+- **next_node**: temporary storage for the next node before we break the link`,
+    starterCode: `class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+def reverse_linked_list(head: ListNode) -> ListNode:
+    # Your code here
+    pass`,
+    testCases: [
+      { input: "[1, 2, 3, 4, 5]", expectedOutput: "[5, 4, 3, 2, 1]", description: "Reverse a 5-element list", passed: false },
+      { input: "[1, 2]", expectedOutput: "[2, 1]", description: "Reverse a 2-element list", passed: false },
+      { input: "[1]", expectedOutput: "[1]", description: "Single element list", passed: false },
+      { input: "[]", expectedOutput: "[]", description: "Empty list", passed: false },
+    ],
+    hints: [
+      "Start with `prev = None` and `curr = head`. In each step, save `curr.next`, then point `curr.next` to `prev`.",
+      "After updating pointers, move both `prev` and `curr` one step forward. When `curr` becomes `None`, `prev` is the new head.",
+      "The iterative approach runs in O(n) time and O(1) space — no recursion needed.",
+    ],
+    constraints: [
+      "The number of nodes is in the range [0, 5000]",
+      "Node values are in the range [-5000, 5000]",
+      "You must reverse the list in-place",
+    ],
+    examples: [
+      { input: "head = [1, 2, 3, 4, 5]", output: "[5, 4, 3, 2, 1]", explanation: "Each node's next pointer is reversed." },
+      { input: "head = [1, 2]", output: "[2, 1]" },
+      { input: "head = []", output: "[]", explanation: "Empty list remains empty." },
+    ],
+  },
+  chal_004: {
+    id: "chal_004",
+    title: "FizzBuzz",
+    difficulty: "easy",
+    category: "practice",
+    language: "Python",
+    xpReward: 50,
+    timeLimit: 10,
+    tags: ["Loops", "Conditionals"],
+    instructions: `# FizzBuzz
+
+Write a function that prints numbers from 1 to n with the following rules:
+
+## Rules
+
+- For multiples of **3**, print \`"Fizz"\` instead of the number
+- For multiples of **5**, print \`"Buzz"\` instead of the number
+- For multiples of **both 3 and 5**, print \`"FizzBuzz"\`
+- For all other numbers, print the number itself
+
+## Input
+
+- \`n\` — a positive integer
+
+## Output
+
+- Return a list of strings representing the FizzBuzz sequence from 1 to n`,
+    starterCode: `def fizzbuzz(n: int) -> list[str]:
+    # Your code here
+    result = []
+
+    return result`,
+    testCases: [
+      { input: "fizzbuzz(15)", expectedOutput: '["1","2","Fizz","4","Buzz","Fizz","7","8","Fizz","Buzz","11","Fizz","13","14","FizzBuzz"]', description: "Classic FizzBuzz up to 15", passed: false },
+      { input: "fizzbuzz(3)", expectedOutput: '["1","2","Fizz"]', description: "Up to 3", passed: false },
+      { input: "fizzbuzz(5)", expectedOutput: '["1","2","Fizz","4","Buzz"]', description: "Up to 5", passed: false },
+      { input: "fizzbuzz(1)", expectedOutput: '["1"]', description: "Single element", passed: false },
+    ],
+    hints: [
+      "Check for divisibility by both 3 AND 5 first (i.e. divisible by 15), before checking 3 or 5 individually.",
+      "Use the modulo operator `%` to check divisibility. `n % 3 == 0` means n is divisible by 3.",
+      "You can also use `divmod()` or check `not n % 3` as a Pythonic shorthand.",
+    ],
+    constraints: [
+      "1 <= n <= 10,000",
+      "Return a list of strings, not integers",
+    ],
+    examples: [
+      { input: "n = 5", output: '["1", "2", "Fizz", "4", "Buzz"]', explanation: "3 is divisible by 3 -> Fizz. 5 is divisible by 5 -> Buzz." },
+      { input: "n = 15", output: '["1", "2", "Fizz", ... "FizzBuzz"]', explanation: "15 is divisible by both 3 and 5 -> FizzBuzz." },
+    ],
+  },
+  chal_010: {
+    id: "chal_010",
+    title: "LRU Cache",
+    difficulty: "hard",
+    category: "practice",
+    language: "Python",
+    xpReward: 400,
+    timeLimit: 45,
+    tags: ["Hash Map", "Doubly Linked List"],
+    instructions: `# LRU Cache
+
+Design and implement a data structure for a **Least Recently Used (LRU) cache**.
+
+## Requirements
+
+Implement the \`LRUCache\` class:
+
+- \`LRUCache(capacity)\` — Initialize the cache with a positive capacity
+- \`get(key)\` — Return the value if the key exists, otherwise return \`-1\`
+- \`put(key, value)\` — Update or insert the value. If the cache exceeds capacity, evict the **least recently used** key
+
+## Constraints
+
+Both \`get\` and \`put\` must run in **O(1)** average time complexity.
+
+## Approach
+
+Use a combination of:
+- A **hash map** for O(1) key lookup
+- A **doubly linked list** for O(1) insertion/deletion to track usage order`,
+    starterCode: `class LRUCache:
+    def __init__(self, capacity: int):
+        # Your code here
+        pass
+
+    def get(self, key: int) -> int:
+        # Your code here
+        pass
+
+    def put(self, key: int, value: int) -> None:
+        # Your code here
+        pass`,
+    testCases: [
+      { input: "cache = LRUCache(2); cache.put(1,1); cache.put(2,2); cache.get(1)", expectedOutput: "1", description: "Basic get after put", passed: false },
+      { input: "cache.put(3,3); cache.get(2)", expectedOutput: "-1", description: "Evicts key 2 (LRU)", passed: false },
+      { input: "cache.put(4,4); cache.get(1)", expectedOutput: "-1", description: "Evicts key 1 (LRU)", passed: false },
+      { input: "cache.get(3)", expectedOutput: "3", description: "Key 3 still exists", passed: false },
+      { input: "cache.get(4)", expectedOutput: "4", description: "Key 4 still exists", passed: false },
+    ],
+    hints: [
+      "Use `collections.OrderedDict` for a simpler Python solution — it maintains insertion order and supports `move_to_end()`.",
+      "For the classic approach: use a dict + doubly linked list. The dict maps keys to list nodes, and the list tracks usage order.",
+      "When accessing a key (get or put), move it to the head of the list. When evicting, remove from the tail.",
+    ],
+    constraints: [
+      "1 <= capacity <= 3000",
+      "0 <= key <= 10,000",
+      "0 <= value <= 100,000",
+      "At most 200,000 calls to get and put",
+      "Both get and put must be O(1) average time",
+    ],
+    examples: [
+      { input: "LRUCache(2) -> put(1,1) -> put(2,2) -> get(1)", output: "1", explanation: "Key 1 exists, returns 1. Also marks key 1 as recently used." },
+      { input: "put(3,3) -> get(2)", output: "-1", explanation: "Key 2 was evicted because it was least recently used when key 3 was added." },
+    ],
+  },
+};
+
 export const mockActivities: ActivityItem[] = [
   // Today
   { id: "act_001", type: "lesson", title: "Completed List Comprehensions", description: "Python Fundamentals — Lesson 18", xp: 80, timestamp: "2026-02-09T08:30:00Z", icon: "📖" },
@@ -566,3 +801,1198 @@ export function getUserTitle(level: number, locale: "en" | "fil" = "en"): string
   }
   return locale === "fil" ? "Baguhan" : "Apprentice";
 }
+
+// ─── Course Detail Types ────────────────────────────────────────────────────
+
+export interface TestCase {
+  input: string;
+  expectedOutput: string;
+  description: string;
+  passed: boolean;
+}
+
+export interface DifficultyTier {
+  difficulty: "easy" | "medium" | "hard";
+  xpMultiplier: number;
+  starterCode: string;
+  description: string;
+}
+
+export interface CourseLesson {
+  id: string;
+  title: string;
+  order: number;
+  status: "locked" | "available" | "completed";
+  difficulty: "easy" | "medium" | "hard";
+  xpReward: number;
+  duration: string;
+}
+
+export interface CourseLevel {
+  id: string;
+  title: string;
+  order: number;
+  lessons: CourseLesson[];
+}
+
+export interface CourseDetail {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  icon: string;
+  color: string;
+  progress: number;
+  totalLessons: number;
+  completedLessons: number;
+  xpEarned: number;
+  difficulty: "beginner" | "intermediate" | "advanced";
+  instructor: string;
+  estimatedHours: number;
+  language: string;
+  levels: CourseLevel[];
+}
+
+export interface LessonDetail {
+  id: string;
+  title: string;
+  courseId: string;
+  courseTitle: string;
+  order: number;
+  instructions: string;
+  language: string;
+  tiers: DifficultyTier[];
+  testCases: TestCase[];
+  hints: string[];
+  xpReward: number;
+  prevLessonId: string | null;
+  nextLessonId: string | null;
+}
+
+// ─── Mock Course Details ────────────────────────────────────────────────────
+
+export const mockCourseDetails: Record<string, CourseDetail> = {
+  crs_001: {
+    id: "crs_001",
+    title: "Python Fundamentals",
+    slug: "python-fundamentals",
+    description: "Master the basics of Python programming — from variables to data structures. Build a solid foundation for your coding journey.",
+    icon: "🐍",
+    color: "#3b82f6",
+    progress: 72,
+    totalLessons: 15,
+    completedLessons: 11,
+    xpEarned: 2_400,
+    difficulty: "beginner",
+    instructor: "Maria Santos",
+    estimatedHours: 10,
+    language: "Python",
+    levels: [
+      {
+        id: "lvl_001",
+        title: "Getting Started",
+        order: 1,
+        lessons: [
+          { id: "les_001", title: "Hello World", order: 1, status: "completed", difficulty: "easy", xpReward: 40, duration: "10 min" },
+          { id: "les_002", title: "Variables & Assignment", order: 2, status: "completed", difficulty: "easy", xpReward: 40, duration: "15 min" },
+          { id: "les_003", title: "Data Types", order: 3, status: "completed", difficulty: "easy", xpReward: 50, duration: "15 min" },
+          { id: "les_004", title: "Operators", order: 4, status: "completed", difficulty: "easy", xpReward: 50, duration: "12 min" },
+          { id: "les_005", title: "Input & Output", order: 5, status: "completed", difficulty: "easy", xpReward: 50, duration: "12 min" },
+        ],
+      },
+      {
+        id: "lvl_002",
+        title: "Control Flow",
+        order: 2,
+        lessons: [
+          { id: "les_006", title: "If / Else Statements", order: 1, status: "completed", difficulty: "easy", xpReward: 60, duration: "15 min" },
+          { id: "les_007", title: "For Loops", order: 2, status: "completed", difficulty: "medium", xpReward: 80, duration: "20 min" },
+          { id: "les_008", title: "While Loops", order: 3, status: "completed", difficulty: "medium", xpReward: 80, duration: "18 min" },
+          { id: "les_009", title: "Functions", order: 4, status: "completed", difficulty: "medium", xpReward: 100, duration: "25 min" },
+          { id: "les_010", title: "Return Values", order: 5, status: "completed", difficulty: "medium", xpReward: 100, duration: "20 min" },
+        ],
+      },
+      {
+        id: "lvl_003",
+        title: "Data Structures",
+        order: 3,
+        lessons: [
+          { id: "les_011", title: "Lists", order: 1, status: "completed", difficulty: "medium", xpReward: 100, duration: "20 min" },
+          { id: "les_012", title: "Tuples", order: 2, status: "available", difficulty: "medium", xpReward: 100, duration: "15 min" },
+          { id: "les_013", title: "Dictionaries", order: 3, status: "locked", difficulty: "medium", xpReward: 120, duration: "25 min" },
+          { id: "les_014", title: "Sets", order: 4, status: "locked", difficulty: "hard", xpReward: 120, duration: "20 min" },
+          { id: "les_015", title: "List Comprehensions", order: 5, status: "locked", difficulty: "hard", xpReward: 150, duration: "25 min" },
+        ],
+      },
+    ],
+  },
+  crs_002: {
+    id: "crs_002",
+    title: "JavaScript Essentials",
+    slug: "javascript-essentials",
+    description: "Learn JavaScript from scratch — DOM manipulation, async programming, and modern ES6+ features.",
+    icon: "⚡",
+    color: "#f59e0b",
+    progress: 45,
+    totalLessons: 15,
+    completedLessons: 7,
+    xpEarned: 1_800,
+    difficulty: "beginner",
+    instructor: "Carlo Reyes",
+    estimatedHours: 12,
+    language: "JavaScript",
+    levels: [
+      {
+        id: "lvl_004",
+        title: "JS Basics",
+        order: 1,
+        lessons: [
+          { id: "les_016", title: "Hello JavaScript", order: 1, status: "completed", difficulty: "easy", xpReward: 40, duration: "10 min" },
+          { id: "les_017", title: "Variables (let, const, var)", order: 2, status: "completed", difficulty: "easy", xpReward: 50, duration: "15 min" },
+          { id: "les_018", title: "Data Types & Coercion", order: 3, status: "completed", difficulty: "easy", xpReward: 50, duration: "15 min" },
+          { id: "les_019", title: "Operators & Expressions", order: 4, status: "completed", difficulty: "easy", xpReward: 50, duration: "12 min" },
+          { id: "les_020", title: "Template Literals", order: 5, status: "completed", difficulty: "easy", xpReward: 40, duration: "10 min" },
+        ],
+      },
+      {
+        id: "lvl_005",
+        title: "Functions & Scope",
+        order: 2,
+        lessons: [
+          { id: "les_021", title: "Function Declarations", order: 1, status: "completed", difficulty: "medium", xpReward: 80, duration: "20 min" },
+          { id: "les_022", title: "Arrow Functions", order: 2, status: "completed", difficulty: "medium", xpReward: 80, duration: "15 min" },
+          { id: "les_023", title: "Closures & Scope", order: 3, status: "available", difficulty: "hard", xpReward: 120, duration: "25 min" },
+          { id: "les_024", title: "Callbacks", order: 4, status: "locked", difficulty: "medium", xpReward: 100, duration: "20 min" },
+          { id: "les_025", title: "Higher-Order Functions", order: 5, status: "locked", difficulty: "hard", xpReward: 120, duration: "25 min" },
+        ],
+      },
+      {
+        id: "lvl_006",
+        title: "Async JavaScript",
+        order: 3,
+        lessons: [
+          { id: "les_026", title: "Promises", order: 1, status: "locked", difficulty: "medium", xpReward: 100, duration: "20 min" },
+          { id: "les_027", title: "Async / Await", order: 2, status: "locked", difficulty: "medium", xpReward: 100, duration: "20 min" },
+          { id: "les_028", title: "Fetch API", order: 3, status: "locked", difficulty: "medium", xpReward: 100, duration: "25 min" },
+          { id: "les_029", title: "Error Handling", order: 4, status: "locked", difficulty: "hard", xpReward: 120, duration: "20 min" },
+          { id: "les_030", title: "Async Patterns", order: 5, status: "locked", difficulty: "hard", xpReward: 150, duration: "30 min" },
+        ],
+      },
+    ],
+  },
+  crs_003: {
+    id: "crs_003",
+    title: "Data Structures & Algorithms",
+    slug: "data-structures-algorithms",
+    description: "Essential CS fundamentals for coding interviews — arrays, trees, graphs, sorting, and dynamic programming.",
+    icon: "🧮",
+    color: "#8b5cf6",
+    progress: 20,
+    totalLessons: 15,
+    completedLessons: 3,
+    xpEarned: 1_200,
+    difficulty: "intermediate",
+    instructor: "Mark Rivera",
+    estimatedHours: 20,
+    language: "Python",
+    levels: [
+      {
+        id: "lvl_007",
+        title: "Arrays & Strings",
+        order: 1,
+        lessons: [
+          { id: "les_031", title: "Array Basics", order: 1, status: "completed", difficulty: "easy", xpReward: 60, duration: "15 min" },
+          { id: "les_032", title: "Two Pointer Technique", order: 2, status: "completed", difficulty: "medium", xpReward: 100, duration: "25 min" },
+          { id: "les_033", title: "Sliding Window", order: 3, status: "completed", difficulty: "medium", xpReward: 100, duration: "25 min" },
+          { id: "les_034", title: "String Manipulation", order: 4, status: "available", difficulty: "medium", xpReward: 100, duration: "20 min" },
+          { id: "les_035", title: "Hash Maps", order: 5, status: "locked", difficulty: "medium", xpReward: 120, duration: "25 min" },
+        ],
+      },
+      {
+        id: "lvl_008",
+        title: "Linked Lists & Stacks",
+        order: 2,
+        lessons: [
+          { id: "les_036", title: "Singly Linked Lists", order: 1, status: "locked", difficulty: "medium", xpReward: 100, duration: "25 min" },
+          { id: "les_037", title: "Doubly Linked Lists", order: 2, status: "locked", difficulty: "hard", xpReward: 120, duration: "25 min" },
+          { id: "les_038", title: "Stacks", order: 3, status: "locked", difficulty: "medium", xpReward: 100, duration: "20 min" },
+          { id: "les_039", title: "Queues", order: 4, status: "locked", difficulty: "medium", xpReward: 100, duration: "20 min" },
+          { id: "les_040", title: "Stack Applications", order: 5, status: "locked", difficulty: "hard", xpReward: 150, duration: "30 min" },
+        ],
+      },
+      {
+        id: "lvl_009",
+        title: "Trees & Graphs",
+        order: 3,
+        lessons: [
+          { id: "les_041", title: "Binary Trees", order: 1, status: "locked", difficulty: "medium", xpReward: 120, duration: "25 min" },
+          { id: "les_042", title: "Binary Search Trees", order: 2, status: "locked", difficulty: "hard", xpReward: 150, duration: "30 min" },
+          { id: "les_043", title: "Tree Traversals", order: 3, status: "locked", difficulty: "hard", xpReward: 150, duration: "30 min" },
+          { id: "les_044", title: "Graph Basics", order: 4, status: "locked", difficulty: "hard", xpReward: 150, duration: "30 min" },
+          { id: "les_045", title: "BFS & DFS", order: 5, status: "locked", difficulty: "hard", xpReward: 180, duration: "35 min" },
+        ],
+      },
+    ],
+  },
+};
+
+// ─── Mock Lesson Details ────────────────────────────────────────────────────
+
+export const mockLessonDetails: Record<string, LessonDetail> = {
+  // ── Python Fundamentals: Level 1 ──────────────────────────────────────
+  les_001: {
+    id: "les_001",
+    title: "Hello World",
+    courseId: "crs_001",
+    courseTitle: "Python Fundamentals",
+    order: 1,
+    language: "Python",
+    instructions: `# Hello World
+
+Welcome to Python! In this first lesson, you'll write your very first program — the classic **Hello World**.
+
+## The print() Function
+
+In Python, \`print()\` outputs text to the console:
+
+\`\`\`python
+print("Hello, World!")
+\`\`\`
+
+You can print multiple values separated by commas:
+
+\`\`\`python
+print("My name is", "Juan")
+# Output: My name is Juan
+\`\`\`
+
+## String Basics
+
+Strings are text wrapped in quotes — single \`'\` or double \`"\`:
+
+\`\`\`python
+greeting = "Kamusta"
+print(greeting)
+\`\`\`
+
+## Your Task
+
+Write a program that prints \`Hello, Aralify!\` to the console.`,
+    tiers: [
+      {
+        difficulty: "easy",
+        xpMultiplier: 1,
+        starterCode: `# Print "Hello, Aralify!" below\nprint()`,
+        description: "Just fill in the print statement with the correct string.",
+      },
+      {
+        difficulty: "medium",
+        xpMultiplier: 2,
+        starterCode: `# Store the greeting in a variable, then print it\ngreeting = ___\nprint(greeting)`,
+        description: "Use a variable to store the greeting before printing.",
+      },
+      {
+        difficulty: "hard",
+        xpMultiplier: 3,
+        starterCode: `# Print "Hello, Aralify!" using string concatenation\n# You must use at least 2 separate strings joined with +\npass`,
+        description: "Build the greeting by concatenating multiple strings together.",
+      },
+    ],
+    testCases: [
+      { input: "run program", expectedOutput: "Hello, Aralify!", description: "Prints correct greeting", passed: true },
+      { input: "check output type", expectedOutput: "str", description: "Output is a string", passed: true },
+    ],
+    hints: [
+      "Put text inside the parentheses of `print()` — don't forget the quotes!",
+      "Strings can be joined with `+`: `\"Hello\" + \", \" + \"World\"`",
+    ],
+    xpReward: 40,
+    prevLessonId: null,
+    nextLessonId: "les_002",
+  },
+  les_002: {
+    id: "les_002",
+    title: "Variables & Assignment",
+    courseId: "crs_001",
+    courseTitle: "Python Fundamentals",
+    order: 2,
+    language: "Python",
+    instructions: `# Variables & Assignment
+
+Variables store data that you can use and change throughout your program.
+
+## Creating Variables
+
+Python doesn't need a keyword like \`let\` or \`var\` — just assign a value:
+
+\`\`\`python
+name = "Juan"
+age = 20
+is_student = True
+\`\`\`
+
+## Naming Rules
+
+- Must start with a letter or underscore
+- Can contain letters, numbers, and underscores
+- Case-sensitive (\`name\` ≠ \`Name\`)
+- Use **snake_case** by convention
+
+## Reassignment
+
+Variables can be updated at any time:
+
+\`\`\`python
+score = 0
+score = score + 10  # now 10
+score += 5          # now 15
+\`\`\`
+
+## Your Task
+
+Create variables for a student profile: \`name\` (string), \`age\` (int), and \`gpa\` (float). Print them in the format: \`"Name: Juan, Age: 20, GPA: 3.5"\``,
+    tiers: [
+      {
+        difficulty: "easy",
+        xpMultiplier: 1,
+        starterCode: `name = "Juan"\nage = 20\ngpa = 3.5\n\n# Print the profile using comma-separated print\nprint("Name:", name, "Age:", age, "GPA:", gpa)`,
+        description: "Variables are pre-defined — just fix the print statement.",
+      },
+      {
+        difficulty: "medium",
+        xpMultiplier: 2,
+        starterCode: `# Create the three variables and use an f-string to print\npass`,
+        description: "Create the variables yourself and use an f-string for formatted output.",
+      },
+      {
+        difficulty: "hard",
+        xpMultiplier: 3,
+        starterCode: `# Create a function that takes name, age, gpa and returns\n# the formatted string. Then call it and print the result.\ndef format_profile(name, age, gpa):\n    pass`,
+        description: "Write a function that returns the formatted profile string.",
+      },
+    ],
+    testCases: [
+      { input: "check name", expectedOutput: "Juan", description: "name variable exists", passed: true },
+      { input: "check age type", expectedOutput: "int", description: "age is an integer", passed: true },
+      { input: "check gpa type", expectedOutput: "float", description: "gpa is a float", passed: true },
+    ],
+    hints: [
+      "f-strings let you embed variables: `f\"Name: {name}\"`",
+      "Make sure `age` is a number (no quotes), not a string.",
+    ],
+    xpReward: 40,
+    prevLessonId: "les_001",
+    nextLessonId: "les_003",
+  },
+  les_003: {
+    id: "les_003",
+    title: "Data Types",
+    courseId: "crs_001",
+    courseTitle: "Python Fundamentals",
+    order: 3,
+    language: "Python",
+    instructions: `# Data Types
+
+Every value in Python has a type. The main built-in types are:
+
+## Common Types
+
+| Type | Example | Description |
+|------|---------|-------------|
+| \`int\` | \`42\` | Whole numbers |
+| \`float\` | \`3.14\` | Decimal numbers |
+| \`str\` | \`"hello"\` | Text |
+| \`bool\` | \`True\` | True or False |
+
+## Checking Types
+
+Use \`type()\` to inspect a value:
+
+\`\`\`python
+print(type(42))       # <class 'int'>
+print(type("hello"))  # <class 'str'>
+\`\`\`
+
+## Type Conversion
+
+Convert between types with built-in functions:
+
+\`\`\`python
+int("42")    # → 42
+str(42)      # → "42"
+float(7)     # → 7.0
+bool(0)      # → False
+\`\`\`
+
+## Your Task
+
+Write a function \`classify\` that takes a value and returns its type as a string: \`"int"\`, \`"float"\`, \`"str"\`, or \`"bool"\`.`,
+    tiers: [
+      {
+        difficulty: "easy",
+        xpMultiplier: 1,
+        starterCode: `def classify(value):\n    if type(value) == int:\n        return "int"\n    # Add the other types below\n    pass`,
+        description: "Use if/elif with type() to check each type.",
+      },
+      {
+        difficulty: "medium",
+        xpMultiplier: 2,
+        starterCode: `def classify(value):\n    # Use isinstance() instead of type()\n    pass`,
+        description: "Use isinstance() for a more Pythonic type check.",
+      },
+      {
+        difficulty: "hard",
+        xpMultiplier: 3,
+        starterCode: `def classify(value):\n    # One-liner using type().__name__\n    pass`,
+        description: "Return the type name dynamically using __name__.",
+      },
+    ],
+    testCases: [
+      { input: "classify(42)", expectedOutput: '"int"', description: "Classify integer", passed: true },
+      { input: "classify(3.14)", expectedOutput: '"float"', description: "Classify float", passed: true },
+      { input: 'classify("hello")', expectedOutput: '"str"', description: "Classify string", passed: true },
+      { input: "classify(True)", expectedOutput: '"bool"', description: "Classify boolean", passed: false },
+    ],
+    hints: [
+      "`type(value)` returns the type object — compare with `int`, `float`, `str`, `bool`.",
+      "Be careful: `bool` is a subclass of `int` in Python — check `bool` first!",
+      "Every type has a `__name__` attribute: `type(42).__name__` → `'int'`",
+    ],
+    xpReward: 50,
+    prevLessonId: "les_002",
+    nextLessonId: "les_004",
+  },
+  les_004: {
+    id: "les_004",
+    title: "Operators",
+    courseId: "crs_001",
+    courseTitle: "Python Fundamentals",
+    order: 4,
+    language: "Python",
+    instructions: `# Operators
+
+Operators let you perform calculations and comparisons.
+
+## Arithmetic Operators
+
+\`\`\`python
+10 + 3   # 13  (addition)
+10 - 3   # 7   (subtraction)
+10 * 3   # 30  (multiplication)
+10 / 3   # 3.33 (division — always float)
+10 // 3  # 3   (floor division)
+10 % 3   # 1   (modulo / remainder)
+10 ** 3  # 1000 (exponent)
+\`\`\`
+
+## Comparison Operators
+
+\`\`\`python
+5 == 5   # True
+5 != 3   # True
+5 > 3    # True
+5 <= 5   # True
+\`\`\`
+
+## Your Task
+
+Write a function \`calculator\` that takes two numbers and an operator string (\`"+"\`, \`"-"\`, \`"*"\`, \`"/"\`) and returns the result.`,
+    tiers: [
+      {
+        difficulty: "easy",
+        xpMultiplier: 1,
+        starterCode: `def calculator(a, b, op):\n    if op == "+":\n        return a + b\n    # Add the other operators\n    pass`,
+        description: "Use if/elif to handle each operator.",
+      },
+      {
+        difficulty: "medium",
+        xpMultiplier: 2,
+        starterCode: `def calculator(a, b, op):\n    # Use a dictionary to map operators to functions\n    pass`,
+        description: "Map operators to lambda functions in a dictionary.",
+      },
+      {
+        difficulty: "hard",
+        xpMultiplier: 3,
+        starterCode: `def calculator(a, b, op):\n    # Use the operator module from the standard library\n    # Handle division by zero gracefully\n    pass`,
+        description: "Use the operator module and handle edge cases like division by zero.",
+      },
+    ],
+    testCases: [
+      { input: 'calculator(10, 3, "+")', expectedOutput: "13", description: "Addition", passed: true },
+      { input: 'calculator(10, 3, "-")', expectedOutput: "7", description: "Subtraction", passed: true },
+      { input: 'calculator(10, 3, "*")', expectedOutput: "30", description: "Multiplication", passed: true },
+    ],
+    hints: [
+      "For division, consider using `a / b` for float division.",
+      "A dict approach: `ops = {'+': lambda a, b: a + b, ...}`",
+    ],
+    xpReward: 50,
+    prevLessonId: "les_003",
+    nextLessonId: "les_005",
+  },
+  les_005: {
+    id: "les_005",
+    title: "Input & Output",
+    courseId: "crs_001",
+    courseTitle: "Python Fundamentals",
+    order: 5,
+    language: "Python",
+    instructions: `# Input & Output
+
+## Getting User Input
+
+The \`input()\` function reads a line of text from the user:
+
+\`\`\`python
+name = input("What is your name? ")
+print(f"Hello, {name}!")
+\`\`\`
+
+**Important:** \`input()\` always returns a **string**. Convert if needed:
+
+\`\`\`python
+age = int(input("Your age: "))
+\`\`\`
+
+## Formatted Output
+
+f-strings are the modern way to format output:
+
+\`\`\`python
+name = "Juan"
+score = 95
+print(f"{name} scored {score}/100")
+\`\`\`
+
+## Your Task
+
+Write a function \`greet_user\` that takes a \`name\` and \`age\` and returns a formatted greeting: \`"Hi <name>! You are <age> years old."\``,
+    tiers: [
+      {
+        difficulty: "easy",
+        xpMultiplier: 1,
+        starterCode: `def greet_user(name, age):\n    # Use an f-string\n    return f"Hi {name}! You are ___ years old."`,
+        description: "Fill in the f-string template.",
+      },
+      {
+        difficulty: "medium",
+        xpMultiplier: 2,
+        starterCode: `def greet_user(name, age):\n    # Use .format() method instead of f-string\n    pass`,
+        description: "Use the .format() string method.",
+      },
+      {
+        difficulty: "hard",
+        xpMultiplier: 3,
+        starterCode: `def greet_user(name, age):\n    # Use % formatting (old style) AND handle\n    # the case where age is a string (convert it)\n    pass`,
+        description: "Use %-style formatting and handle type conversion.",
+      },
+    ],
+    testCases: [
+      { input: 'greet_user("Juan", 20)', expectedOutput: '"Hi Juan! You are 20 years old."', description: "Basic greeting", passed: true },
+      { input: 'greet_user("Maria", 25)', expectedOutput: '"Hi Maria! You are 25 years old."', description: "Different name", passed: true },
+    ],
+    hints: [
+      "f-strings: `f\"Hi {name}! You are {age} years old.\"`",
+      ".format(): `\"Hi {}! You are {} years old.\".format(name, age)`",
+    ],
+    xpReward: 50,
+    prevLessonId: "les_004",
+    nextLessonId: "les_006",
+  },
+  // ── Python Fundamentals: Level 2 ──────────────────────────────────────
+  les_006: {
+    id: "les_006",
+    title: "If / Else Statements",
+    courseId: "crs_001",
+    courseTitle: "Python Fundamentals",
+    order: 1,
+    language: "Python",
+    instructions: `# If / Else Statements
+
+Conditional statements let your program make decisions.
+
+## Basic Syntax
+
+\`\`\`python
+age = 18
+if age >= 18:
+    print("Adult")
+elif age >= 13:
+    print("Teenager")
+else:
+    print("Child")
+\`\`\`
+
+## Comparison Operators
+
+- \`==\` equal, \`!=\` not equal
+- \`>\` greater, \`<\` less
+- \`>=\` greater or equal, \`<=\` less or equal
+
+## Logical Operators
+
+Combine conditions with \`and\`, \`or\`, \`not\`:
+
+\`\`\`python
+if age >= 18 and has_id:
+    print("Welcome!")
+\`\`\`
+
+## Your Task
+
+Write a function \`grade\` that takes a numeric score (0–100) and returns the letter grade: \`"A"\` (90+), \`"B"\` (80+), \`"C"\` (70+), \`"D"\` (60+), \`"F"\` (below 60).`,
+    tiers: [
+      {
+        difficulty: "easy",
+        xpMultiplier: 1,
+        starterCode: `def grade(score):\n    if score >= 90:\n        return "A"\n    # Add elif/else for B, C, D, F\n    pass`,
+        description: "Complete the if/elif/else chain for each grade.",
+      },
+      {
+        difficulty: "medium",
+        xpMultiplier: 2,
+        starterCode: `def grade(score):\n    # Use a more compact approach (e.g., a loop over thresholds)\n    pass`,
+        description: "Use a list of thresholds and a loop.",
+      },
+      {
+        difficulty: "hard",
+        xpMultiplier: 3,
+        starterCode: `def grade(score):\n    # One-liner using next() + generator expression\n    # Also handle invalid scores (< 0 or > 100) by returning "Invalid"\n    pass`,
+        description: "One-liner with next() + generator, plus input validation.",
+      },
+    ],
+    testCases: [
+      { input: "grade(95)", expectedOutput: '"A"', description: "A grade", passed: true },
+      { input: "grade(85)", expectedOutput: '"B"', description: "B grade", passed: true },
+      { input: "grade(55)", expectedOutput: '"F"', description: "F grade", passed: true },
+    ],
+    hints: [
+      "Check from highest to lowest: 90 → A, 80 → B, etc.",
+      "Threshold approach: `grades = [(90,'A'),(80,'B'),(70,'C'),(60,'D')]`",
+    ],
+    xpReward: 60,
+    prevLessonId: "les_005",
+    nextLessonId: "les_007",
+  },
+  les_007: {
+    id: "les_007",
+    title: "For Loops",
+    courseId: "crs_001",
+    courseTitle: "Python Fundamentals",
+    order: 2,
+    language: "Python",
+    instructions: `# For Loops
+
+For loops iterate over sequences like lists, strings, and ranges.
+
+## Basic For Loop
+
+\`\`\`python
+fruits = ["apple", "banana", "cherry"]
+for fruit in fruits:
+    print(fruit)
+\`\`\`
+
+## range() Function
+
+\`\`\`python
+for i in range(5):      # 0, 1, 2, 3, 4
+    print(i)
+
+for i in range(2, 8):   # 2, 3, 4, 5, 6, 7
+    print(i)
+
+for i in range(0, 10, 2):  # 0, 2, 4, 6, 8
+    print(i)
+\`\`\`
+
+## enumerate()
+
+Get both index and value:
+
+\`\`\`python
+for i, fruit in enumerate(fruits):
+    print(f"{i}: {fruit}")
+\`\`\`
+
+## Your Task
+
+Write a function \`sum_evens\` that takes a number \`n\` and returns the sum of all even numbers from 1 to \`n\` (inclusive).`,
+    tiers: [
+      {
+        difficulty: "easy",
+        xpMultiplier: 1,
+        starterCode: `def sum_evens(n):\n    total = 0\n    for i in range(1, n + 1):\n        # Check if i is even, then add to total\n        pass\n    return total`,
+        description: "Use a for loop with an if check for even numbers.",
+      },
+      {
+        difficulty: "medium",
+        xpMultiplier: 2,
+        starterCode: `def sum_evens(n):\n    # Use range() with a step of 2 — no if needed\n    pass`,
+        description: "Use range() with step=2 to skip odd numbers entirely.",
+      },
+      {
+        difficulty: "hard",
+        xpMultiplier: 3,
+        starterCode: `def sum_evens(n):\n    # Solve it with the math formula (no loop needed)\n    # Sum of evens from 2 to n = k*(k+1) where k = n//2\n    pass`,
+        description: "Use the arithmetic series formula — O(1) with no loop.",
+      },
+    ],
+    testCases: [
+      { input: "sum_evens(10)", expectedOutput: "30", description: "Sum evens to 10", passed: true },
+      { input: "sum_evens(1)", expectedOutput: "0", description: "No evens in 1", passed: true },
+      { input: "sum_evens(6)", expectedOutput: "12", description: "Sum evens to 6", passed: true },
+    ],
+    hints: [
+      "A number is even if `n % 2 == 0`.",
+      "`range(2, n+1, 2)` generates only even numbers.",
+      "Math formula: the sum of first k even numbers is k*(k+1).",
+    ],
+    xpReward: 80,
+    prevLessonId: "les_006",
+    nextLessonId: "les_008",
+  },
+  les_008: {
+    id: "les_008",
+    title: "While Loops",
+    courseId: "crs_001",
+    courseTitle: "Python Fundamentals",
+    order: 3,
+    language: "Python",
+    instructions: `# While Loops
+
+A \`while\` loop repeats as long as a condition is true.
+
+## Basic Syntax
+
+\`\`\`python
+count = 0
+while count < 5:
+    print(count)
+    count += 1
+\`\`\`
+
+## break and continue
+
+- \`break\` exits the loop immediately
+- \`continue\` skips to the next iteration
+
+\`\`\`python
+while True:
+    line = input()
+    if line == "quit":
+        break
+    print(f"You said: {line}")
+\`\`\`
+
+## Your Task
+
+Write a function \`countdown\` that takes a positive integer \`n\` and returns a list counting down from \`n\` to 1, followed by \`"Go!"\`.
+
+**Example:** \`countdown(3)\` → \`[3, 2, 1, "Go!"]\``,
+    tiers: [
+      {
+        difficulty: "easy",
+        xpMultiplier: 1,
+        starterCode: `def countdown(n):\n    result = []\n    while n > 0:\n        result.append(n)\n        n -= 1\n    # Don't forget "Go!"\n    return result`,
+        description: "Fill in the while loop to count down, then append 'Go!'.",
+      },
+      {
+        difficulty: "medium",
+        xpMultiplier: 2,
+        starterCode: `def countdown(n):\n    # Use list(range(...)) + ["Go!"] — no while loop\n    pass`,
+        description: "Use range() with a negative step and list concatenation.",
+      },
+      {
+        difficulty: "hard",
+        xpMultiplier: 3,
+        starterCode: `def countdown(n):\n    # Recursive solution — no loops at all\n    pass`,
+        description: "Implement countdown recursively without any loops.",
+      },
+    ],
+    testCases: [
+      { input: "countdown(3)", expectedOutput: '[3, 2, 1, "Go!"]', description: "Count from 3", passed: true },
+      { input: "countdown(1)", expectedOutput: '[1, "Go!"]', description: "Count from 1", passed: true },
+      { input: "countdown(5)", expectedOutput: '[5, 4, 3, 2, 1, "Go!"]', description: "Count from 5", passed: true },
+    ],
+    hints: [
+      "Decrement `n` with `n -= 1` inside the loop.",
+      "`list(range(n, 0, -1))` gives `[n, n-1, ..., 1]`.",
+      "Recursive: base case returns `['Go!']`, recursive case returns `[n] + countdown(n-1)`.",
+    ],
+    xpReward: 80,
+    prevLessonId: "les_007",
+    nextLessonId: "les_009",
+  },
+  les_009: {
+    id: "les_009",
+    title: "Functions",
+    courseId: "crs_001",
+    courseTitle: "Python Fundamentals",
+    order: 4,
+    language: "Python",
+    instructions: `# Functions
+
+Functions are reusable blocks of code defined with the \`def\` keyword.
+
+## Defining Functions
+
+\`\`\`python
+def greet(name):
+    return f"Hello, {name}!"
+
+print(greet("Juan"))  # Hello, Juan!
+\`\`\`
+
+## Default Parameters
+
+\`\`\`python
+def power(base, exp=2):
+    return base ** exp
+
+power(3)     # 9
+power(3, 3)  # 27
+\`\`\`
+
+## Multiple Return Values
+
+\`\`\`python
+def min_max(numbers):
+    return min(numbers), max(numbers)
+
+lo, hi = min_max([3, 1, 4, 1, 5])
+\`\`\`
+
+## Your Task
+
+Write a function \`fizzbuzz\` that takes \`n\` and returns a list where each number 1–n is replaced by \`"Fizz"\` (divisible by 3), \`"Buzz"\` (divisible by 5), \`"FizzBuzz"\` (both), or the number itself.`,
+    tiers: [
+      {
+        difficulty: "easy",
+        xpMultiplier: 1,
+        starterCode: `def fizzbuzz(n):\n    result = []\n    for i in range(1, n + 1):\n        if i % 15 == 0:\n            result.append("FizzBuzz")\n        # Add elif for % 3, % 5, and else\n        pass\n    return result`,
+        description: "Complete the classic FizzBuzz with if/elif/else.",
+      },
+      {
+        difficulty: "medium",
+        xpMultiplier: 2,
+        starterCode: `def fizzbuzz(n):\n    # Use a list comprehension with conditional expression\n    pass`,
+        description: "Solve FizzBuzz as a one-liner list comprehension.",
+      },
+      {
+        difficulty: "hard",
+        xpMultiplier: 3,
+        starterCode: `def fizzbuzz(n):\n    # Make it extensible: accept a dict of {divisor: label}\n    # Default: {3: "Fizz", 5: "Buzz"}\n    pass`,
+        description: "Generalize FizzBuzz to accept any set of divisor/label pairs.",
+      },
+    ],
+    testCases: [
+      { input: "fizzbuzz(5)", expectedOutput: '[1, 2, "Fizz", 4, "Buzz"]', description: "First 5", passed: true },
+      { input: "fizzbuzz(15)[-1]", expectedOutput: '"FizzBuzz"', description: "15 is FizzBuzz", passed: true },
+      { input: "len(fizzbuzz(100))", expectedOutput: "100", description: "Length check", passed: true },
+    ],
+    hints: [
+      "Check divisibility by 15 first (both 3 and 5), then 3, then 5.",
+      "List comp: `['FizzBuzz' if i%15==0 else 'Fizz' if i%3==0 else ...]`",
+      "For the extensible version, loop over the divisor dict and build the label string.",
+    ],
+    xpReward: 100,
+    prevLessonId: "les_008",
+    nextLessonId: "les_010",
+  },
+  les_010: {
+    id: "les_010",
+    title: "Return Values",
+    courseId: "crs_001",
+    courseTitle: "Python Fundamentals",
+    order: 5,
+    language: "Python",
+    instructions: `# Return Values
+
+The \`return\` statement sends a value back from a function to the caller.
+
+## Basics
+
+\`\`\`python
+def add(a, b):
+    return a + b
+
+result = add(3, 4)  # result is 7
+\`\`\`
+
+## Returning None
+
+A function without \`return\` (or with bare \`return\`) returns \`None\`:
+
+\`\`\`python
+def say_hello(name):
+    print(f"Hello, {name}!")
+    # implicitly returns None
+\`\`\`
+
+## Early Returns
+
+Use \`return\` to exit early:
+
+\`\`\`python
+def is_positive(n):
+    if n <= 0:
+        return False
+    return True
+\`\`\`
+
+## Your Task
+
+Write a function \`safe_divide\` that takes two numbers and returns the result of division. If the divisor is 0, return \`None\` instead of crashing.`,
+    tiers: [
+      {
+        difficulty: "easy",
+        xpMultiplier: 1,
+        starterCode: `def safe_divide(a, b):\n    if b == 0:\n        return None\n    # Return the division result\n    pass`,
+        description: "Add the return statement for the normal division case.",
+      },
+      {
+        difficulty: "medium",
+        xpMultiplier: 2,
+        starterCode: `def safe_divide(a, b):\n    # Use try/except ZeroDivisionError instead of an if check\n    pass`,
+        description: "Handle division by zero with try/except.",
+      },
+      {
+        difficulty: "hard",
+        xpMultiplier: 3,
+        starterCode: `def safe_divide(a, b, default=None):\n    # Return 'default' on error; also handle TypeError\n    # (e.g., if strings are passed)\n    pass`,
+        description: "Handle both ZeroDivisionError and TypeError with a configurable default.",
+      },
+    ],
+    testCases: [
+      { input: "safe_divide(10, 2)", expectedOutput: "5.0", description: "Normal division", passed: true },
+      { input: "safe_divide(10, 0)", expectedOutput: "None", description: "Division by zero", passed: true },
+      { input: "safe_divide(0, 5)", expectedOutput: "0.0", description: "Zero numerator", passed: true },
+    ],
+    hints: [
+      "Division in Python always returns a float: `10 / 2` → `5.0`.",
+      "try/except: wrap `a / b` in a try block and catch `ZeroDivisionError`.",
+    ],
+    xpReward: 100,
+    prevLessonId: "les_009",
+    nextLessonId: "les_011",
+  },
+  // ── Python Fundamentals: Level 3 ──────────────────────────────────────
+  les_011: {
+    id: "les_011",
+    title: "Lists",
+    courseId: "crs_001",
+    courseTitle: "Python Fundamentals",
+    order: 1,
+    language: "Python",
+    instructions: `# Lists
+
+Lists are ordered, mutable collections — the most versatile data structure in Python.
+
+## Creating Lists
+
+\`\`\`python
+numbers = [1, 2, 3, 4, 5]
+mixed = [1, "hello", True, 3.14]
+empty = []
+\`\`\`
+
+## Common Operations
+
+\`\`\`python
+fruits = ["apple", "banana"]
+fruits.append("cherry")      # Add to end
+fruits.insert(0, "avocado")  # Insert at index
+fruits.remove("banana")      # Remove by value
+popped = fruits.pop()        # Remove & return last
+\`\`\`
+
+## Slicing
+
+\`\`\`python
+nums = [0, 1, 2, 3, 4, 5]
+nums[1:4]    # [1, 2, 3]
+nums[:3]     # [0, 1, 2]
+nums[::2]    # [0, 2, 4]
+nums[::-1]   # [5, 4, 3, 2, 1, 0]
+\`\`\`
+
+## Your Task
+
+Write a function \`rotate_list\` that takes a list and a number \`k\`, and rotates the list to the right by \`k\` positions.
+
+**Example:** \`rotate_list([1,2,3,4,5], 2)\` → \`[4,5,1,2,3]\``,
+    tiers: [
+      {
+        difficulty: "easy",
+        xpMultiplier: 1,
+        starterCode: `def rotate_list(lst, k):\n    if not lst:\n        return lst\n    k = k % len(lst)\n    # Use slicing to rotate\n    # Hint: lst[-k:] + lst[:-k]\n    pass`,
+        description: "Use list slicing to rotate.",
+      },
+      {
+        difficulty: "medium",
+        xpMultiplier: 2,
+        starterCode: `def rotate_list(lst, k):\n    # Use collections.deque with its rotate method\n    pass`,
+        description: "Use collections.deque which has a built-in rotate().",
+      },
+      {
+        difficulty: "hard",
+        xpMultiplier: 3,
+        starterCode: `def rotate_list(lst, k):\n    # In-place rotation using the "reverse three times" trick\n    # 1. Reverse the whole list\n    # 2. Reverse first k elements\n    # 3. Reverse the rest\n    pass`,
+        description: "Rotate in-place using the triple-reverse algorithm (O(1) extra space).",
+      },
+    ],
+    testCases: [
+      { input: "rotate_list([1,2,3,4,5], 2)", expectedOutput: "[4, 5, 1, 2, 3]", description: "Rotate right by 2", passed: true },
+      { input: "rotate_list([1,2,3], 0)", expectedOutput: "[1, 2, 3]", description: "No rotation", passed: true },
+      { input: "rotate_list([], 3)", expectedOutput: "[]", description: "Empty list", passed: true },
+    ],
+    hints: [
+      "Slicing: `lst[-k:]` gives the last k elements, `lst[:-k]` gives the rest.",
+      "`from collections import deque` — `d = deque(lst); d.rotate(k); return list(d)`",
+      "To reverse a sublist in-place, use two pointers swapping from outside in.",
+    ],
+    xpReward: 100,
+    prevLessonId: "les_010",
+    nextLessonId: "les_012",
+  },
+  les_012: {
+    id: "les_012",
+    title: "Tuples",
+    courseId: "crs_001",
+    courseTitle: "Python Fundamentals",
+    order: 2,
+    language: "Python",
+    instructions: `# Tuples in Python
+
+A **tuple** is an immutable sequence type. Once created, you cannot modify its elements. Tuples are often used to represent fixed collections of related values.
+
+## Creating Tuples
+
+\`\`\`python
+coordinates = (3, 7)
+colors = ("red", "green", "blue")
+single = (42,)  # Note the trailing comma
+\`\`\`
+
+## Why Use Tuples?
+
+- **Immutability** — they can be used as dictionary keys
+- **Performance** — slightly faster than lists
+- **Safety** — prevent accidental modification
+
+## Your Task
+
+Write a function \`swap_pair\` that takes a tuple of two elements and returns a new tuple with the elements swapped.
+
+**Example:**
+\`\`\`python
+swap_pair((1, 2))  # → (2, 1)
+swap_pair(("hello", "world"))  # → ("world", "hello")
+\`\`\``,
+    tiers: [
+      {
+        difficulty: "easy",
+        xpMultiplier: 1,
+        starterCode: `def swap_pair(pair):\n    # Unpack the tuple and return swapped\n    first, second = pair\n    # Return the swapped tuple\n    pass`,
+        description: "Unpack the tuple and return a new one with swapped elements.",
+      },
+      {
+        difficulty: "medium",
+        xpMultiplier: 2,
+        starterCode: `def swap_pair(pair):\n    # Swap without unpacking — use indexing\n    pass`,
+        description: "Swap elements using tuple indexing instead of unpacking.",
+      },
+      {
+        difficulty: "hard",
+        xpMultiplier: 3,
+        starterCode: `def swap_many(t):\n    # Given a tuple of ANY even length, swap adjacent pairs\n    # (1,2,3,4) → (2,1,4,3)\n    pass`,
+        description: "Generalize: swap every adjacent pair in a tuple of any even length.",
+      },
+    ],
+    testCases: [
+      { input: "swap_pair((1, 2))", expectedOutput: "(2, 1)", description: "Swap integers", passed: true },
+      { input: 'swap_pair(("a", "b"))', expectedOutput: '("b", "a")', description: "Swap strings", passed: true },
+      { input: "swap_pair((True, False))", expectedOutput: "(False, True)", description: "Swap booleans", passed: false },
+    ],
+    hints: [
+      "Python lets you unpack tuples: `a, b = my_tuple`",
+      "You can create a new tuple with parentheses: `(b, a)`",
+      "For the hard tier, try using a list comprehension with range(0, len(t), 2) and convert back to tuple.",
+    ],
+    xpReward: 100,
+    prevLessonId: "les_011",
+    nextLessonId: "les_013",
+  },
+  les_015: {
+    id: "les_015",
+    title: "List Comprehensions",
+    courseId: "crs_001",
+    courseTitle: "Python Fundamentals",
+    order: 5,
+    language: "Python",
+    instructions: `# List Comprehensions
+
+List comprehensions provide a concise way to create lists. They consist of brackets containing an expression followed by a \`for\` clause, then zero or more \`for\` or \`if\` clauses.
+
+## Basic Syntax
+
+\`\`\`python
+squares = [x**2 for x in range(10)]
+evens = [x for x in range(20) if x % 2 == 0]
+\`\`\`
+
+## Nested Comprehensions
+
+\`\`\`python
+matrix = [[1, 2], [3, 4], [5, 6]]
+flat = [num for row in matrix for num in row]
+# → [1, 2, 3, 4, 5, 6]
+\`\`\`
+
+## Your Task
+
+Write a function \`compress\` that takes a list of integers and returns a new list containing only the elements that appear more than once, in the order they first appear.
+
+**Example:**
+\`\`\`python
+compress([1, 2, 2, 3, 3, 3, 4])  # → [2, 3]
+compress([5, 5, 5])               # → [5]
+compress([1, 2, 3])               # → []
+\`\`\``,
+    tiers: [
+      {
+        difficulty: "easy",
+        xpMultiplier: 1,
+        starterCode: `def compress(lst):\n    # Use a loop and a seen set\n    result = []\n    seen = set()\n    duplicates = set()\n    for item in lst:\n        if item in seen and item not in duplicates:\n            # Add to result\n            pass\n        seen.add(item)\n    return result`,
+        description: "Use a loop with two sets to track seen items and duplicates.",
+      },
+      {
+        difficulty: "medium",
+        xpMultiplier: 2,
+        starterCode: `def compress(lst):\n    # Solve it with list comprehension + count()\n    pass`,
+        description: "Use a list comprehension with the count() method.",
+      },
+      {
+        difficulty: "hard",
+        xpMultiplier: 3,
+        starterCode: `def compress(lst):\n    # One-liner using dict/Counter + list comprehension\n    # Maintain insertion order\n    pass`,
+        description: "One-liner using collections.Counter and list comprehension preserving order.",
+      },
+    ],
+    testCases: [
+      { input: "compress([1, 2, 2, 3, 3, 3, 4])", expectedOutput: "[2, 3]", description: "Basic duplicates", passed: true },
+      { input: "compress([])", expectedOutput: "[]", description: "Empty list", passed: false },
+      { input: "compress([5, 5, 5])", expectedOutput: "[5]", description: "Single repeated item", passed: true },
+      { input: "compress([1, 2, 3])", expectedOutput: "[]", description: "No duplicates", passed: true },
+    ],
+    hints: [
+      "The `count()` method returns how many times an element appears in a list.",
+      "Use a set to track which elements you've already added to avoid duplicates in the result.",
+      "For the hard tier: `from collections import Counter` — Counter preserves insertion order in Python 3.7+.",
+    ],
+    xpReward: 150,
+    prevLessonId: "les_014",
+    nextLessonId: null,
+  },
+};

@@ -10,8 +10,10 @@ interface AdminShellWrapperProps {
 
 export function AdminShellWrapper({ children, adminRole, adminName }: AdminShellWrapperProps) {
   return (
-    <AdminShell adminRole={adminRole} adminName={adminName}>
-      {children}
-    </AdminShell>
+    <div className="dark bg-[#0a0e1a] min-h-screen text-white">
+      <AdminShell adminRole={adminRole} adminName={adminName}>
+        {children}
+      </AdminShell>
+    </div>
   );
 }

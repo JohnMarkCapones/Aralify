@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 import {
   Home,
   BookOpen,
@@ -22,7 +23,7 @@ import { cn } from "@/lib/utils";
 const PRIMARY_NAV = [
   { icon: Home, label: "Home", href: "/dashboard", exact: true },
   { icon: BookOpen, label: "Courses", href: "/dashboard/courses", exact: false },
-  { icon: Target, label: "Challenges", href: "/dashboard/daily-challenge", exact: false },
+  { icon: Target, label: "Challenges", href: "/dashboard/challenges", exact: false },
   { icon: Users, label: "Community", href: "/dashboard/leaderboard", exact: false },
 ];
 
@@ -60,13 +61,23 @@ export function GameSidebar({ onProfileClick }: GameSidebarProps) {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                "relative flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors group",
                 active
                   ? "bg-primary/10 text-primary"
                   : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
               )}
             >
-              <item.icon size={18} />
+              {active && (
+                <motion.div
+                  layoutId="sidebar-active"
+                  className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-full bg-primary"
+                  transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                />
+              )}
+              <item.icon
+                size={18}
+                className="group-hover:scale-110 transition-transform"
+              />
               <span>{item.label}</span>
             </Link>
           );
@@ -83,13 +94,23 @@ export function GameSidebar({ onProfileClick }: GameSidebarProps) {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                "relative flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors group",
                 active
                   ? "bg-primary/10 text-primary"
                   : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
               )}
             >
-              <item.icon size={18} />
+              {active && (
+                <motion.div
+                  layoutId="sidebar-active"
+                  className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-full bg-primary"
+                  transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                />
+              )}
+              <item.icon
+                size={18}
+                className="group-hover:scale-110 transition-transform"
+              />
               <span>{item.label}</span>
             </Link>
           );
@@ -102,21 +123,21 @@ export function GameSidebar({ onProfileClick }: GameSidebarProps) {
         <Link
           href="/settings"
           className={cn(
-            "flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+            "flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors group",
             pathname === "/settings" || pathname.startsWith("/settings/")
               ? "bg-primary/10 text-primary"
               : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
           )}
         >
-          <Settings size={18} />
+          <Settings size={18} className="group-hover:scale-110 transition-transform" />
           <span>Settings</span>
         </Link>
 
         <button
           onClick={onProfileClick}
-          className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+          className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-muted-foreground hover:bg-muted/50 hover:text-foreground group"
         >
-          <User size={18} />
+          <User size={18} className="group-hover:scale-110 transition-transform" />
           <span>Profile</span>
         </button>
       </nav>

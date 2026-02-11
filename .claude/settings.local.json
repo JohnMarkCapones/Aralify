@@ -29,7 +29,11 @@
       "Bash(fi)",
       "Bash(done)",
       "Bash(magick identify:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(find:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(findstr:*)",
+      "Bash(Select-String:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

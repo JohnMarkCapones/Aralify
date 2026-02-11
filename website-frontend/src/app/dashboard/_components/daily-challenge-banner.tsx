@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { Check, Clock, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { DailyChallenge } from "@/lib/data/dashboard";
@@ -43,7 +44,11 @@ export function DailyChallengeBanner({ challenge }: DailyChallengeBannerProps) {
   const totalXp = challenge.xpReward * challenge.multiplier;
 
   return (
-    <section
+    <motion.section
+      initial={{ opacity: 0, scale: 0.95 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      viewport={{ once: true }}
+      transition={{ type: "spring", stiffness: 300, damping: 24 }}
       className={cn(
         "rounded-2xl border-2 border-primary/20 bg-gradient-to-r from-primary/5 via-primary/10 to-secondary/5 p-6",
         challenge.completed && "opacity-60"
@@ -76,7 +81,7 @@ export function DailyChallengeBanner({ challenge }: DailyChallengeBannerProps) {
         <div className="flex items-center gap-4 shrink-0">
           <div className="flex items-center gap-1.5 text-muted-foreground">
             <Clock size={14} />
-            <span className="font-mono text-sm font-bold">{timeLeft}</span>
+            <span className="font-mono text-sm font-bold tabular-nums">{timeLeft}</span>
           </div>
 
           {challenge.completed ? (
@@ -87,13 +92,13 @@ export function DailyChallengeBanner({ challenge }: DailyChallengeBannerProps) {
           ) : (
             <Link
               href="/dashboard/daily-challenge"
-              className="bg-primary text-white rounded-xl px-4 py-2 text-sm font-medium hover:bg-primary/90 transition-colors"
+              className="relative bg-primary text-white rounded-xl px-4 py-2 text-sm font-medium hover:bg-primary/90 transition-colors animate-pulse-ring"
             >
               Start Challenge
             </Link>
           )}
         </div>
       </div>
-    </section>
+    </motion.section>
   );
 }

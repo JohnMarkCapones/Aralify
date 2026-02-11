@@ -8,6 +8,7 @@ interface XpProgressBarProps {
   max: number;
   size?: "sm" | "md" | "lg";
   showLabel?: boolean;
+  shimmer?: boolean;
   className?: string;
 }
 
@@ -16,6 +17,7 @@ export function XpProgressBar({
   max,
   size = "md",
   showLabel = true,
+  shimmer = false,
   className,
 }: XpProgressBarProps) {
   const percentage = Math.min((current / max) * 100, 100);
@@ -45,7 +47,11 @@ export function XpProgressBar({
         )}
       >
         <motion.div
-          className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-primary via-secondary to-primary"
+          className={cn(
+            "absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-primary via-secondary to-primary",
+            shimmer && "animate-xp-shimmer",
+            "shadow-[0_0_12px_hsl(var(--primary)/0.4)]"
+          )}
           initial={{ width: 0 }}
           animate={{ width: `${percentage}%` }}
           transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}

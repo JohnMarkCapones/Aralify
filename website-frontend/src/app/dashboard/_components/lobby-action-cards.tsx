@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { BookOpen, Trophy, Award, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { DashboardUserProfile } from "@/lib/data/dashboard";
@@ -8,6 +9,15 @@ import type { DashboardUserProfile } from "@/lib/data/dashboard";
 interface LobbyActionCardsProps {
   user: DashboardUserProfile;
 }
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.08, duration: 0.4, ease: "easeOut" as const },
+  }),
+};
 
 export function LobbyActionCards({ user }: LobbyActionCardsProps) {
   const cards = [
@@ -49,31 +59,48 @@ export function LobbyActionCards({ user }: LobbyActionCardsProps) {
   return (
     <section>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {cards.map((card) => (
-          <Link key={card.label} href={card.href}>
-            <div
-              className={cn(
-                "p-5 rounded-xl card-elevated bg-gradient-to-br transition-shadow hover:card-elevated-hover",
-                card.gradient
-              )}
-            >
-              <div className="flex items-start justify-between mb-3">
-                <card.icon size={24} className={card.iconColor} />
-                <span className="text-xs font-medium text-muted-foreground">
-                  {card.label}
-                </span>
-              </div>
-              <p className="text-xs font-semibold text-muted-foreground">{card.stat}</p>
-              {card.progress !== undefined && (
-                <div className="mt-2 h-1 w-full rounded-full bg-black/10 dark:bg-white/10 overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-purple-500"
-                    style={{ width: `${card.progress * 100}%` }}
+        {cards.map((card, i) => (
+          <motion.div
+            key={card.label}
+            custom={i}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={cardVariants}
+          >
+            <Link href={card.href}>
+              <motion.div
+                whileHover={{ y: -6, scale: 1.02 }}
+                transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                className={cn(
+                  "p-5 rounded-xl card-elevated bg-gradient-to-br transition-shadow hover:card-elevated-hover group",
+                  card.gradient
+                )}
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <card.icon
+                    size={24}
+                    className={cn(card.iconColor, "group-hover:scale-110 transition-transform")}
                   />
+                  <span className="text-xs font-medium text-muted-foreground">
+                    {card.label}
+                  </span>
                 </div>
-              )}
-            </div>
-          </Link>
+                <p className="text-xs font-semibold text-muted-foreground">{card.stat}</p>
+                {card.progress !== undefined && (
+                  <div className="mt-2 h-1 w-full rounded-full bg-black/10 dark:bg-white/10 overflow-hidden">
+                    <motion.div
+                      className="h-full rounded-full bg-purple-500"
+                      initial={{ width: 0 }}
+                      whileInView={{ width: `${card.progress * 100}%` }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
+                    />
+                  </div>
+                )}
+              </motion.div>
+            </Link>
+          </motion.div>
         ))}
       </div>
     </section>

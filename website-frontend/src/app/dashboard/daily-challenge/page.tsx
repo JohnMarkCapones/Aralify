@@ -1,31 +1,46 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Target, Clock, Zap, Trophy, CheckCircle, XCircle } from "lucide-react";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import {
+  Target, Clock, Zap, Trophy, CheckCircle, XCircle,
+  Flame, ArrowRight, Timer, Code2, ChevronRight,
+  Sparkles, Shield, Star,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "../_components/page-header";
-import { StatCard } from "../_components/stat-card";
 import { mockDailyChallenge, mockChallengeHistory, mockUserProfile } from "@/lib/data/dashboard";
+
+const DIFFICULTY_COLORS = {
+  easy: { bg: "bg-emerald-500/10", text: "text-emerald-500", border: "border-emerald-500/30", glow: "shadow-[0_0_20px_rgba(16,185,129,0.15)]" },
+  medium: { bg: "bg-amber-500/10", text: "text-amber-500", border: "border-amber-500/30", glow: "shadow-[0_0_20px_rgba(245,158,11,0.15)]" },
+  hard: { bg: "bg-red-500/10", text: "text-red-500", border: "border-red-500/30", glow: "shadow-[0_0_20px_rgba(239,68,68,0.15)]" },
+};
+
+const item = {
+  hidden: { opacity: 0, y: 16 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" as const } },
+};
 
 export default function DailyChallengePage() {
   const challenge = mockDailyChallenge;
+  const diff = DIFFICULTY_COLORS[challenge.difficulty];
   const [timeLeft, setTimeLeft] = useState("");
 
   useEffect(() => {
     function updateTimer() {
       const now = new Date();
       const reset = new Date(challenge.resetsAt);
-      const diff = reset.getTime() - now.getTime();
-      if (diff <= 0) {
-        setTimeLeft("Resetting...");
-        return;
-      }
-      const hours = Math.floor(diff / 3_600_000);
-      const mins = Math.floor((diff % 3_600_000) / 60_000);
-      setTimeLeft(`${hours}h ${mins}m`);
+      const d = reset.getTime() - now.getTime();
+      if (d <= 0) { setTimeLeft("Resetting..."); return; }
+      const h = Math.floor(d / 3_600_000);
+      const m = Math.floor((d % 3_600_000) / 60_000);
+      const s = Math.floor((d % 60_000) / 1_000);
+      setTimeLeft(`${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`);
     }
     updateTimer();
-    const interval = setInterval(updateTimer, 60_000);
+    const interval = setInterval(updateTimer, 1_000);
     return () => clearInterval(interval);
   }, [challenge.resetsAt]);
 
@@ -33,140 +48,199 @@ export default function DailyChallengePage() {
   const totalXp = mockChallengeHistory.reduce((sum, c) => sum + c.xpEarned, 0);
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      initial="hidden"
+      animate="show"
+      transition={{ staggerChildren: 0.08 }}
+      className="space-y-6"
+    >
       <PageHeader
         title="Daily Challenge"
         description="Solve a new coding challenge every day"
+        icon={Target}
         actions={
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Clock size={14} />
-            <span className="font-medium">Resets in {timeLeft}</span>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-orange-500/10 border border-orange-500/20">
+            <Clock size={14} className="text-orange-400" />
+            <span className="font-mono text-sm font-bold tabular-nums text-orange-400">{timeLeft}</span>
           </div>
         }
       />
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <StatCard icon={<Target size={16} />} label="Streak" value={`${mockUserProfile.streak} days`} />
-        <StatCard icon={<Trophy size={16} />} label="Completed" value={completedCount} subtitle={`of ${mockChallengeHistory.length} challenges`} />
-        <StatCard icon={<Zap size={16} />} label="Total XP" value={totalXp} />
-        <StatCard icon={<Zap size={16} />} label="Multiplier" value={`${challenge.multiplier}x`} subtitle="Streak bonus" />
-      </div>
-
-      {/* Today's Challenge */}
-      <div className="bg-background rounded-xl border border-border/50 shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-border/30 flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-semibold">Today&apos;s Challenge</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">Solve to earn XP and keep your streak</p>
+      {/* Stat pills */}
+      <motion.div variants={item} className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { icon: <Flame size={16} className="text-orange-500" />, label: "Streak", value: `${mockUserProfile.streak} days`, gradient: "from-orange-500/10 to-orange-500/5", accent: "border-orange-500/20" },
+          { icon: <Trophy size={16} className="text-amber-500" />, label: "Completed", value: `${completedCount}/${mockChallengeHistory.length}`, gradient: "from-amber-500/10 to-amber-500/5", accent: "border-amber-500/20" },
+          { icon: <Zap size={16} className="text-primary" />, label: "Total XP", value: totalXp.toLocaleString(), gradient: "from-primary/10 to-primary/5", accent: "border-primary/20" },
+          { icon: <Star size={16} className="text-purple-500" />, label: "Multiplier", value: `${challenge.multiplier}x`, gradient: "from-purple-500/10 to-purple-500/5", accent: "border-purple-500/20" },
+        ].map((s) => (
+          <div key={s.label} className={cn("p-4 rounded-xl bg-gradient-to-br card-elevated border", s.gradient, s.accent)}>
+            <div className="flex items-center gap-2 mb-1.5">
+              {s.icon}
+              <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">{s.label}</span>
+            </div>
+            <p className="text-lg font-semibold">{s.value}</p>
           </div>
-          <span className={cn(
-            "text-[10px] font-medium px-2 py-0.5 rounded-full",
-            challenge.difficulty === "easy" && "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400",
-            challenge.difficulty === "medium" && "bg-amber-50 text-amber-600 dark:bg-amber-950/30 dark:text-amber-400",
-            challenge.difficulty === "hard" && "bg-red-50 text-red-600 dark:bg-red-950/30 dark:text-red-400",
-          )}>
-            {challenge.difficulty}
-          </span>
+        ))}
+      </motion.div>
+
+      {/* Today's Challenge — Hero card */}
+      <motion.div
+        variants={item}
+        className={cn(
+          "relative rounded-2xl border-2 overflow-hidden",
+          diff.border, diff.glow
+        )}
+      >
+        {/* Decorative gradient orbs */}
+        <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-gradient-to-br from-orange-500/8 to-amber-500/5 blur-3xl" />
+        <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full bg-gradient-to-br from-primary/5 to-cyan-500/5 blur-3xl" />
+
+        <div className="relative">
+          {/* Header */}
+          <div className="px-6 py-4 border-b border-border/20 flex items-center justify-between bg-muted/10">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500/20 to-amber-500/20 flex items-center justify-center">
+                <Target size={20} className="text-orange-400" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold">Today&apos;s Challenge</h3>
+                <p className="text-[10px] text-muted-foreground">Solve to earn XP and keep your streak</p>
+              </div>
+            </div>
+            <span className={cn("text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full", diff.bg, diff.text)}>
+              {challenge.difficulty}
+            </span>
+          </div>
+
+          {/* Body */}
+          <div className="p-6">
+            <h2 className="text-xl font-semibold mb-2">{challenge.title}</h2>
+            <p className="text-sm text-muted-foreground mb-5 max-w-xl">{challenge.description}</p>
+
+            {/* Meta chips */}
+            <div className="flex flex-wrap gap-2 mb-6">
+              <span className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full bg-muted/40 border border-border/20">
+                <Code2 size={13} className="text-blue-400" /> {challenge.language}
+              </span>
+              <span className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full bg-muted/40 border border-border/20">
+                <Timer size={13} className="text-muted-foreground" /> {challenge.timeLimit} min
+              </span>
+              <span className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary">
+                <Zap size={13} /> {challenge.xpReward} XP
+              </span>
+              <span className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-500">
+                <Sparkles size={13} /> x{challenge.multiplier} = {challenge.xpReward * challenge.multiplier} XP
+              </span>
+            </div>
+
+            <Link
+              href="/dashboard/challenges/chal_001"
+              className="inline-flex bg-primary text-primary-foreground rounded-xl px-6 py-3 text-sm font-semibold hover:bg-primary/90 transition-all items-center gap-2 shadow-lg shadow-primary/20"
+            >
+              Start Challenge <ArrowRight size={16} />
+            </Link>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Streak Multiplier — visual tiers */}
+      <motion.div variants={item} className="bg-background rounded-xl border border-border/50 card-elevated overflow-hidden">
+        <div className="px-5 py-4 border-b border-border/20 flex items-center gap-2">
+          <Flame size={14} className="text-orange-400" />
+          <h3 className="text-sm font-semibold">Streak Multiplier</h3>
         </div>
         <div className="p-5">
-          <h2 className="text-lg font-semibold mb-2">{challenge.title}</h2>
-          <p className="text-sm text-muted-foreground mb-4">{challenge.description}</p>
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { days: "1-6 days", multi: "1x", icon: <Shield size={20} />, active: mockUserProfile.streak < 7, color: "blue" },
+              { days: "7-13 days", multi: "2x", icon: <Flame size={20} />, active: mockUserProfile.streak >= 7 && mockUserProfile.streak < 14, color: "orange" },
+              { days: "14+ days", multi: "3x", icon: <Sparkles size={20} />, active: mockUserProfile.streak >= 14, color: "purple" },
+            ].map((tier) => {
+              const colors = {
+                blue: { bg: "from-blue-500/10 to-blue-500/5", border: "border-blue-500/30", text: "text-blue-500", glow: "shadow-[0_0_15px_rgba(59,130,246,0.2)]" },
+                orange: { bg: "from-orange-500/10 to-orange-500/5", border: "border-orange-500/30", text: "text-orange-500", glow: "shadow-[0_0_15px_rgba(249,115,22,0.2)]" },
+                purple: { bg: "from-purple-500/10 to-purple-500/5", border: "border-purple-500/30", text: "text-purple-500", glow: "shadow-[0_0_15px_rgba(139,92,246,0.2)]" },
+              }[tier.color]!;
 
-          <div className="flex flex-wrap gap-4 mb-5">
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <span className="font-medium">Language:</span> {challenge.language}
-            </div>
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Clock size={12} />
-              <span>{challenge.timeLimit} min</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-xs">
-              <Zap size={12} className="text-primary" />
-              <span className="font-medium text-primary">{challenge.xpReward} XP</span>
-              <span className="text-muted-foreground">x{challenge.multiplier} multiplier = {challenge.xpReward * challenge.multiplier} XP</span>
-            </div>
+              return (
+                <div
+                  key={tier.days}
+                  className={cn(
+                    "rounded-xl border-2 p-4 text-center transition-all bg-gradient-to-b",
+                    tier.active
+                      ? cn(colors.border, colors.bg, colors.glow)
+                      : "border-border/20 opacity-40"
+                  )}
+                >
+                  <div className={cn("mx-auto mb-2", tier.active ? colors.text : "text-muted-foreground")}>
+                    {tier.icon}
+                  </div>
+                  <p className={cn("text-2xl font-bold", tier.active && colors.text)}>{tier.multi}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{tier.days}</p>
+                  {tier.active && (
+                    <p className={cn("text-[10px] font-bold mt-1.5 uppercase tracking-wider", colors.text)}>Active</p>
+                  )}
+                </div>
+              );
+            })}
           </div>
-
-          <button className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
-            Start Challenge
-          </button>
         </div>
-      </div>
-
-      {/* Streak Multiplier Info */}
-      <div className="bg-background rounded-xl border border-border/50 p-5 shadow-sm">
-        <h3 className="text-sm font-semibold mb-3">Streak Multiplier</h3>
-        <div className="grid grid-cols-3 gap-3">
-          {[
-            { days: "1-6 days", multi: "1x", active: mockUserProfile.streak < 7 },
-            { days: "7-13 days", multi: "2x", active: mockUserProfile.streak >= 7 && mockUserProfile.streak < 14 },
-            { days: "14+ days", multi: "3x", active: mockUserProfile.streak >= 14 },
-          ].map((tier) => (
-            <div
-              key={tier.days}
-              className={cn(
-                "rounded-lg border p-3 text-center",
-                tier.active
-                  ? "border-primary bg-primary/5"
-                  : "border-border/30 opacity-50"
-              )}
-            >
-              <p className="text-lg font-semibold">{tier.multi}</p>
-              <p className="text-[10px] text-muted-foreground">{tier.days}</p>
-              {tier.active && <p className="text-[10px] text-primary font-medium mt-1">Active</p>}
-            </div>
-          ))}
-        </div>
-      </div>
+      </motion.div>
 
       {/* Challenge History */}
-      <div className="bg-background rounded-xl border border-border/50 shadow-sm">
-        <div className="px-5 py-4 border-b border-border/30">
-          <h3 className="text-sm font-semibold">Recent Challenges</h3>
+      <motion.div variants={item} className="bg-background rounded-xl border border-border/50 card-elevated overflow-hidden">
+        <div className="px-5 py-4 border-b border-border/20 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Clock size={14} className="text-muted-foreground" />
+            <h3 className="text-sm font-semibold">Recent Challenges</h3>
+          </div>
+          <span className="text-[10px] text-muted-foreground font-medium">
+            {completedCount} of {mockChallengeHistory.length} completed
+          </span>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border/30">
-                <th className="text-left text-xs font-medium text-muted-foreground px-5 py-2.5">Challenge</th>
-                <th className="text-left text-xs font-medium text-muted-foreground px-4 py-2.5">Difficulty</th>
-                <th className="text-left text-xs font-medium text-muted-foreground px-4 py-2.5">Language</th>
-                <th className="text-right text-xs font-medium text-muted-foreground px-4 py-2.5">Time</th>
-                <th className="text-right text-xs font-medium text-muted-foreground px-4 py-2.5">XP</th>
-                <th className="text-center text-xs font-medium text-muted-foreground px-5 py-2.5">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {mockChallengeHistory.map((entry) => (
-                <tr key={entry.id} className="border-b border-border/20 last:border-b-0 hover:bg-muted/20 transition-colors">
-                  <td className="px-5 py-2.5 font-medium">{entry.title}</td>
-                  <td className="px-4 py-2.5">
-                    <span className={cn(
-                      "text-[10px] font-medium px-2 py-0.5 rounded-full capitalize",
-                      entry.difficulty === "easy" && "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400",
-                      entry.difficulty === "medium" && "bg-amber-50 text-amber-600 dark:bg-amber-950/30 dark:text-amber-400",
-                      entry.difficulty === "hard" && "bg-red-50 text-red-600 dark:bg-red-950/30 dark:text-red-400",
-                    )}>
+        <div className="divide-y divide-border/20">
+          {mockChallengeHistory.map((entry) => {
+            const eDiff = DIFFICULTY_COLORS[entry.difficulty];
+            return (
+              <div key={entry.id} className="flex items-center gap-4 px-5 py-3 hover:bg-muted/20 transition-colors group">
+                <div className={cn(
+                  "w-9 h-9 rounded-lg flex items-center justify-center shrink-0",
+                  entry.completed ? "bg-emerald-500/10" : "bg-red-500/10"
+                )}>
+                  {entry.completed
+                    ? <CheckCircle size={16} className="text-emerald-500" />
+                    : <XCircle size={16} className="text-red-400" />
+                  }
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{entry.title}</p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded-full capitalize", eDiff.bg, eDiff.text)}>
                       {entry.difficulty}
                     </span>
-                  </td>
-                  <td className="px-4 py-2.5 text-muted-foreground">{entry.language}</td>
-                  <td className="px-4 py-2.5 text-right text-muted-foreground">{entry.timeTaken} min</td>
-                  <td className="px-4 py-2.5 text-right font-medium">{entry.xpEarned > 0 ? `+${entry.xpEarned}` : "—"}</td>
-                  <td className="px-5 py-2.5 text-center">
-                    {entry.completed ? (
-                      <CheckCircle size={16} className="text-emerald-500 inline" />
-                    ) : (
-                      <XCircle size={16} className="text-red-400 inline" />
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    <span className="text-[10px] text-muted-foreground">{entry.language}</span>
+                    <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                      <Timer size={9} /> {entry.timeTaken}m
+                    </span>
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  {entry.completed ? (
+                    <span className="text-xs font-bold text-emerald-500">+{entry.xpEarned} XP</span>
+                  ) : (
+                    <span className="text-xs font-medium text-red-400">Failed</span>
+                  )}
+                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                    {new Date(entry.completedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                  </p>
+                </div>
+                <ChevronRight size={14} className="text-muted-foreground/30 group-hover:text-muted-foreground transition-colors shrink-0" />
+              </div>
+            );
+          })}
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

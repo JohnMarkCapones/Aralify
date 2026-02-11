@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 import { QuestCard } from "./quest-card";
 import type { EnrolledCourse } from "@/lib/data/dashboard";
@@ -27,8 +28,16 @@ export function QuestBoard({ courses }: QuestBoardProps) {
       </div>
 
       <div className="space-y-3">
-        {inProgress.map((course) => (
-          <QuestCard key={course.id} course={course} />
+        {inProgress.map((course, i) => (
+          <motion.div
+            key={course.id}
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: i * 0.1, duration: 0.4, ease: "easeOut" }}
+          >
+            <QuestCard course={course} />
+          </motion.div>
         ))}
       </div>
 

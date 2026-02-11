@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://via.placeholder.com/120x120/1a365d/ffffff?text=CF" alt="Aralify Logo" width="120" height="120">
+  <img src="../Aralify/website-frontend/public/logo-original.png" alt="Aralify Logo" width="120" height="120">
 </p>
 
 <h1 align="center">Aralify</h1>

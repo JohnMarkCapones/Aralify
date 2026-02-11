@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { motion } from "framer-motion";
 import type { ActivityItem } from "@/lib/data/dashboard";
 
 interface ActivityTickerProps {
@@ -19,6 +20,15 @@ function formatRelativeTime(timestamp: string): string {
   return `${Math.floor(diffMs / 86_400_000)}d ago`;
 }
 
+const itemVariants = {
+  hidden: { opacity: 0, x: -20 },
+  visible: (i: number) => ({
+    opacity: 1,
+    x: 0,
+    transition: { delay: i * 0.05, duration: 0.3, ease: "easeOut" as const },
+  }),
+};
+
 export function ActivityTicker({ activities }: ActivityTickerProps) {
   const items = activities.slice(0, 5);
 
@@ -34,20 +44,27 @@ export function ActivityTicker({ activities }: ActivityTickerProps) {
         </Link>
       </div>
       <div className="divide-y divide-border/10">
-        {items.map((item) => (
-          <div
+        {items.map((item, i) => (
+          <motion.div
             key={item.id}
+            custom={i}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={itemVariants}
             className="flex items-center gap-3 px-5 py-3"
           >
             <span className="text-base shrink-0">{item.icon}</span>
             <p className="flex-1 text-sm font-medium truncate">{item.title}</p>
             {item.xp && item.xp > 0 && (
-              <span className="text-xs font-bold text-primary shrink-0">+{item.xp} XP</span>
+              <span className="text-xs font-bold text-primary shrink-0 drop-shadow-[0_0_4px_hsl(var(--primary)/0.3)]">
+                +{item.xp} XP
+              </span>
             )}
             <span className="text-[11px] text-muted-foreground shrink-0">
               {formatRelativeTime(item.timestamp)}
             </span>
-          </div>
+          </motion.div>
         ))}
       </div>
     </section>

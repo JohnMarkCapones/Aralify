@@ -75,26 +75,32 @@ export function GameHudBar({
         <div className="flex items-center gap-2 lg:gap-3">
           {/* XP bar - desktop only */}
           <div className="hidden lg:block w-36">
-            <XpProgressBar current={xp} max={xpToNextLevel} size="sm" showLabel={false} />
+            <XpProgressBar current={xp} max={xpToNextLevel} size="sm" showLabel={false} shimmer />
           </div>
           <span className="hidden lg:inline-flex text-xs font-bold text-muted-foreground">
             {xp.toLocaleString()}/{(xpToNextLevel / 1000).toFixed(0)}K
           </span>
 
           {/* Streak */}
-          <div className="flex items-center gap-1 text-xs font-bold">
-            <Flame size={16} className="text-orange-500" />
+          <div
+            className={cn(
+              "flex items-center gap-1 text-xs font-bold",
+              streak >= 7 && "text-orange-400 drop-shadow-[0_0_6px_rgba(251,146,60,0.5)]"
+            )}
+          >
+            <Flame size={16} className="text-orange-500 animate-flame" />
             <span>{streak}</span>
           </div>
 
-          {/* Rank - desktop only */}
-          <span className="hidden lg:inline-flex items-center gap-1 text-xs font-bold text-amber-600 dark:text-amber-400">
+          {/* Rank - desktop only with shimmer */}
+          <span className="hidden lg:inline-flex items-center gap-1 text-xs font-bold text-amber-600 dark:text-amber-400 relative overflow-hidden">
             #{rank}
+            <span className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/20 to-transparent bg-[length:200%_100%] pointer-events-none" />
           </span>
 
           {/* Notification bell */}
           <button className="relative p-2 hover:bg-muted rounded-lg transition-colors text-muted-foreground">
-            <Bell size={17} />
+            <Bell size={17} className="animate-[bounce_1s_ease-in-out_1]" />
             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
           </button>
 

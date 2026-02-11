@@ -1,36 +1,38 @@
 import { cn } from "@/lib/utils";
 
-const STATUS_STYLES: Record<string, string> = {
-  PUBLISHED: "text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/30",
-  ACTIVE: "text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/30",
-  VISIBLE: "text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/30",
-  REVIEWED: "text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/30",
-  healthy: "text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/30",
+const STATUS_STYLES: Record<string, { text: string; bg: string; glow: string }> = {
+  PUBLISHED:  { text: "text-emerald-400", bg: "bg-emerald-500/15", glow: "shadow-[0_0_8px_rgba(16,185,129,0.12)]" },
+  ACTIVE:     { text: "text-emerald-400", bg: "bg-emerald-500/15", glow: "shadow-[0_0_8px_rgba(16,185,129,0.12)]" },
+  VISIBLE:    { text: "text-emerald-400", bg: "bg-emerald-500/15", glow: "shadow-[0_0_8px_rgba(16,185,129,0.12)]" },
+  REVIEWED:   { text: "text-emerald-400", bg: "bg-emerald-500/15", glow: "shadow-[0_0_8px_rgba(16,185,129,0.12)]" },
+  healthy:    { text: "text-emerald-400", bg: "bg-emerald-500/15", glow: "shadow-[0_0_8px_rgba(16,185,129,0.12)]" },
 
-  DRAFT: "text-amber-700 bg-amber-50 dark:text-amber-400 dark:bg-amber-950/30",
-  PENDING: "text-orange-700 bg-orange-50 dark:text-orange-400 dark:bg-orange-950/30",
-  MEDIUM: "text-amber-700 bg-amber-50 dark:text-amber-400 dark:bg-amber-950/30",
-  degraded: "text-amber-700 bg-amber-50 dark:text-amber-400 dark:bg-amber-950/30",
+  DRAFT:      { text: "text-amber-400",   bg: "bg-amber-500/15",   glow: "shadow-[0_0_8px_rgba(245,158,11,0.12)]" },
+  PENDING:    { text: "text-orange-400",   bg: "bg-orange-500/15",  glow: "shadow-[0_0_8px_rgba(249,115,22,0.12)]" },
+  MEDIUM:     { text: "text-amber-400",   bg: "bg-amber-500/15",   glow: "shadow-[0_0_8px_rgba(245,158,11,0.12)]" },
+  degraded:   { text: "text-amber-400",   bg: "bg-amber-500/15",   glow: "shadow-[0_0_8px_rgba(245,158,11,0.12)]" },
 
-  BANNED: "text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-950/30",
-  DELETED: "text-gray-600 bg-gray-100 dark:text-gray-400 dark:bg-gray-800/50",
-  HIDDEN: "text-gray-600 bg-gray-100 dark:text-gray-400 dark:bg-gray-800/50",
-  DISMISSED: "text-gray-600 bg-gray-100 dark:text-gray-400 dark:bg-gray-800/50",
-  down: "text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-950/30",
+  BANNED:     { text: "text-red-400",     bg: "bg-red-500/15",     glow: "shadow-[0_0_8px_rgba(239,68,68,0.12)]" },
+  DELETED:    { text: "text-slate-400",   bg: "bg-slate-500/15",   glow: "" },
+  HIDDEN:     { text: "text-slate-400",   bg: "bg-slate-500/15",   glow: "" },
+  DISMISSED:  { text: "text-slate-400",   bg: "bg-slate-500/15",   glow: "" },
+  down:       { text: "text-red-400",     bg: "bg-red-500/15",     glow: "shadow-[0_0_8px_rgba(239,68,68,0.12)]" },
 
-  EASY: "text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/30",
-  HARD: "text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-950/30",
+  EASY:       { text: "text-emerald-400", bg: "bg-emerald-500/15", glow: "shadow-[0_0_8px_rgba(16,185,129,0.12)]" },
+  HARD:       { text: "text-red-400",     bg: "bg-red-500/15",     glow: "shadow-[0_0_8px_rgba(239,68,68,0.12)]" },
 
-  USER: "text-blue-700 bg-blue-50 dark:text-blue-400 dark:bg-blue-950/30",
-  ADMIN: "text-purple-700 bg-purple-50 dark:text-purple-400 dark:bg-purple-950/30",
-  MODERATOR: "text-indigo-700 bg-indigo-50 dark:text-indigo-400 dark:bg-indigo-950/30",
+  USER:       { text: "text-blue-400",    bg: "bg-blue-500/15",    glow: "shadow-[0_0_8px_rgba(59,130,246,0.12)]" },
+  ADMIN:      { text: "text-purple-400",  bg: "bg-purple-500/15",  glow: "shadow-[0_0_8px_rgba(139,92,246,0.12)]" },
+  MODERATOR:  { text: "text-indigo-400",  bg: "bg-indigo-500/15",  glow: "shadow-[0_0_8px_rgba(99,102,241,0.12)]" },
 
-  LEARNING: "text-blue-700 bg-blue-50 dark:text-blue-400 dark:bg-blue-950/30",
-  SOCIAL: "text-pink-700 bg-pink-50 dark:text-pink-400 dark:bg-pink-950/30",
-  STREAK: "text-orange-700 bg-orange-50 dark:text-orange-400 dark:bg-orange-950/30",
-  MASTERY: "text-purple-700 bg-purple-50 dark:text-purple-400 dark:bg-purple-950/30",
-  SPECIAL: "text-yellow-700 bg-yellow-50 dark:text-yellow-400 dark:bg-yellow-950/30",
+  LEARNING:   { text: "text-blue-400",    bg: "bg-blue-500/15",    glow: "shadow-[0_0_8px_rgba(59,130,246,0.12)]" },
+  SOCIAL:     { text: "text-pink-400",    bg: "bg-pink-500/15",    glow: "shadow-[0_0_8px_rgba(236,72,153,0.12)]" },
+  STREAK:     { text: "text-orange-400",  bg: "bg-orange-500/15",  glow: "shadow-[0_0_8px_rgba(249,115,22,0.12)]" },
+  MASTERY:    { text: "text-purple-400",  bg: "bg-purple-500/15",  glow: "shadow-[0_0_8px_rgba(139,92,246,0.12)]" },
+  SPECIAL:    { text: "text-yellow-400",  bg: "bg-yellow-500/15",  glow: "shadow-[0_0_8px_rgba(234,179,8,0.12)]" },
 };
+
+const DEFAULT_STYLE = { text: "text-slate-400", bg: "bg-slate-500/15", glow: "" };
 
 interface StatusBadgeProps {
   status: string;
@@ -39,12 +41,20 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status, className, dot }: StatusBadgeProps) {
-  const styles = STATUS_STYLES[status] || "text-gray-600 bg-gray-100 dark:text-gray-400 dark:bg-gray-800/50";
+  const styles = STATUS_STYLES[status] || DEFAULT_STYLE;
 
   return (
-    <span className={cn("inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium", styles, className)}>
+    <span className={cn(
+      "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium",
+      styles.text, styles.bg, styles.glow,
+      className
+    )}>
       {dot && (
-        <span className={cn("w-1.5 h-1.5 rounded-full", status === "healthy" || status === "ACTIVE" || status === "PUBLISHED" ? "bg-emerald-500" : status === "down" || status === "BANNED" ? "bg-red-500" : "bg-amber-500")} />
+        <span className={cn(
+          "w-1.5 h-1.5 rounded-full animate-pulse",
+          status === "healthy" || status === "ACTIVE" || status === "PUBLISHED" ? "bg-emerald-400" :
+          status === "down" || status === "BANNED" ? "bg-red-400" : "bg-amber-400"
+        )} />
       )}
       {status.charAt(0) + status.slice(1).toLowerCase()}
     </span>

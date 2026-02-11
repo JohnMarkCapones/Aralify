@@ -10,7 +10,6 @@ import {
   ChevronRight, Search, Activity, Gamepad2, FileBarChart,
   ChevronLeft,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
 
 const NAV_SECTIONS = [
@@ -72,15 +71,20 @@ export function AdminShell({ children, adminRole = "ADMIN", adminName = "Admin" 
   const SidebarContent = ({ mobile = false }: { mobile?: boolean }) => (
     <div className="flex flex-col h-full">
       {/* Logo */}
-      <div className={cn("flex items-center h-14 border-b border-border/50 shrink-0", collapsed && !mobile ? "justify-center px-2" : "px-4")}>
+      <div className={cn(
+        "flex items-center h-14 border-b border-white/[0.06] shrink-0",
+        collapsed && !mobile ? "justify-center px-2" : "px-4"
+      )}>
         <Link href="/admin" className="flex items-center gap-2.5" onClick={() => setSidebarOpen(false)}>
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shrink-0">
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shrink-0 shadow-[0_0_12px_rgba(59,130,246,0.3)]">
             <Code2 size={16} className="text-white" />
           </div>
           {(!collapsed || mobile) && (
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-sm">Aralify</span>
-              <Badge variant="destructive" className="text-[9px] h-4 px-1.5">ADMIN</Badge>
+              <span className="font-semibold text-sm text-white">Aralify</span>
+              <span className="text-[9px] h-4 px-1.5 rounded font-semibold bg-gradient-to-r from-blue-500 to-purple-500 text-white flex items-center">
+                ADMIN
+              </span>
             </div>
           )}
         </Link>
@@ -91,7 +95,7 @@ export function AdminShell({ children, adminRole = "ADMIN", adminName = "Admin" 
         {NAV_SECTIONS.map((section) => (
           <div key={section.title} className="mb-4">
             {(!collapsed || mobile) && (
-              <p className="px-3 mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+              <p className="px-3 mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-blue-300/40">
                 {section.title}
               </p>
             )}
@@ -104,15 +108,15 @@ export function AdminShell({ children, adminRole = "ADMIN", adminName = "Admin" 
                     href={item.href}
                     onClick={() => setSidebarOpen(false)}
                     className={cn(
-                      "flex items-center gap-2.5 rounded-lg transition-colors text-[13px] font-medium",
+                      "flex items-center gap-2.5 rounded-lg transition-all text-[13px] font-medium relative",
                       collapsed && !mobile ? "justify-center p-2.5" : "px-3 py-2",
                       active
-                        ? "bg-primary/10 text-primary dark:bg-primary/15"
-                        : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                        ? "bg-blue-500/10 text-blue-400 border-l-2 border-blue-500 shadow-[0_0_12px_rgba(59,130,246,0.08)]"
+                        : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200 border-l-2 border-transparent"
                     )}
                     title={collapsed && !mobile ? item.label : undefined}
                   >
-                    <item.icon size={16} className={cn(active && "text-primary")} />
+                    <item.icon size={16} className={cn(active && "text-blue-400")} />
                     {(!collapsed || mobile) && (
                       <>
                         <span className="flex-1">{item.label}</span>
@@ -128,15 +132,17 @@ export function AdminShell({ children, adminRole = "ADMIN", adminName = "Admin" 
       </nav>
 
       {/* Bottom */}
-      <div className={cn("border-t border-border/50 p-3", collapsed && !mobile && "px-2")}>
+      <div className={cn("border-t border-white/[0.06] p-3", collapsed && !mobile && "px-2")}>
         <div className={cn("flex items-center gap-2.5", collapsed && !mobile && "justify-center")}>
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center shrink-0 text-xs font-semibold text-primary">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500/30 to-purple-500/30 ring-2 ring-blue-500/20 flex items-center justify-center shrink-0 text-xs font-semibold text-blue-300">
             {adminName.charAt(0).toUpperCase()}
           </div>
           {(!collapsed || mobile) && (
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium truncate">{adminName}</p>
-              <p className="text-[10px] text-muted-foreground">{adminRole}</p>
+              <p className="text-xs font-medium text-white truncate">{adminName}</p>
+              <span className="inline-flex text-[9px] font-medium px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-400 shadow-[0_0_8px_rgba(139,92,246,0.1)]">
+                {adminRole}
+              </span>
             </div>
           )}
         </div>
@@ -145,20 +151,20 @@ export function AdminShell({ children, adminRole = "ADMIN", adminName = "Admin" 
   );
 
   return (
-    <div className="min-h-screen bg-muted/30 font-body text-foreground">
+    <div className="min-h-screen bg-[#0a0e1a] font-body text-slate-200">
       {/* Top bar */}
-      <header className="sticky top-0 z-40 h-14 border-b border-border/50 bg-background/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 h-14 border-b border-white/[0.06] bg-[#0d1117]/80 backdrop-blur-xl">
         <div className="flex items-center justify-between h-full px-4">
           <div className="flex items-center gap-2">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden p-2 hover:bg-muted rounded-lg transition-colors text-muted-foreground"
+              className="lg:hidden p-2 hover:bg-white/[0.06] rounded-lg transition-colors text-slate-400"
             >
               {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
             <button
               onClick={() => setCollapsed(!collapsed)}
-              className="hidden lg:flex p-2 hover:bg-muted rounded-lg transition-colors text-muted-foreground"
+              className="hidden lg:flex p-2 hover:bg-white/[0.06] rounded-lg transition-colors text-slate-400"
             >
               {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
             </button>
@@ -166,23 +172,23 @@ export function AdminShell({ children, adminRole = "ADMIN", adminName = "Admin" 
 
           <div className="hidden md:flex flex-1 max-w-md mx-4">
             <div className="relative w-full">
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50" />
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
               <input
                 placeholder="Search anything..."
-                className="w-full h-9 pl-9 pr-3 rounded-lg border border-border/50 bg-muted/30 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all"
+                className="w-full h-9 pl-9 pr-3 rounded-lg border border-white/[0.06] bg-white/[0.03] text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/30 focus:shadow-[0_0_15px_rgba(59,130,246,0.1)] transition-all"
                 readOnly
               />
             </div>
           </div>
 
           <div className="flex items-center gap-1">
-            <button className="p-2 hover:bg-muted rounded-lg transition-colors text-muted-foreground relative">
+            <button className="p-2 hover:bg-white/[0.06] rounded-lg transition-colors text-slate-400 relative">
               <Bell size={17} />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-[0_0_6px_rgba(239,68,68,0.5)]" />
             </button>
             <button
               onClick={handleLogout}
-              className="p-2 hover:bg-muted rounded-lg transition-colors text-muted-foreground"
+              className="p-2 hover:bg-white/[0.06] rounded-lg transition-colors text-slate-400"
               title="Logout"
             >
               <LogOut size={17} />
@@ -195,7 +201,7 @@ export function AdminShell({ children, adminRole = "ADMIN", adminName = "Admin" 
         {/* Desktop sidebar */}
         <aside
           className={cn(
-            "hidden lg:flex flex-col border-r border-border/50 bg-background shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] transition-all duration-200",
+            "hidden lg:flex flex-col border-r border-white/[0.06] bg-[#0d1117] shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] transition-all duration-200",
             collapsed ? "w-[60px]" : "w-56"
           )}
         >
@@ -206,10 +212,10 @@ export function AdminShell({ children, adminRole = "ADMIN", adminName = "Admin" 
         {sidebarOpen && (
           <>
             <div
-              className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm lg:hidden"
+              className="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm lg:hidden"
               onClick={() => setSidebarOpen(false)}
             />
-            <aside className="fixed left-0 top-14 z-30 w-56 h-[calc(100vh-3.5rem)] border-r border-border/50 bg-background lg:hidden shadow-xl">
+            <aside className="fixed left-0 top-14 z-30 w-56 h-[calc(100vh-3.5rem)] border-r border-white/[0.06] bg-[#0d1117] lg:hidden shadow-2xl shadow-black/40">
               <SidebarContent mobile />
             </aside>
           </>

@@ -60,26 +60,26 @@ export function DataTable<T extends { id: string }>({
     <div className={cn("space-y-4", className)}>
       {searchable && (
         <div className="relative max-w-xs">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50" />
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
           <input
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
             placeholder={searchPlaceholder}
-            className="w-full h-9 pl-9 pr-3 rounded-lg border border-border/50 bg-background text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all"
+            className="w-full h-9 pl-9 pr-3 rounded-lg border border-white/[0.06] bg-white/[0.03] text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/30 focus:shadow-[0_0_15px_rgba(59,130,246,0.1)] transition-all"
           />
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-border/50 bg-background shadow-sm">
+      <div className="overflow-x-auto rounded-xl border border-[#1e293b] bg-[#111827]/80">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-border/50">
+            <tr className="border-b border-[#1e293b] bg-[#0d1117]/60">
               {columns.map((col) => (
                 <th
                   key={col.key}
                   className={cn(
-                    "px-4 py-3 text-left text-xs font-medium text-muted-foreground",
-                    col.sortable && "cursor-pointer hover:text-foreground select-none",
+                    "px-4 py-3 text-left text-xs font-medium text-slate-400",
+                    col.sortable && "cursor-pointer hover:text-slate-200 select-none",
                     col.className
                   )}
                   onClick={() => col.sortable && handleSort(col.key)}
@@ -87,7 +87,7 @@ export function DataTable<T extends { id: string }>({
                   <span className="flex items-center gap-1">
                     {col.header}
                     {col.sortable && sortKey === col.key && (
-                      <span className="text-foreground">{sortDir === "asc" ? "\u2191" : "\u2193"}</span>
+                      <span className="text-blue-400">{sortDir === "asc" ? "\u2191" : "\u2193"}</span>
                     )}
                   </span>
                 </th>
@@ -97,15 +97,15 @@ export function DataTable<T extends { id: string }>({
           <tbody>
             {paginatedData.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="px-4 py-12 text-center text-sm text-muted-foreground">
+                <td colSpan={columns.length} className="px-4 py-12 text-center text-sm text-slate-500">
                   {emptyMessage}
                 </td>
               </tr>
             ) : (
               paginatedData.map((row) => (
-                <tr key={row.id} className="border-b border-border/30 last:border-b-0 hover:bg-muted/30 transition-colors">
+                <tr key={row.id} className="border-b border-white/[0.04] last:border-b-0 hover:bg-blue-500/[0.03] transition-colors">
                   {columns.map((col) => (
-                    <td key={col.key} className={cn("px-4 py-3 text-sm", col.className)}>
+                    <td key={col.key} className={cn("px-4 py-3 text-sm text-slate-300", col.className)}>
                       {col.render(row)}
                     </td>
                   ))}
@@ -118,14 +118,14 @@ export function DataTable<T extends { id: string }>({
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between text-sm">
-          <span className="text-xs text-muted-foreground">
-            {page * pageSize + 1}\u2013{Math.min((page + 1) * pageSize, data.length)} of {data.length}
+          <span className="text-xs text-slate-500">
+            {page * pageSize + 1}–{Math.min((page + 1) * pageSize, data.length)} of {data.length}
           </span>
           <div className="flex items-center gap-1">
             <button
               onClick={() => setPage(Math.max(0, page - 1))}
               disabled={page === 0}
-              className="p-1.5 rounded-md hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              className="p-1.5 rounded-md hover:bg-white/[0.06] text-slate-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeft size={16} />
             </button>
@@ -137,7 +137,9 @@ export function DataTable<T extends { id: string }>({
                   onClick={() => setPage(pageNum)}
                   className={cn(
                     "w-8 h-8 rounded-md text-xs font-medium transition-colors",
-                    pageNum === page ? "bg-primary text-primary-foreground" : "hover:bg-muted text-muted-foreground"
+                    pageNum === page
+                      ? "bg-blue-500/20 text-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.15)]"
+                      : "hover:bg-white/[0.06] text-slate-500"
                   )}
                 >
                   {pageNum + 1}
@@ -147,7 +149,7 @@ export function DataTable<T extends { id: string }>({
             <button
               onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
               disabled={page === totalPages - 1}
-              className="p-1.5 rounded-md hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              className="p-1.5 rounded-md hover:bg-white/[0.06] text-slate-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronRight size={16} />
             </button>

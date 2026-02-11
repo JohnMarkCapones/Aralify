@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Cpu, Globe, Database, Binary, Code2, Play } from "lucide-react";
 import { DotPattern } from "@/components/effects";
@@ -11,6 +12,8 @@ const bentoItems = [
     icon: <Cpu className="w-7 h-7" />,
     color: "bg-primary",
     size: "md:col-span-2 md:row-span-2",
+    image: "/bento-playground.png",
+    imageClass: "right-32 top-4 w-[65%] h-full",
   },
   {
     title: "GLOBAL LEADERBOARD",
@@ -18,6 +21,8 @@ const bentoItems = [
     icon: <Globe className="w-7 h-7" />,
     color: "bg-secondary",
     size: "md:col-span-1 md:row-span-1",
+    image: "/bento-leaderboard.png",
+    imageClass: "right-2 -top-10 w-full h-full",
   },
   {
     title: "SQL VISUALIZER",
@@ -25,6 +30,8 @@ const bentoItems = [
     icon: <Database className="w-7 h-7" />,
     color: "bg-accent",
     size: "md:col-span-1 md:row-span-1",
+    image: "/bento-sql.png",
+    imageClass: "right-2 top-0 w-[65%] h-[65%]",
   },
   {
     title: "DEBUGGING TOOLS",
@@ -32,6 +39,8 @@ const bentoItems = [
     icon: <Binary className="w-7 h-7" />,
     color: "bg-card",
     size: "md:col-span-1 md:row-span-1",
+    image: "/bento-debug.png",
+    imageClass: "right-16 -top-2 w-[65%] h-[65%]",
   },
   {
     title: "SYSTEM DESIGN",
@@ -80,9 +89,20 @@ export function BentoGrids() {
               {item.icon}
             </div>
 
+            {item.image && (
+              <div className={`absolute ${item.imageClass} pointer-events-none select-none`}>
+                <Image
+                  src={item.image}
+                  alt={item.title}
+                  fill
+                  className="object-contain object-right-top drop-shadow-lg group-hover:scale-105 group-hover:-rotate-2 transition-transform duration-300 p-4"
+                />
+              </div>
+            )}
+
             <div className="z-10">
               <h3 className="text-2xl font-black mb-2 uppercase leading-none">{item.title}</h3>
-              <p className="font-medium text-lg opacity-80 leading-snug">{item.desc}</p>
+              <p className={`font-medium text-lg opacity-80 leading-snug ${item.title === "CODE PLAYGROUND" ? "max-w-[60%]" : ""}`}>{item.desc}</p>
             </div>
           </motion.div>
         ))}

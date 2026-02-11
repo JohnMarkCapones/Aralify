@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { Medal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "../_components/page-header";
@@ -29,6 +30,15 @@ const RARITY_DOT: Record<string, string> = {
   rare: "bg-blue-500",
   epic: "bg-purple-500",
   legendary: "bg-amber-500",
+};
+
+const badgeVariants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.04, duration: 0.35, ease: "easeOut" as const },
+  }),
 };
 
 export default function BadgesPage() {
@@ -110,38 +120,49 @@ export default function BadgesPage() {
 
       {/* Badge Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        {filtered.map((badge) => (
-          <div
+        {filtered.map((badge, i) => (
+          <motion.div
             key={badge.id}
-            className={cn(
-              "bg-background rounded-xl border border-border/50 p-4 shadow-sm text-center transition-all",
-              badge.earned && `ring-2 ${RARITY_RING[badge.rarity]}`,
-              !badge.earned && "opacity-50"
-            )}
+            custom={i}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={badgeVariants}
+            whileHover={{ rotateY: 15, scale: 1.1 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            style={{ perspective: 800 }}
           >
-            <span className={cn("text-3xl block mb-2", !badge.earned && "grayscale")}>{badge.icon}</span>
-            <h4 className="text-xs font-semibold mb-0.5">{badge.name}</h4>
-            <p className="text-[10px] text-muted-foreground mb-2">{badge.description}</p>
+            <div
+              className={cn(
+                "bg-background rounded-xl border border-border/50 p-4 shadow-sm text-center transition-all",
+                badge.earned && `ring-2 ${RARITY_RING[badge.rarity]}`,
+                !badge.earned && "opacity-50"
+              )}
+            >
+              <span className={cn("text-3xl block mb-2", !badge.earned && "grayscale")}>{badge.icon}</span>
+              <h4 className="text-xs font-semibold mb-0.5">{badge.name}</h4>
+              <p className="text-[10px] text-muted-foreground mb-2">{badge.description}</p>
 
-            <span className={cn(
-              "text-[9px] font-medium px-1.5 py-0.5 rounded-full capitalize inline-block",
-              badge.rarity === "common" && "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
-              badge.rarity === "rare" && "bg-blue-50 text-blue-600 dark:bg-blue-950/30 dark:text-blue-400",
-              badge.rarity === "epic" && "bg-purple-50 text-purple-600 dark:bg-purple-950/30 dark:text-purple-400",
-              badge.rarity === "legendary" && "bg-amber-50 text-amber-600 dark:bg-amber-950/30 dark:text-amber-400",
-            )}>
-              {badge.rarity}
-            </span>
+              <span className={cn(
+                "text-[9px] font-medium px-1.5 py-0.5 rounded-full capitalize inline-block",
+                badge.rarity === "common" && "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
+                badge.rarity === "rare" && "bg-blue-50 text-blue-600 dark:bg-blue-950/30 dark:text-blue-400",
+                badge.rarity === "epic" && "bg-purple-50 text-purple-600 dark:bg-purple-950/30 dark:text-purple-400",
+                badge.rarity === "legendary" && "bg-amber-50 text-amber-600 dark:bg-amber-950/30 dark:text-amber-400",
+              )}>
+                {badge.rarity}
+              </span>
 
-            {badge.earned && badge.earnedAt && (
-              <p className="text-[9px] text-muted-foreground mt-2">
-                {new Date(badge.earnedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-              </p>
-            )}
-            {!badge.earned && (
-              <p className="text-[9px] text-muted-foreground mt-2 italic">{badge.hint}</p>
-            )}
-          </div>
+              {badge.earned && badge.earnedAt && (
+                <p className="text-[9px] text-muted-foreground mt-2">
+                  {new Date(badge.earnedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                </p>
+              )}
+              {!badge.earned && (
+                <p className="text-[9px] text-muted-foreground mt-2 italic">{badge.hint}</p>
+              )}
+            </div>
+          </motion.div>
         ))}
       </div>
 

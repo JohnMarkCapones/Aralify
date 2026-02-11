@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { Trophy, Flame, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "../_components/page-header";
@@ -9,6 +10,10 @@ import { mockLeaderboard, mockUserProfile } from "@/lib/data/dashboard";
 type Period = "weekly" | "monthly" | "all_time";
 
 const MEDALS = ["", "bg-amber-400", "bg-zinc-300", "bg-amber-700"];
+
+// Podium order: 2nd, 1st, 3rd — stagger: 3rd rises first, then 2nd, then 1st
+const podiumDelays = [0.3, 0.5, 0.1];
+const podiumHeights = ["h-20", "h-28", "h-16"];
 
 export default function LeaderboardPage() {
   const [period, setPeriod] = useState<Period>("weekly");
@@ -44,7 +49,13 @@ export default function LeaderboardPage() {
 
       {/* User rank highlight */}
       {currentUser && (
-        <div className="bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl border border-primary/20 p-5">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl border border-primary/20 p-5"
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-muted-foreground mb-1">Your Rank</p>
@@ -63,27 +74,41 @@ export default function LeaderboardPage() {
               <p className="text-xs text-muted-foreground">Level {currentUser.level}</p>
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
 
-      {/* Top 3 podium */}
-      <div className="grid grid-cols-3 gap-3">
+      {/* Top 3 podium with staggered rise */}
+      <div className="grid grid-cols-3 gap-3 items-end">
         {[top3[1], top3[0], top3[2]].map((entry, i) => {
           const podiumOrder = [2, 1, 3];
           const rank = podiumOrder[i];
           return (
-            <div
+            <motion.div
               key={entry.id}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{
+                delay: podiumDelays[i],
+                duration: 0.5,
+                type: "spring",
+                stiffness: 200,
+                damping: 20,
+              }}
               className={cn(
                 "bg-background rounded-xl border border-border/50 shadow-sm p-4 text-center",
                 rank === 1 && "ring-2 ring-amber-400/50"
               )}
             >
+              {/* Medal with shine */}
               <div className={cn(
-                "w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold mx-auto mb-2",
+                "w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold mx-auto mb-2 relative overflow-hidden",
                 MEDALS[rank]
               )}>
                 {rank}
+                {rank <= 3 && (
+                  <span className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/30 to-transparent bg-[length:200%_100%] pointer-events-none" />
+                )}
               </div>
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mx-auto mb-2 text-sm font-semibold text-primary">
                 {entry.displayName.charAt(0)}
@@ -95,7 +120,7 @@ export default function LeaderboardPage() {
                 <span className="text-xs font-medium">{entry.xp.toLocaleString()}</span>
               </div>
               <p className="text-[10px] text-muted-foreground">Level {entry.level}</p>
-            </div>
+            </motion.div>
           );
         })}
       </div>
@@ -114,9 +139,13 @@ export default function LeaderboardPage() {
               </tr>
             </thead>
             <tbody>
-              {rest.map((entry) => (
-                <tr
+              {rest.map((entry, i) => (
+                <motion.tr
                   key={entry.id}
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.03, duration: 0.3 }}
                   className={cn(
                     "border-b border-border/20 last:border-b-0 transition-colors",
                     entry.isCurrentUser
@@ -147,7 +176,7 @@ export default function LeaderboardPage() {
                       <span className="text-muted-foreground">{entry.streak}</span>
                     </div>
                   </td>
-                </tr>
+                </motion.tr>
               ))}
             </tbody>
           </table>
