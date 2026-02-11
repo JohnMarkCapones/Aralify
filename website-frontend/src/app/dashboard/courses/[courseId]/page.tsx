@@ -55,6 +55,7 @@ export default function CourseDetailPage({
             key={level.id}
             level={level}
             courseId={course.id}
+            courseColor={course.color}
             defaultOpen={i === activeLevelIndex}
             index={i}
           />

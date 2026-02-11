@@ -14,6 +14,7 @@ const bentoItems = [
     size: "md:col-span-2 md:row-span-2",
     image: "/bento-playground.png",
     imageClass: "right-32 top-4 w-[65%] h-full",
+    decoration: "playground",
   },
   {
     title: "GLOBAL LEADERBOARD",
@@ -23,6 +24,7 @@ const bentoItems = [
     size: "md:col-span-1 md:row-span-1",
     image: "/bento-leaderboard.png",
     imageClass: "right-2 -top-10 w-full h-full",
+    decoration: "leaderboard",
   },
   {
     title: "SQL VISUALIZER",
@@ -32,6 +34,7 @@ const bentoItems = [
     size: "md:col-span-1 md:row-span-1",
     image: "/bento-sql.png",
     imageClass: "right-2 top-0 w-[65%] h-[65%]",
+    decoration: "sql",
   },
   {
     title: "DEBUGGING TOOLS",
@@ -41,6 +44,7 @@ const bentoItems = [
     size: "md:col-span-1 md:row-span-1",
     image: "/bento-debug.png",
     imageClass: "right-16 -top-2 w-[65%] h-[65%]",
+    decoration: "debug",
   },
   {
     title: "SYSTEM DESIGN",
@@ -48,8 +52,253 @@ const bentoItems = [
     icon: <Code2 className="w-7 h-7" />,
     color: "bg-muted",
     size: "md:col-span-2 md:row-span-1",
+    image: "/bento-system.png",
+    imageClass: "right-16 -top-4 w-[55%] h-full",
+    decoration: "system",
   },
 ];
+
+
+function BentoDecoration({ type }: { type: string }) {
+  switch (type) {
+    case "playground":
+      return (
+        <>
+          {/* Floating grid pattern */}
+          <div className="absolute top-0 right-0 w-full h-full opacity-[0.07] pointer-events-none">
+            <svg width="100%" height="100%">
+              <defs>
+                <pattern id="grid-pg" width="40" height="40" patternUnits="userSpaceOnUse">
+                  <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="1" />
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#grid-pg)" />
+            </svg>
+          </div>
+          {/* Floating circles */}
+          <motion.div
+            animate={{ y: [-8, 8, -8], rotate: [0, 10, 0] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-6 right-8 w-16 h-16 rounded-full border-[3px] border-current opacity-10 pointer-events-none"
+          />
+          <motion.div
+            animate={{ y: [6, -6, 6], x: [-4, 4, -4] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+            className="absolute bottom-20 right-16 w-8 h-8 rounded-lg border-[3px] border-current opacity-10 rotate-45 pointer-events-none"
+          />
+          {/* Code bracket shapes */}
+          <div className="absolute top-14 right-6 text-5xl font-black opacity-[0.06] pointer-events-none select-none">
+            {"{ }"}
+          </div>
+        </>
+      );
+
+    case "leaderboard":
+      return (
+        <>
+          {/* Diagonal stripes */}
+          <div className="absolute inset-0 opacity-[0.06] pointer-events-none overflow-hidden">
+            <svg width="100%" height="100%">
+              <defs>
+                <pattern id="stripes-lb" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                  <line x1="0" y1="0" x2="0" y2="12" stroke="currentColor" strokeWidth="3" />
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#stripes-lb)" />
+            </svg>
+          </div>
+          {/* Trophy/podium shapes */}
+          <motion.div
+            animate={{ scale: [1, 1.15, 1] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-4 right-4 w-10 h-10 border-[3px] border-current opacity-10 pointer-events-none"
+            style={{ clipPath: "polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%)" }}
+          />
+          <motion.div
+            animate={{ y: [-4, 4, -4] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute bottom-16 right-6 pointer-events-none opacity-[0.08]"
+          >
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+            </svg>
+          </motion.div>
+        </>
+      );
+
+    case "sql":
+      return (
+        <>
+          {/* Dot grid */}
+          <div className="absolute inset-0 opacity-[0.08] pointer-events-none">
+            <svg width="100%" height="100%">
+              <defs>
+                <pattern id="dots-sql" width="20" height="20" patternUnits="userSpaceOnUse">
+                  <circle cx="2" cy="2" r="1.5" fill="currentColor" />
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#dots-sql)" />
+            </svg>
+          </div>
+          {/* Database cylinder shape */}
+          <motion.div
+            animate={{ rotate: [0, 5, -5, 0] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute bottom-14 left-6 opacity-[0.08] pointer-events-none"
+          >
+            <svg width="36" height="44" viewBox="0 0 36 44" fill="none" stroke="currentColor" strokeWidth="2">
+              <ellipse cx="18" cy="8" rx="14" ry="6" />
+              <line x1="4" y1="8" x2="4" y2="36" />
+              <line x1="32" y1="8" x2="32" y2="36" />
+              <ellipse cx="18" cy="36" rx="14" ry="6" />
+            </svg>
+          </motion.div>
+          {/* Small floating diamond */}
+          <motion.div
+            animate={{ y: [-5, 5, -5], x: [3, -3, 3] }}
+            transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-5 right-5 w-5 h-5 border-2 border-current opacity-10 rotate-45 pointer-events-none"
+          />
+        </>
+      );
+
+    case "debug":
+      return (
+        <>
+          {/* Cross-hatch pattern */}
+          <div className="absolute inset-0 opacity-[0.05] pointer-events-none overflow-hidden">
+            <svg width="100%" height="100%">
+              <defs>
+                <pattern id="cross-db" width="16" height="16" patternUnits="userSpaceOnUse">
+                  <path d="M 0 8 L 16 8 M 8 0 L 8 16" stroke="currentColor" strokeWidth="1" />
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#cross-db)" />
+            </svg>
+          </div>
+          {/* Bug/target rings */}
+          <motion.div
+            animate={{ scale: [1, 1.2, 1], opacity: [0.08, 0.12, 0.08] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute bottom-14 right-6 pointer-events-none"
+          >
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="1">
+              <circle cx="20" cy="20" r="16" />
+              <circle cx="20" cy="20" r="10" />
+              <circle cx="20" cy="20" r="4" />
+              <line x1="20" y1="0" x2="20" y2="8" />
+              <line x1="20" y1="32" x2="20" y2="40" />
+              <line x1="0" y1="20" x2="8" y2="20" />
+              <line x1="32" y1="20" x2="40" y2="20" />
+            </svg>
+          </motion.div>
+          {/* Small floating triangle */}
+          <motion.div
+            animate={{ rotate: [0, 180, 360] }}
+            transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+            className="absolute top-6 right-6 w-6 h-6 border-2 border-current opacity-10 pointer-events-none"
+            style={{ clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)" }}
+          />
+        </>
+      );
+
+    case "system":
+      return (
+        <>
+          {/* Node graph — left side */}
+          <div className="absolute left-0 top-0 w-[50%] h-full opacity-[0.07] pointer-events-none">
+            <svg width="100%" height="100%" viewBox="0 0 300 250">
+              {/* Nodes */}
+              <circle cx="60" cy="50" r="8" fill="currentColor" />
+              <circle cx="140" cy="40" r="6" fill="currentColor" />
+              <circle cx="100" cy="120" r="10" fill="currentColor" />
+              <circle cx="200" cy="80" r="7" fill="currentColor" />
+              <circle cx="40" cy="140" r="5" fill="currentColor" />
+              <circle cx="170" cy="160" r="6" fill="currentColor" />
+              <circle cx="240" cy="140" r="5" fill="currentColor" />
+              {/* Lines */}
+              <line x1="60" y1="50" x2="140" y2="40" stroke="currentColor" strokeWidth="1.5" />
+              <line x1="60" y1="50" x2="100" y2="120" stroke="currentColor" strokeWidth="1.5" />
+              <line x1="140" y1="40" x2="200" y2="80" stroke="currentColor" strokeWidth="1.5" />
+              <line x1="100" y1="120" x2="170" y2="160" stroke="currentColor" strokeWidth="1.5" />
+              <line x1="200" y1="80" x2="240" y2="140" stroke="currentColor" strokeWidth="1.5" />
+              <line x1="40" y1="140" x2="100" y2="120" stroke="currentColor" strokeWidth="1.5" />
+              <line x1="170" y1="160" x2="240" y2="140" stroke="currentColor" strokeWidth="1.5" />
+              <line x1="140" y1="40" x2="100" y2="120" stroke="currentColor" strokeWidth="1.5" />
+            </svg>
+          </div>
+          {/* Floating hexagon — left */}
+          <motion.div
+            animate={{ rotate: [0, 60, 0], y: [-3, 3, -3] }}
+            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-4 left-28 opacity-[0.08] pointer-events-none"
+          >
+            <svg width="44" height="50" viewBox="0 0 44 50" fill="none" stroke="currentColor" strokeWidth="2">
+              <polygon points="22,2 42,14 42,36 22,48 2,36 2,14" />
+            </svg>
+          </motion.div>
+          {/* Floating circle — left */}
+          <motion.div
+            animate={{ scale: [1, 1.2, 1], y: [-4, 4, -4] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute bottom-8 left-8 w-10 h-10 rounded-full border-[3px] border-current opacity-10 pointer-events-none"
+          />
+          {/* Small diamond — left */}
+          <motion.div
+            animate={{ rotate: [45, 135, 45], x: [-3, 3, -3] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+            className="absolute bottom-20 left-24 w-5 h-5 border-2 border-current opacity-10 pointer-events-none"
+          />
+          {/* Dot — left */}
+          <motion.div
+            animate={{ y: [3, -3, 3] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-16 left-10 w-3 h-3 bg-current opacity-[0.06] rounded-full pointer-events-none"
+          />
+          {/* Small square — left */}
+          <motion.div
+            animate={{ rotate: [0, 90, 0] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            className="absolute bottom-6 left-44 w-4 h-4 border-2 border-current opacity-[0.08] rounded-sm pointer-events-none"
+          />
+          {/* === Right side shapes === */}
+          {/* Floating triangle — right */}
+          <motion.div
+            animate={{ rotate: [0, 180, 360], y: [-3, 3, -3] }}
+            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+            className="absolute top-5 right-6 w-7 h-7 border-2 border-current opacity-10 pointer-events-none"
+            style={{ clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)" }}
+          />
+          {/* Floating circle — right */}
+          <motion.div
+            animate={{ scale: [1, 1.15, 1], x: [3, -3, 3] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
+            className="absolute bottom-10 right-10 w-8 h-8 rounded-full border-[3px] border-current opacity-[0.08] pointer-events-none"
+          />
+          {/* Small cross — right */}
+          <motion.div
+            animate={{ rotate: [0, 45, 0] }}
+            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}
+            className="absolute top-14 right-14 opacity-[0.08] pointer-events-none"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" stroke="currentColor" strokeWidth="2">
+              <line x1="8" y1="0" x2="8" y2="16" />
+              <line x1="0" y1="8" x2="16" y2="8" />
+            </svg>
+          </motion.div>
+          {/* Dot — right */}
+          <motion.div
+            animate={{ y: [-4, 4, -4] }}
+            transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 1.2 }}
+            className="absolute bottom-20 right-6 w-3 h-3 bg-current opacity-[0.06] rounded-full pointer-events-none"
+          />
+        </>
+      );
+
+    default:
+      return null;
+  }
+}
 
 export function BentoGrids() {
   return (
@@ -85,7 +334,10 @@ export function BentoGrids() {
               rounded-2xl relative overflow-hidden
             `}
           >
-            <div className="bg-foreground text-background p-3 w-fit rounded-xl group-hover:bg-primary group-hover:text-white group-hover:rotate-12 group-hover:scale-110 transition-all duration-300">
+            {/* Decorative shapes */}
+            <BentoDecoration type={item.decoration} />
+
+            <div className="bg-foreground text-background p-3 w-fit rounded-xl group-hover:bg-primary group-hover:text-white group-hover:rotate-12 group-hover:scale-110 transition-all duration-300 relative z-10">
               {item.icon}
             </div>
 
@@ -99,6 +351,7 @@ export function BentoGrids() {
                 />
               </div>
             )}
+
 
             <div className="z-10">
               <h3 className="text-2xl font-black mb-2 uppercase leading-none">{item.title}</h3>

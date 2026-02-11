@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Clock } from "lucide-react";
+import { motion } from "framer-motion";
+import { Clock, BookOpen, Swords, Trophy, Users, Zap, Flame, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "../_components/page-header";
 import { mockActivities } from "@/lib/data/dashboard";
@@ -9,13 +10,67 @@ import type { ActivityItem } from "@/lib/data/dashboard";
 
 type TypeFilter = "all" | ActivityItem["type"];
 
-const FILTERS: { value: TypeFilter; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: "lesson", label: "Lessons" },
-  { value: "challenge", label: "Challenges" },
-  { value: "achievement", label: "Achievements" },
-  { value: "social", label: "Social" },
+const FILTERS: { value: TypeFilter; label: string; color: string }[] = [
+  { value: "all", label: "All", color: "bg-primary text-primary-foreground" },
+  { value: "lesson", label: "Lessons", color: "bg-blue-500 text-white" },
+  { value: "challenge", label: "Challenges", color: "bg-orange-500 text-white" },
+  { value: "achievement", label: "Achievements", color: "bg-purple-500 text-white" },
+  { value: "social", label: "Social", color: "bg-emerald-500 text-white" },
 ];
+
+const TYPE_STYLES: Record<string, { border: string; iconBg: string; iconColor: string }> = {
+  lesson: {
+    border: "border-l-blue-500",
+    iconBg: "bg-blue-100 dark:bg-blue-950/40",
+    iconColor: "text-blue-600 dark:text-blue-400",
+  },
+  challenge: {
+    border: "border-l-orange-500",
+    iconBg: "bg-orange-100 dark:bg-orange-950/40",
+    iconColor: "text-orange-600 dark:text-orange-400",
+  },
+  achievement: {
+    border: "border-l-purple-500",
+    iconBg: "bg-purple-100 dark:bg-purple-950/40",
+    iconColor: "text-purple-600 dark:text-purple-400",
+  },
+  social: {
+    border: "border-l-emerald-500",
+    iconBg: "bg-emerald-100 dark:bg-emerald-950/40",
+    iconColor: "text-emerald-600 dark:text-emerald-400",
+  },
+  badge: {
+    border: "border-l-amber-500",
+    iconBg: "bg-amber-100 dark:bg-amber-950/40",
+    iconColor: "text-amber-600 dark:text-amber-400",
+  },
+  streak: {
+    border: "border-l-red-500",
+    iconBg: "bg-red-100 dark:bg-red-950/40",
+    iconColor: "text-red-600 dark:text-red-400",
+  },
+  xp: {
+    border: "border-l-primary",
+    iconBg: "bg-primary/10",
+    iconColor: "text-primary",
+  },
+};
+
+const DATE_BORDER_COLORS: Record<string, string> = {
+  Today: "border-l-blue-500",
+  Yesterday: "border-l-purple-500",
+  "This Week": "border-l-emerald-500",
+  Earlier: "border-l-amber-500",
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 15 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.05, duration: 0.35, ease: "easeOut" as const },
+  }),
+};
 
 function groupByDate(items: ActivityItem[]): { label: string; items: ActivityItem[] }[] {
   const now = new Date("2026-02-09T12:00:00Z");
@@ -54,20 +109,34 @@ export default function ActivityPage() {
 
   const groups = groupByDate(filtered);
 
+  // Stats
+  const totalXp = mockActivities.reduce((sum, a) => sum + (a.xp ?? 0), 0);
+  const lessonCount = mockActivities.filter((a) => a.type === "lesson").length;
+  const challengeCount = mockActivities.filter((a) => a.type === "challenge").length;
+
+  const stats = [
+    { icon: Activity, label: "Activities", value: mockActivities.length, color: "text-blue-500", bg: "bg-blue-100 dark:bg-blue-950/40" },
+    { icon: Zap, label: "XP Earned", value: `+${totalXp}`, color: "text-primary", bg: "bg-primary/10" },
+    { icon: BookOpen, label: "Lessons", value: lessonCount, color: "text-emerald-500", bg: "bg-emerald-100 dark:bg-emerald-950/40" },
+    { icon: Swords, label: "Challenges", value: challengeCount, color: "text-orange-500", bg: "bg-orange-100 dark:bg-orange-950/40" },
+  ];
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Activity Feed"
         description="Your recent learning activity"
         actions={
-          <div className="flex gap-1 p-1 rounded-xl bg-muted/30">
+          <div className="flex gap-1.5 flex-wrap">
             {FILTERS.map((f) => (
               <button
                 key={f.value}
                 onClick={() => setFilter(f.value)}
                 className={cn(
-                  "px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
-                  filter === f.value ? "bg-background card-elevated text-foreground" : "text-muted-foreground hover:text-foreground"
+                  "px-3 py-1.5 rounded-full text-xs font-medium transition-all",
+                  filter === f.value
+                    ? f.color
+                    : "bg-muted/40 text-muted-foreground hover:bg-muted/70 hover:text-foreground"
                 )}
               >
                 {f.label}
@@ -77,30 +146,77 @@ export default function ActivityPage() {
         }
       />
 
+      {/* Stats strip */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {stats.map((stat, i) => (
+          <motion.div
+            key={stat.label}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.08, duration: 0.35 }}
+            className="flex items-center gap-3 p-3 rounded-xl bg-background border border-border/40 shadow-sm"
+          >
+            <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center shrink-0", stat.bg)}>
+              <stat.icon size={16} className={stat.color} />
+            </div>
+            <div>
+              <p className="text-[10px] text-muted-foreground">{stat.label}</p>
+              <p className="text-sm font-bold">{stat.value}</p>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
       {groups.map((group) => (
         <div key={group.label}>
-          <h3 className="text-xs font-semibold text-muted-foreground mb-3">{group.label}</h3>
-          <div className="space-y-1">
-            {group.items.map((item) => (
-              <div
-                key={item.id}
-                className="bg-background rounded-xl border border-border/50 shadow-sm p-4 flex items-start gap-3"
-              >
-                <span className="text-base mt-0.5 shrink-0">{item.icon}</span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">{item.title}</p>
-                  <p className="text-xs text-muted-foreground">{item.description}</p>
-                </div>
-                <div className="text-right shrink-0">
-                  {item.xp !== null && item.xp > 0 && (
-                    <p className="text-xs font-medium text-primary">+{item.xp} XP</p>
+          <div className={cn(
+            "border-l-4 pl-3 mb-3",
+            DATE_BORDER_COLORS[group.label] || "border-l-muted-foreground"
+          )}>
+            <h3 className="text-xs font-semibold text-muted-foreground">{group.label}</h3>
+          </div>
+          <div className="space-y-2">
+            {group.items.map((item, i) => {
+              const style = TYPE_STYLES[item.type] || TYPE_STYLES.xp;
+              return (
+                <motion.div
+                  key={item.id}
+                  custom={i}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, margin: "-20px" }}
+                  variants={cardVariants}
+                  whileHover={{ y: -2 }}
+                  className={cn(
+                    "bg-background rounded-xl border border-border/50 shadow-sm p-4 flex items-start gap-3",
+                    "border-l-4",
+                    style.border
                   )}
-                  <p className="text-[10px] text-muted-foreground mt-0.5">
-                    {formatTime(item.timestamp)}
-                  </p>
-                </div>
-              </div>
-            ))}
+                >
+                  <div className={cn(
+                    "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5",
+                    style.iconBg
+                  )}>
+                    <span className="text-sm">{item.icon}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium">{item.title}</p>
+                    <p className="text-xs text-muted-foreground">{item.description}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    {item.xp !== null && item.xp > 0 && (
+                      <span className="inline-flex items-center gap-1 text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                        <Zap size={10} />
+                        +{item.xp} XP
+                      </span>
+                    )}
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      {formatTime(item.timestamp)}
+                    </p>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       ))}

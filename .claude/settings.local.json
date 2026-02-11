@@ -33,7 +33,8 @@
       "Bash(find:*)",
       "mcp__ide__getDiagnostics",
       "Bash(findstr:*)",
-      "Bash(Select-String:*)"
+      "Bash(Select-String:*)",
+      "Bash(grep:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

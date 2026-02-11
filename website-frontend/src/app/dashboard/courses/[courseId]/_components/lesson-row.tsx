@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Lock, PlayCircle, CheckCircle2 } from "lucide-react";
+import { Lock, PlayCircle, CheckCircle2, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CardTilt } from "@/components/effects/CardTilt";
 import type { CourseLesson } from "@/lib/data/dashboard";
@@ -29,19 +29,30 @@ export function LessonRow({ lesson, courseId, isCurrent }: LessonRowProps) {
       className={cn(
         "flex items-center gap-3 p-3 rounded-xl border transition-colors",
         isLocked
-          ? "border-border/20 opacity-50 cursor-not-allowed"
+          ? "border-border/20 opacity-40 cursor-not-allowed bg-muted/10"
+          : isCompleted
+          ? "border-emerald-200/50 dark:border-emerald-500/10 bg-emerald-50/50 dark:bg-emerald-950/10 hover:border-emerald-300/50"
           : "border-border/40 hover:border-border cursor-pointer",
-        isCurrent && "border-primary/50 bg-primary/5 ring-2 ring-primary/20 animate-pulse-ring"
+        isCurrent && "border-primary/50 bg-primary/5 ring-2 ring-primary/20"
       )}
     >
       {/* Status icon */}
       <div className="shrink-0">
         {isLocked ? (
-          <Lock size={18} className="text-muted-foreground/50" />
+          <div className="w-7 h-7 rounded-full bg-muted/50 flex items-center justify-center">
+            <Lock size={14} className="text-muted-foreground/50" />
+          </div>
         ) : isCompleted ? (
-          <CheckCircle2 size={18} className="text-emerald-500" />
+          <div className="w-7 h-7 rounded-full bg-emerald-100 dark:bg-emerald-950/40 flex items-center justify-center">
+            <CheckCircle2 size={14} className="text-emerald-500" />
+          </div>
         ) : (
-          <PlayCircle size={18} className="text-primary animate-pulse" />
+          <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center relative">
+            <PlayCircle size={14} className="text-primary" />
+            {isCurrent && (
+              <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-primary animate-pulse" />
+            )}
+          </div>
         )}
       </div>
 
@@ -53,7 +64,8 @@ export function LessonRow({ lesson, courseId, isCurrent }: LessonRowProps) {
       {/* Title */}
       <span className={cn(
         "text-sm font-medium flex-1 min-w-0 truncate",
-        isLocked && "text-muted-foreground"
+        isLocked && "text-muted-foreground",
+        isCompleted && "text-emerald-800 dark:text-emerald-300"
       )}>
         {lesson.title}
       </span>
@@ -66,9 +78,10 @@ export function LessonRow({ lesson, courseId, isCurrent }: LessonRowProps) {
         {lesson.difficulty}
       </span>
 
-      {/* XP */}
-      <span className="text-[11px] font-bold text-muted-foreground shrink-0 w-12 text-right">
-        +{lesson.xpReward} XP
+      {/* XP with colored badge */}
+      <span className="inline-flex items-center gap-0.5 text-[11px] font-bold shrink-0 bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
+        <Zap size={9} />
+        +{lesson.xpReward}
       </span>
 
       {/* Duration */}

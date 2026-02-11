@@ -98,7 +98,7 @@ export function Navbar({ mobileMenuOpen, setMobileMenuOpen }: NavbarProps) {
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-[100] border-b-4 border-border bg-background/90 backdrop-blur-xl">
+    <nav className="fixed left-0 right-0 z-[100] border-b-4 border-border bg-background/90 backdrop-blur-xl" style={{ top: "var(--banner-h, 0px)" }}>
       <div
         className={`container mx-auto px-4 flex items-center justify-between transition-all duration-300 ${
           isScrolled ? "h-16" : "h-20"

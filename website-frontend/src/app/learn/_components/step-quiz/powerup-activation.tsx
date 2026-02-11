@@ -316,7 +316,7 @@ function FreezeAnimation({ onDone }: { onDone: () => void }) {
             <Snowflake
               size={s.size}
               className="text-cyan-200/70"
-              style={{ filter: `blur(${s.size > 18 ? 0 : 1}px)`, drop: "shadow(0 0 4px rgba(186,230,253,0.5))" }}
+              style={{ filter: `blur(${s.size > 18 ? 0 : 1}px) drop-shadow(0 0 4px rgba(186,230,253,0.5))` }}
             />
           </motion.div>
         ))}

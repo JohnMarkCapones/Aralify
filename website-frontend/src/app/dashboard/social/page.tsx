@@ -1,12 +1,40 @@
 "use client";
 
 import { useState } from "react";
-import { Users, Zap, Flame, UserPlus, UserMinus } from "lucide-react";
+import { motion } from "framer-motion";
+import { Users, Zap, Flame, UserPlus, UserMinus, Heart, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "../_components/page-header";
 import { mockFriends } from "@/lib/data/dashboard";
 
 type Tab = "following" | "followers" | "discover";
+
+const AVATAR_GRADIENTS = [
+  "from-blue-500 to-cyan-400",
+  "from-purple-500 to-pink-400",
+  "from-emerald-500 to-teal-400",
+  "from-orange-500 to-amber-400",
+  "from-rose-500 to-pink-400",
+  "from-indigo-500 to-blue-400",
+  "from-fuchsia-500 to-purple-400",
+  "from-teal-500 to-emerald-400",
+];
+
+function getLevelColor(level: number): string {
+  if (level <= 10) return "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400";
+  if (level <= 20) return "bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400";
+  if (level <= 30) return "bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-400";
+  return "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400";
+}
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.06, duration: 0.4, ease: "easeOut" as const },
+  }),
+};
 
 export default function SocialPage() {
   const [tab, setTab] = useState<Tab>("following");
@@ -19,12 +47,20 @@ export default function SocialPage() {
   const following = mockFriends.filter((f) => followState[f.id]);
   const followers = mockFriends.filter((f) => f.isFollowedBy);
   const discover = mockFriends.filter((f) => !followState[f.id] && !f.isFollowedBy);
+  const mutuals = mockFriends.filter((f) => followState[f.id] && f.isFollowedBy);
 
   const displayed = tab === "following" ? following : tab === "followers" ? followers : discover;
 
   const toggleFollow = (id: string) => {
     setFollowState((prev) => ({ ...prev, [id]: !prev[id] }));
   };
+
+  const stats = [
+    { icon: UserPlus, label: "Following", value: following.length, color: "text-blue-500", bg: "bg-blue-100 dark:bg-blue-950/40" },
+    { icon: Users, label: "Followers", value: followers.length, color: "text-purple-500", bg: "bg-purple-100 dark:bg-purple-950/40" },
+    { icon: Heart, label: "Mutuals", value: mutuals.length, color: "text-rose-500", bg: "bg-rose-100 dark:bg-rose-950/40" },
+    { icon: BarChart3, label: "Discover", value: discover.length, color: "text-emerald-500", bg: "bg-emerald-100 dark:bg-emerald-950/40" },
+  ];
 
   return (
     <div className="space-y-6">
@@ -49,60 +85,116 @@ export default function SocialPage() {
         }
       />
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {displayed.map((friend) => (
-          <div
-            key={friend.id}
-            className="bg-background rounded-xl border border-border/50 shadow-sm p-4"
+      {/* Stats banner */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {stats.map((stat, i) => (
+          <motion.div
+            key={stat.label}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.08, duration: 0.35 }}
+            className="flex items-center gap-3 p-3 rounded-xl bg-background border border-border/40 shadow-sm"
           >
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-sm font-semibold text-primary shrink-0">
-                {friend.displayName.charAt(0)}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold truncate">{friend.displayName}</p>
-                <p className="text-[10px] text-muted-foreground">@{friend.username}</p>
-                <div className="flex items-center gap-3 mt-2">
-                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                    <Zap size={10} className="text-primary" />
-                    <span>{friend.xp.toLocaleString()} XP</span>
+            <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center shrink-0", stat.bg)}>
+              <stat.icon size={16} className={stat.color} />
+            </div>
+            <div>
+              <p className="text-[10px] text-muted-foreground">{stat.label}</p>
+              <p className="text-sm font-bold">{stat.value}</p>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {displayed.map((friend, i) => {
+          const gradientIdx = friend.id.charCodeAt(friend.id.length - 1) % AVATAR_GRADIENTS.length;
+          return (
+            <motion.div
+              key={friend.id}
+              custom={i}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-20px" }}
+              variants={cardVariants}
+              whileHover={{ y: -3 }}
+              className="bg-background rounded-xl border border-border/50 shadow-sm overflow-hidden"
+            >
+              {/* Subtle top gradient strip */}
+              <div className={cn("h-1 bg-gradient-to-r", AVATAR_GRADIENTS[gradientIdx])} />
+
+              <div className="p-4">
+                <div className="flex items-start gap-3">
+                  {/* Gradient avatar */}
+                  <div className="relative shrink-0">
+                    <div className={cn(
+                      "w-11 h-11 rounded-full bg-gradient-to-br flex items-center justify-center text-sm font-bold text-white",
+                      AVATAR_GRADIENTS[gradientIdx]
+                    )}>
+                      {friend.displayName.charAt(0)}
+                    </div>
+                    {/* Online indicator */}
+                    <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-background" />
                   </div>
-                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                    <Flame size={10} className="text-orange-500" />
-                    <span>{friend.streak}d</span>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold truncate">{friend.displayName}</p>
+                      {/* Level badge with tier color */}
+                      <span className={cn(
+                        "text-[9px] font-bold px-1.5 py-0.5 rounded-full",
+                        getLevelColor(friend.level)
+                      )}>
+                        Lv.{friend.level}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">@{friend.username}</p>
+                    <div className="flex items-center gap-3 mt-2">
+                      <div className="flex items-center gap-1.5 text-[10px]">
+                        <div className="w-5 h-5 rounded-md bg-primary/10 flex items-center justify-center">
+                          <Zap size={10} className="text-primary" />
+                        </div>
+                        <span className="font-medium">{friend.xp.toLocaleString()}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[10px]">
+                        <div className="w-5 h-5 rounded-md bg-orange-100 dark:bg-orange-950/40 flex items-center justify-center">
+                          <Flame size={10} className="text-orange-500" />
+                        </div>
+                        <span className="font-medium">{friend.streak}d</span>
+                      </div>
+                    </div>
                   </div>
-                  <span className="text-[10px] text-muted-foreground">Lv.{friend.level}</span>
+                </div>
+                <div className="mt-3 flex gap-2">
+                  <button
+                    onClick={() => toggleFollow(friend.id)}
+                    className={cn(
+                      "flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
+                      followState[friend.id]
+                        ? "border border-border/50 hover:bg-red-50 dark:hover:bg-red-950/20 hover:text-red-500 hover:border-red-200"
+                        : "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:shadow-md"
+                    )}
+                  >
+                    {followState[friend.id] ? (
+                      <>
+                        <UserMinus size={12} />
+                        Following
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus size={12} />
+                        Follow
+                      </>
+                    )}
+                  </button>
+                  <button className="px-3 py-1.5 border border-border/50 rounded-lg text-xs font-medium hover:bg-primary/5 hover:border-primary/30 hover:text-primary transition-all">
+                    Compare
+                  </button>
                 </div>
               </div>
-            </div>
-            <div className="mt-3 flex gap-2">
-              <button
-                onClick={() => toggleFollow(friend.id)}
-                className={cn(
-                  "flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
-                  followState[friend.id]
-                    ? "border border-border/50 hover:bg-red-50 dark:hover:bg-red-950/20 hover:text-red-500 hover:border-red-200"
-                    : "bg-primary text-primary-foreground hover:bg-primary/90"
-                )}
-              >
-                {followState[friend.id] ? (
-                  <>
-                    <UserMinus size={12} />
-                    Following
-                  </>
-                ) : (
-                  <>
-                    <UserPlus size={12} />
-                    Follow
-                  </>
-                )}
-              </button>
-              <button className="px-3 py-1.5 border border-border/50 rounded-lg text-xs font-medium hover:bg-muted transition-colors">
-                Compare
-              </button>
-            </div>
-          </div>
-        ))}
+            </motion.div>
+          );
+        })}
       </div>
 
       {displayed.length === 0 && (
