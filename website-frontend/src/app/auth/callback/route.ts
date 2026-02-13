@@ -1,45 +1,43 @@
-import { createClient } from '@/lib/supabase/server';
-import { NextResponse } from 'next/server';
+import { createClient } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
-  console.log('=== AUTH CALLBACK START ===');
-
   const { searchParams, origin } = new URL(request.url);
-  const code = searchParams.get('code');
-  const redirect = searchParams.get('redirect') || '/dashboard';
-
-  console.log('Code exists:', !!code);
-  console.log('Redirect to:', redirect);
+  const code = searchParams.get("code");
+  const redirect = searchParams.get("redirect") || "/dashboard";
 
   if (code) {
     const supabase = await createClient();
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
-    console.log('Exchange result - Error:', error?.message || 'none');
-    console.log('Exchange result - User:', data?.user?.email || 'none');
-    console.log('Exchange result - Session:', !!data?.session);
-
     if (!error && data?.session) {
-      console.log('Session token (first 50):', data.session.access_token?.substring(0, 50));
+      // Register session with backend (fire-and-forget, non-blocking)
+      const API_URL =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+      fetch(`${API_URL}/api/v1/auth/session`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${data.session.access_token}`,
+        },
+      }).catch(() => {
+        // Backend sync is best-effort; AuthProvider will retry on client
+      });
 
       // Check if this is a new user (created within the last 10 seconds)
       const createdAt = data.user?.created_at;
       const isNewUser =
-        createdAt &&
-        Date.now() - new Date(createdAt).getTime() < 10_000;
+        createdAt && Date.now() - new Date(createdAt).getTime() < 10_000;
 
       if (isNewUser) {
-        console.log('=== NEW USER - Redirecting to onboarding ===');
-        return NextResponse.redirect(`${origin}/onboarding`);
+        return NextResponse.redirect(new URL("/onboarding", origin));
       }
 
-      console.log('=== AUTH CALLBACK SUCCESS - Redirecting to', redirect, '===');
-      return NextResponse.redirect(`${origin}${redirect}`);
+      return NextResponse.redirect(new URL(redirect, origin));
     }
-
-    console.error('Auth callback error:', error);
   }
 
-  console.log('=== AUTH CALLBACK FAILED ===');
-  return NextResponse.redirect(`${origin}/login?error=Could not authenticate`);
+  return NextResponse.redirect(
+    new URL("/login?error=Could not authenticate", origin)
+  );
 }

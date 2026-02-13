@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useParams } from "next/navigation";
 import { PageShell } from "@/components/layout/PageShell";
 import { NeoButton } from "@/components/ui/neo-button";
+import { useLesson, useStartLesson, useCompleteLesson, useSubmitChallenge } from "@/hooks/api";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
@@ -15,6 +17,7 @@ import {
   FileText,
   HelpCircle,
   Lightbulb,
+  Loader2,
   Play,
   RotateCcw,
   Terminal,
@@ -68,13 +71,51 @@ const testCases = [
 ];
 
 export default function LessonPage() {
+  const params = useParams();
+  const lessonSlug = params.lessonSlug as string;
+  const courseSlug = params.slug as string;
+
+  const { data: lessonData, isLoading: loadingLesson } = useLesson(lessonSlug);
+  const startLesson = useStartLesson();
+  const completeLesson = useCompleteLesson();
+  const submitChallenge = useSubmitChallenge();
+
   const [selectedTier, setSelectedTier] = useState(0);
   const [showOutput, setShowOutput] = useState(false);
   const [showHints, setShowHints] = useState(false);
   const [showTests, setShowTests] = useState(false);
   const [completed, setCompleted] = useState(false);
+  const [challengeResult, setChallengeResult] = useState<{
+    output: string;
+    allPassed: boolean;
+    xpAwarded: number;
+    testResults: { input: string; expected: string; actual: string; passed: boolean }[];
+  } | null>(null);
 
   const tier = difficultyTiers[selectedTier];
+
+  // Use API data if available, else fall back to mock
+  const lessonInstructions = lessonData?.instructions ?? instructions;
+  const lessonHints = lessonData?.hints ?? hints;
+  const lessonTitle = lessonData?.title ?? "LESSON 8: RECURSION & FIBONACCI";
+  const lessonCourseTitle = lessonData?.courseTitle ?? "Python Fundamentals";
+  const lessonModuleTitle = lessonData?.moduleTitle ?? "Module 3";
+  const lessonEstimatedMinutes = lessonData?.estimatedMinutes ?? 15;
+  const lessonLanguage = lessonData?.language ?? "Python 3.11";
+  const lessonStarterCode = lessonData?.starterCode ?? mockCode;
+  const lessonTestCases = lessonData?.testCases ?? testCases;
+  const previousLesson = lessonData?.previousLesson;
+  const nextLesson = lessonData?.nextLesson;
+
+  if (loadingLesson) {
+    return (
+      <PageShell>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Loader2 size={32} className="animate-spin text-primary" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell>
@@ -84,22 +125,22 @@ export default function LessonPage() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <Link
-                href="/courses/python-fundamentals"
+                href={`/courses/${courseSlug}`}
                 className="inline-flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-primary transition-colors mb-2 group"
               >
                 <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
-                Python Fundamentals — Module 3
+                {lessonCourseTitle} — {lessonModuleTitle}
               </Link>
               <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tighter">
-                LESSON 8: RECURSION & FIBONACCI
+                {lessonTitle}
               </h1>
             </div>
             <div className="flex items-center gap-3 flex-wrap">
               <div className="flex items-center gap-1.5 text-sm font-bold text-muted-foreground">
-                <Clock size={14} /> ~15 min
+                <Clock size={14} /> ~{lessonEstimatedMinutes} min
               </div>
               <div className="flex items-center gap-1.5 text-sm font-bold text-muted-foreground">
-                <BookOpen size={14} /> Exercise
+                <BookOpen size={14} /> {lessonData?.type ?? "Exercise"}
               </div>
             </div>
           </div>
@@ -145,11 +186,18 @@ export default function LessonPage() {
                   <span className="font-black text-sm uppercase tracking-wider">Instructions</span>
                 </div>
                 <div className="p-6 space-y-4">
-                  <p className="text-sm font-medium text-muted-foreground leading-relaxed">
-                    Write a function that calculates numbers in the Fibonacci sequence using recursion. The Fibonacci sequence is a series where each number is the sum of the two preceding ones.
-                  </p>
+                  {lessonData?.description && (
+                    <p className="text-sm font-medium text-muted-foreground leading-relaxed">
+                      {lessonData.description}
+                    </p>
+                  )}
+                  {!lessonData?.description && (
+                    <p className="text-sm font-medium text-muted-foreground leading-relaxed">
+                      Write a function that calculates numbers in the Fibonacci sequence using recursion. The Fibonacci sequence is a series where each number is the sum of the two preceding ones.
+                    </p>
+                  )}
                   <div className="space-y-2">
-                    {instructions.map((inst, i) => (
+                    {lessonInstructions.map((inst, i) => (
                       <motion.div
                         key={i}
                         initial={{ opacity: 0, x: -10 }}
@@ -176,7 +224,7 @@ export default function LessonPage() {
                   <div className="flex items-center gap-2">
                     <Lightbulb size={16} className="text-accent" />
                     <span className="font-black text-sm uppercase tracking-wider">Hints</span>
-                    <span className="text-xs font-bold text-muted-foreground">({hints.length} available)</span>
+                    <span className="text-xs font-bold text-muted-foreground">({lessonHints.length} available)</span>
                   </div>
                   <motion.div animate={{ rotate: showHints ? 180 : 0 }}>
                     <ChevronDown size={16} className="text-muted-foreground" />
@@ -191,7 +239,7 @@ export default function LessonPage() {
                       className="overflow-hidden"
                     >
                       <div className="px-6 pb-4 space-y-2">
-                        {hints.map((hint, i) => (
+                        {lessonHints.map((hint, i) => (
                           <div key={i} className="flex items-start gap-2 p-2 bg-accent/10 rounded-lg">
                             <Lightbulb size={12} className="text-accent mt-0.5 shrink-0" />
                             <span className="text-sm font-medium">{hint}</span>
@@ -226,7 +274,7 @@ export default function LessonPage() {
                       className="overflow-hidden"
                     >
                       <div className="px-6 pb-4 space-y-2">
-                        {testCases.map((tc, i) => (
+                        {lessonTestCases.map((tc, i) => (
                           <div key={i} className="flex items-center justify-between p-2 bg-muted/30 rounded-lg font-mono text-sm">
                             <span>{tc.input}</span>
                             <div className="flex items-center gap-2">
@@ -255,7 +303,7 @@ export default function LessonPage() {
                   <div className="w-3 h-3 rounded-full bg-accent" />
                   <div className="w-3 h-3 rounded-full bg-green-500" />
                   <span className="ml-auto text-white/60 font-mono text-xs flex items-center gap-2">
-                    <Code size={12} /> solution.py
+                    <Code size={12} /> {lessonData?.language ? `solution.${lessonData.language.toLowerCase().replace(/\s.*/,'')}` : "solution.py"}
                   </span>
                   <div className="flex items-center gap-2">
                     <button className="text-white/40 hover:text-white/80 transition-colors"><Copy size={12} /></button>
@@ -265,7 +313,7 @@ export default function LessonPage() {
 
                 {/* Code area */}
                 <div className="bg-[#0d1117] p-6 min-h-[350px] font-mono text-sm">
-                  {mockCode.split("\n").map((line, i) => (
+                  {lessonStarterCode.split("\n").map((line, i) => (
                     <div key={i} className="flex">
                       <span className="w-8 text-right mr-4 text-white/20 select-none text-xs">{i + 1}</span>
                       <span className="text-green-300 whitespace-pre">{line}</span>
@@ -287,16 +335,29 @@ export default function LessonPage() {
                     variant="outline"
                     size="sm"
                     className="gap-2"
+                    disabled={completeLesson.isPending}
                     onClick={() => {
                       setShowOutput(true);
                       setShowTests(true);
-                      setCompleted(true);
+                      if (lessonData?.id) {
+                        const difficulty = difficultyTiers[selectedTier].label;
+                        completeLesson.mutate(
+                          { id: lessonData.id, difficulty },
+                          {
+                            onSuccess: (result) => {
+                              setCompleted(true);
+                            },
+                          }
+                        );
+                      } else {
+                        setCompleted(true);
+                      }
                     }}
                   >
-                    <CheckCircle size={14} /> SUBMIT
+                    <CheckCircle size={14} /> {completeLesson.isPending ? "SUBMITTING..." : "SUBMIT"}
                   </NeoButton>
                   <div className="ml-auto flex items-center gap-2 text-xs font-bold text-muted-foreground">
-                    <Terminal size={12} /> Python 3.11
+                    <Terminal size={12} /> {lessonLanguage}
                   </div>
                 </div>
               </div>
@@ -355,10 +416,10 @@ export default function LessonPage() {
                   <h2 className="text-3xl font-black uppercase tracking-tighter">LESSON COMPLETE!</h2>
                   <div className="bg-primary/10 neo-brutal-border rounded-xl p-4 space-y-2">
                     <div className="flex items-center justify-center gap-2 text-2xl font-black text-primary">
-                      <Zap size={24} /> +{tier.xpAmount} XP
+                      <Zap size={24} /> +{completeLesson.data?.xpAwarded ?? tier.xpAmount} XP
                     </div>
                     <div className="text-sm font-bold text-muted-foreground">
-                      {tier.label} Tier · {tier.xp} Multiplier
+                      {tier.label} Tier · {completeLesson.data?.multiplier ?? tier.multiplier}x Multiplier
                     </div>
                   </div>
                   <div className="flex gap-3">
@@ -380,14 +441,28 @@ export default function LessonPage() {
       <section className="py-6 bg-card border-t-4 border-border">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between max-w-7xl mx-auto">
-            <Link href="#" className="flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-primary transition-colors group">
-              <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
-              Previous: Functions
-            </Link>
-            <Link href="#" className="flex items-center gap-2 text-sm font-bold text-primary group">
-              Next: Memoization
-              <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-            </Link>
+            {previousLesson ? (
+              <Link href={`/courses/${courseSlug}/lesson/${previousLesson.slug}`} className="flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-primary transition-colors group">
+                <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+                Previous: {previousLesson.title}
+              </Link>
+            ) : (
+              <Link href={`/courses/${courseSlug}`} className="flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-primary transition-colors group">
+                <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+                Back to Course
+              </Link>
+            )}
+            {nextLesson ? (
+              <Link href={`/courses/${courseSlug}/lesson/${nextLesson.slug}`} className="flex items-center gap-2 text-sm font-bold text-primary group">
+                Next: {nextLesson.title}
+                <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+              </Link>
+            ) : (
+              <Link href={`/courses/${courseSlug}`} className="flex items-center gap-2 text-sm font-bold text-primary group">
+                Course Overview
+                <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+              </Link>
+            )}
           </div>
         </div>
       </section>
