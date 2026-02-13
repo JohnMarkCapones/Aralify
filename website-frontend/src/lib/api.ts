@@ -193,6 +193,47 @@ export const leaderboardApi = {
   getUserRanks: () => api.get<UserRanks>("/api/v1/leaderboards/me/ranks"),
 };
 
+// ─── Onboarding API ──────────────────────────────────────────────────────────
+
+export const onboardingApi = {
+  getStatus: () =>
+    api.get<OnboardingStatus>("/api/v1/users/onboarding/status"),
+  complete: (data: CompleteOnboardingPayload) =>
+    api.put<{ success: boolean; xpAwarded: number }>(
+      "/api/v1/users/onboarding/complete",
+      data
+    ),
+  skip: () =>
+    api.put<{ success: boolean }>("/api/v1/users/onboarding/skip"),
+};
+
+// ─── Social / Activity Feed API ─────────────────────────────────────────────
+
+export const socialApi = {
+  getFeed: (params?: { limit?: number; offset?: number; type?: string }) => {
+    const query = new URLSearchParams();
+    if (params?.limit) query.set("limit", String(params.limit));
+    if (params?.offset) query.set("offset", String(params.offset));
+    if (params?.type) query.set("type", params.type);
+    const qs = query.toString();
+    return api.get<ActivityFeedResponse>(
+      `/api/v1/social/feed${qs ? `?${qs}` : ""}`
+    );
+  },
+  getUserActivity: (
+    username: string,
+    params?: { limit?: number; offset?: number }
+  ) => {
+    const query = new URLSearchParams();
+    if (params?.limit) query.set("limit", String(params.limit));
+    if (params?.offset) query.set("offset", String(params.offset));
+    const qs = query.toString();
+    return api.get<ActivityFeedResponse>(
+      `/api/v1/social/users/${username}/activity${qs ? `?${qs}` : ""}`
+    );
+  },
+};
+
 // ─── Recommendation API ──────────────────────────────────────────────────────
 
 export const recommendationApi = {
@@ -764,4 +805,36 @@ export interface UserCareerPathEntry {
   currentNodeId?: string;
   startedAt: string;
   totalNodes: number;
+}
+
+// Onboarding types
+export interface OnboardingStatus {
+  onboardingCompleted: boolean;
+  completedAt?: string;
+}
+
+export interface CompleteOnboardingPayload {
+  displayName: string;
+  avatarPreset?: string;
+  interestedLanguages: string[];
+  skillLevel: string;
+  learningGoals: string[];
+  dailyCommitmentMins: number;
+}
+
+// Social / Activity Feed types
+export interface ActivityFeedItem {
+  id: string;
+  type: string;
+  userId: string;
+  username: string;
+  displayName: string;
+  avatarUrl: string | null;
+  data: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface ActivityFeedResponse {
+  activities: ActivityFeedItem[];
+  total: number;
 }

@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight, X } from "lucide-react";
 import { NeoButton } from "@/components/ui/neo-button";
+import { onboardingApi } from "@/lib/api";
+import { useUserStore } from "@/stores/user-store";
 import { OnboardingProgress } from "./components/onboarding-progress";
 import { WelcomeStep } from "./steps/welcome-step";
 import { PersonalizationStep } from "./steps/personalization-step";
@@ -57,10 +59,9 @@ function loadSavedData(emailPrefix: string): OnboardingData {
 
 interface OnboardingClientProps {
   userEmail: string;
-  token?: string;
 }
 
-export function OnboardingClient({ userEmail, token }: OnboardingClientProps) {
+export function OnboardingClient({ userEmail }: OnboardingClientProps) {
   const router = useRouter();
   const emailPrefix = userEmail.split("@")[0] || "";
   const [data, setData] = useState<OnboardingData>(() =>
@@ -125,16 +126,7 @@ export function OnboardingClient({ userEmail, token }: OnboardingClientProps) {
   const handleSkip = async () => {
     setIsSubmitting(true);
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      if (apiUrl && token) {
-        await fetch(`${apiUrl}/api/v1/users/onboarding/skip`, {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-      }
+      await onboardingApi.skip();
     } catch {
       // continue even if API fails
     }
@@ -145,24 +137,14 @@ export function OnboardingClient({ userEmail, token }: OnboardingClientProps) {
   const handleComplete = async () => {
     setIsSubmitting(true);
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      if (apiUrl && token) {
-        await fetch(`${apiUrl}/api/v1/users/onboarding/complete`, {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            displayName: data.displayName.trim(),
-            avatarPreset: data.avatarPreset || undefined,
-            interestedLanguages: data.selectedLanguages,
-            skillLevel: data.skillLevel,
-            learningGoals: data.selectedGoals,
-            dailyCommitmentMins: data.dailyMins,
-          }),
-        });
-      }
+      await onboardingApi.complete({
+        displayName: data.displayName.trim(),
+        avatarPreset: data.avatarPreset || undefined,
+        interestedLanguages: data.selectedLanguages,
+        skillLevel: data.skillLevel,
+        learningGoals: data.selectedGoals,
+        dailyCommitmentMins: data.dailyMins,
+      });
     } catch {
       // continue even if API fails
     }

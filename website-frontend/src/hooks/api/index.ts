@@ -45,3 +45,5 @@ export {
   useFriendsLeaderboard,
   useUserRanks,
 } from "./use-leaderboard";
+
+export { useActivityFeed, useUserActivity } from "./use-social";

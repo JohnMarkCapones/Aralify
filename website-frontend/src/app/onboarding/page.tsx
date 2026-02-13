@@ -17,7 +17,7 @@ export default async function OnboardingPage() {
   const token = (await supabase.auth.getSession()).data.session?.access_token;
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-  // Check if user already completed onboarding
+  // Check if user already completed onboarding (server-side check)
   if (apiUrl && token) {
     try {
       const res = await fetch(`${apiUrl}/api/v1/users/onboarding/status`, {
@@ -36,10 +36,5 @@ export default async function OnboardingPage() {
     }
   }
 
-  return (
-    <OnboardingClient
-      userEmail={user.email || ""}
-      token={token}
-    />
-  );
+  return <OnboardingClient userEmail={user.email || ""} />;
 }

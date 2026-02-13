@@ -13,12 +13,17 @@ import {
   mockQuests,
   mockActivities,
 } from "@/lib/data/dashboard";
-import type { DashboardUserProfile, EnrolledCourse } from "@/lib/data/dashboard";
+import type {
+  DashboardUserProfile,
+  EnrolledCourse,
+  ActivityItem,
+} from "@/lib/data/dashboard";
 import {
   useUserProfile,
   useUserStats,
   useUserCourses,
   useGamificationProfile,
+  useActivityFeed,
 } from "@/hooks/api";
 
 function Skeleton({ className = "" }: { className?: string }) {
@@ -29,12 +34,45 @@ function Skeleton({ className = "" }: { className?: string }) {
   );
 }
 
+// Map activity type from backend to frontend icon
+function activityTypeToIcon(type: string): string {
+  const map: Record<string, string> = {
+    lesson_completed: "book-open",
+    achievement_unlocked: "trophy",
+    level_up: "arrow-up",
+    badge_earned: "award",
+    streak_milestone: "flame",
+    course_started: "play",
+    course_completed: "graduation-cap",
+    challenge_completed: "code",
+  };
+  return map[type] || "activity";
+}
+
+// Map activity type from backend to frontend type
+function activityTypeToFrontend(
+  type: string
+): ActivityItem["type"] {
+  const map: Record<string, ActivityItem["type"]> = {
+    lesson_completed: "lesson",
+    achievement_unlocked: "achievement",
+    badge_earned: "badge",
+    streak_milestone: "streak",
+    challenge_completed: "challenge",
+    course_started: "lesson",
+    course_completed: "achievement",
+    level_up: "xp",
+  };
+  return map[type] || "lesson";
+}
+
 export default function DashboardHomePage() {
   const { data: userProfile, isLoading: loadingProfile } = useUserProfile();
   const { data: userStats, isLoading: loadingStats } = useUserStats();
   const { data: gamification, isLoading: loadingGamification } =
     useGamificationProfile();
   const { data: userCourses, isLoading: loadingCourses } = useUserCourses();
+  const { data: feedData } = useActivityFeed({ limit: 10 });
 
   const isLoading =
     loadingProfile || loadingStats || loadingGamification || loadingCourses;
@@ -88,6 +126,21 @@ export default function DashboardHomePage() {
       difficulty: c.difficulty as "beginner" | "intermediate" | "advanced",
     })) ?? mockEnrolledCourses;
 
+  // Map API activity feed to ActivityItem[] or fall back to mock
+  const activities: ActivityItem[] =
+    feedData?.activities?.map((a) => ({
+      id: a.id,
+      type: activityTypeToFrontend(a.type),
+      title: (a.data?.title as string) || a.type.replace(/_/g, " "),
+      description:
+        (a.data?.description as string) ||
+        `${a.displayName} ${a.type.replace(/_/g, " ")}`,
+      xp: (a.data?.xp as number) || null,
+      timestamp: a.createdAt,
+      icon: activityTypeToIcon(a.type),
+      relatedUrl: a.data?.url as string | undefined,
+    })) ?? mockActivities;
+
   if (isLoading) {
     return (
       <div className="space-y-8">
@@ -117,7 +170,7 @@ export default function DashboardHomePage() {
       <LobbyActionCards user={user} />
 
       {/* Zone 6: Activity Ticker */}
-      <ActivityTicker activities={mockActivities} />
+      <ActivityTicker activities={activities} />
     </div>
   );
 }
