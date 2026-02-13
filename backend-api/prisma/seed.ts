@@ -1,4 +1,4 @@
-import { PrismaClient, Difficulty, QuizType, UserRole } from '@prisma/client';
+import { PrismaClient, Difficulty, QuizType, UserRole, LeagueTier } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -358,6 +358,36 @@ async function main() {
     // Secret achievements
     { slug: 'night-owl', title: 'Night Owl', description: 'Complete a lesson after midnight', category: 'secret', xpReward: 100, criteria: { type: 'time_of_day', hour_start: 0, hour_end: 5 }, isSecret: true },
     { slug: 'speed-demon', title: 'Speed Demon', description: 'Complete a lesson in under 2 minutes', category: 'secret', xpReward: 150, criteria: { type: 'fast_completion', max_seconds: 120 }, isSecret: true },
+
+    // === NEW ACHIEVEMENTS (16 total) ===
+
+    // Social (4)
+    { slug: 'social-butterfly', title: 'Social Butterfly', description: 'Follow 10 learners', category: 'social', xpReward: 150, criteria: { type: 'social', action: 'following', count: 10 } },
+    { slug: 'helpful-hand', title: 'Helpful Hand', description: 'Leave 25 comments', category: 'social', xpReward: 250, criteria: { type: 'social', action: 'comment', count: 25 } },
+    { slug: 'community-star', title: 'Community Star', description: 'Get 50 followers', category: 'social', xpReward: 500, criteria: { type: 'social', action: 'follower', count: 50 } },
+    { slug: 'influencer-100', title: 'Influencer', description: 'Get 100 followers', category: 'social', xpReward: 1000, criteria: { type: 'social', action: 'follower', count: 100 }, isSecret: true },
+
+    // Speed/Secret (2)
+    { slug: 'early-bird', title: 'Early Bird', description: 'Complete a lesson between 4-6 AM UTC', category: 'secret', xpReward: 100, criteria: { type: 'time_of_day', hour_start: 4, hour_end: 6 }, isSecret: true },
+    { slug: 'lightning-fast', title: 'Lightning Fast', description: 'Complete a lesson in under 60 seconds', category: 'secret', xpReward: 200, criteria: { type: 'fast_completion', max_seconds: 60 }, isSecret: true },
+
+    // Diversity (3)
+    { slug: 'two-courses', title: 'Explorer', description: 'Start 2 courses', category: 'completion', xpReward: 100, criteria: { type: 'course_started', count: 2 } },
+    { slug: 'three-courses', title: 'Triple Threat', description: 'Complete 3 courses', category: 'completion', xpReward: 750, criteria: { type: 'course_complete', count: 3 } },
+    { slug: 'polyglot-coder', title: 'Polyglot Coder', description: 'Complete lessons in 3 different languages', category: 'mastery', xpReward: 500, criteria: { type: 'language_count', count: 3 } },
+
+    // Mastery (3)
+    { slug: 'hard-mode-5', title: 'Hard Mode Warrior', description: 'Complete 5 HARD lessons', category: 'mastery', xpReward: 300, criteria: { type: 'lesson_difficulty', difficulty: 'HARD', count: 5 } },
+    { slug: 'hard-mode-25', title: 'Hard Mode Legend', description: 'Complete 25 HARD lessons', category: 'mastery', xpReward: 1000, criteria: { type: 'lesson_difficulty', difficulty: 'HARD', count: 25 } },
+    { slug: 'easy-50', title: 'Solid Foundation', description: 'Complete 50 EASY lessons', category: 'mastery', xpReward: 300, criteria: { type: 'lesson_difficulty', difficulty: 'EASY', count: 50 } },
+
+    // Level (2)
+    { slug: 'level-75', title: 'Legend', description: 'Reach level 75', category: 'level', xpReward: 3000, criteria: { type: 'level', level: 75 } },
+    { slug: 'level-100', title: 'Mythic', description: 'Reach level 100', category: 'level', xpReward: 5000, criteria: { type: 'level', level: 100 }, isSecret: true },
+
+    // Completion (2)
+    { slug: 'two-hundred-lessons', title: 'Marathon Runner', description: 'Complete 200 lessons', category: 'completion', xpReward: 2000, criteria: { type: 'lesson_count', count: 200 } },
+    { slug: 'five-hundred-lessons', title: 'Unstoppable Force', description: 'Complete 500 lessons', category: 'completion', xpReward: 5000, criteria: { type: 'lesson_count', count: 500 }, isSecret: true },
   ];
 
   for (const achievement of achievements) {
@@ -412,6 +442,36 @@ async function main() {
   }
 
   console.log(`   ✅ Created ${badges.length} badges\n`);
+
+  // ============================================
+  // LEAGUES
+  // ============================================
+  console.log('🏅 Seeding leagues...');
+
+  const leagueTiers = [
+    { tier: LeagueTier.BRONZE, name: 'Bronze League', description: 'Starting league for all learners. Keep learning to climb!', iconUrl: '/icons/leagues/bronze.svg', minRank: 0 },
+    { tier: LeagueTier.SILVER, name: 'Silver League', description: 'Dedicated learners who show consistent progress.', iconUrl: '/icons/leagues/silver.svg', minRank: 1 },
+    { tier: LeagueTier.GOLD, name: 'Gold League', description: 'Skilled learners pushing for excellence.', iconUrl: '/icons/leagues/gold.svg', minRank: 2 },
+    { tier: LeagueTier.DIAMOND, name: 'Diamond League', description: 'Elite learners among the top performers.', iconUrl: '/icons/leagues/diamond.svg', minRank: 3 },
+    { tier: LeagueTier.CHAMPION, name: 'Champion League', description: 'The best of the best. Legends of Aralify.', iconUrl: '/icons/leagues/champion.svg', minRank: 4 },
+  ];
+
+  for (const league of leagueTiers) {
+    await prisma.league.upsert({
+      where: { tier: league.tier },
+      update: {},
+      create: {
+        tier: league.tier,
+        name: league.name,
+        description: league.description,
+        iconUrl: league.iconUrl,
+        minRank: league.minRank,
+        maxSize: 30,
+      },
+    });
+  }
+
+  console.log(`   ✅ Created ${leagueTiers.length} leagues\n`);
 
   // ============================================
   // GIVE DEMO USER SOME PROGRESS
@@ -477,6 +537,7 @@ async function main() {
   console.log(`   💻 Code Challenges: ${totalChallenges}`);
   console.log(`   🏆 Achievements: ${achievements.length}`);
   console.log(`   🎖️ Badges: ${badges.length}`);
+  console.log(`   🏅 Leagues: ${leagueTiers.length}`);
   console.log('═══════════════════════════════════════\n');
 }
 

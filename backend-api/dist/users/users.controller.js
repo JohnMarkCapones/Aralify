@@ -37,6 +37,25 @@ let UsersController = class UsersController {
     async getStats(user) {
         return this.usersService.getStats(user.id);
     }
+    async getUserCourses(user) {
+        return this.usersService.getUserCourses(user.id);
+    }
+    async getDetailedStats(user, range) {
+        return this.usersService.getDetailedStats(user.id, range || '7d');
+    }
+    async getCertificates(user) {
+        return this.usersService.getCertificates(user.id);
+    }
+    async getChallengeHistory(user, page, limit) {
+        return this.usersService.getChallengeHistory(user.id, Number(page) || 1, Number(limit) || 20);
+    }
+    async getUserActivities(user, type, page, limit) {
+        return this.usersService.getUserActivities(user.id, {
+            type,
+            page: Number(page) || 1,
+            limit: Number(limit) || 20,
+        });
+    }
     async getOnboardingStatus(user) {
         return this.usersService.getOnboardingStatus(user.id);
     }
@@ -131,6 +150,68 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "getStats", null);
+__decorate([
+    (0, common_1.Get)('user/courses'),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Get enrolled courses with progress' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Returns enrolled courses', type: [dto_1.UserCourseDto] }),
+    __param(0, (0, decorators_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "getUserCourses", null);
+__decorate([
+    (0, common_1.Get)('user/stats/detailed'),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Get detailed stats (XP over time, difficulty breakdown)' }),
+    (0, swagger_1.ApiQuery)({ name: 'range', required: false, enum: ['7d', '30d'], example: '7d' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Returns detailed statistics', type: dto_1.UserDetailedStatsDto }),
+    __param(0, (0, decorators_1.CurrentUser)()),
+    __param(1, (0, common_1.Query)('range')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "getDetailedStats", null);
+__decorate([
+    (0, common_1.Get)('user/certificates'),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Get certificates for completed courses' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Returns certificates', type: [dto_1.UserCertificateDto] }),
+    __param(0, (0, decorators_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "getCertificates", null);
+__decorate([
+    (0, common_1.Get)('user/challenge-history'),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Get past challenge submissions' }),
+    (0, swagger_1.ApiQuery)({ name: 'page', required: false, example: 1 }),
+    (0, swagger_1.ApiQuery)({ name: 'limit', required: false, example: 20 }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Returns challenge history' }),
+    __param(0, (0, decorators_1.CurrentUser)()),
+    __param(1, (0, common_1.Query)('page')),
+    __param(2, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Number, Number]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "getChallengeHistory", null);
+__decorate([
+    (0, common_1.Get)('user/activities'),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Get own activity history' }),
+    (0, swagger_1.ApiQuery)({ name: 'type', required: false, description: 'Filter by activity type' }),
+    (0, swagger_1.ApiQuery)({ name: 'page', required: false, example: 1 }),
+    (0, swagger_1.ApiQuery)({ name: 'limit', required: false, example: 20 }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Returns activities' }),
+    __param(0, (0, decorators_1.CurrentUser)()),
+    __param(1, (0, common_1.Query)('type')),
+    __param(2, (0, common_1.Query)('page')),
+    __param(3, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, Number, Number]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "getUserActivities", null);
 __decorate([
     (0, common_1.Get)('users/onboarding/status'),
     (0, swagger_1.ApiBearerAuth)(),

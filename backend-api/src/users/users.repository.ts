@@ -287,4 +287,145 @@ export class UsersRepository {
     });
     return !!follow;
   }
+
+  // ============================================================================
+  // User Courses
+  // ============================================================================
+
+  async getUserCourses(userId: string) {
+    return this.prisma.userCourseProgress.findMany({
+      where: { userId },
+      orderBy: { lastActivityAt: 'desc' },
+      include: {
+        course: {
+          select: {
+            id: true,
+            slug: true,
+            title: true,
+            description: true,
+            language: true,
+            iconUrl: true,
+            color: true,
+          },
+        },
+      },
+    });
+  }
+
+  // ============================================================================
+  // Detailed Stats
+  // ============================================================================
+
+  async getXpOverTime(userId: string, since: Date) {
+    return this.prisma.xpTransaction.findMany({
+      where: {
+        userId,
+        createdAt: { gte: since },
+      },
+      select: {
+        amount: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
+
+  async getDifficultyBreakdown(userId: string) {
+    const [easy, medium, hard] = await Promise.all([
+      this.prisma.userLessonProgress.count({
+        where: { userId, status: ProgressStatus.COMPLETED, lesson: { difficulty: 'EASY' } },
+      }),
+      this.prisma.userLessonProgress.count({
+        where: { userId, status: ProgressStatus.COMPLETED, lesson: { difficulty: 'MEDIUM' } },
+      }),
+      this.prisma.userLessonProgress.count({
+        where: { userId, status: ProgressStatus.COMPLETED, lesson: { difficulty: 'HARD' } },
+      }),
+    ]);
+    return { easy, medium, hard };
+  }
+
+  async getTimeSpentInRange(userId: string, since: Date) {
+    const result = await this.prisma.userCourseProgress.aggregate({
+      where: { userId, lastActivityAt: { gte: since } },
+      _sum: { timeSpentSeconds: true },
+    });
+    return result._sum.timeSpentSeconds || 0;
+  }
+
+  // ============================================================================
+  // Certificates
+  // ============================================================================
+
+  async getCompletedCourses(userId: string) {
+    return this.prisma.userCourseProgress.findMany({
+      where: { userId, completedAt: { not: null } },
+      orderBy: { completedAt: 'desc' },
+      include: {
+        course: {
+          select: {
+            id: true,
+            slug: true,
+            title: true,
+          },
+        },
+      },
+    });
+  }
+
+  // ============================================================================
+  // Challenge History
+  // ============================================================================
+
+  async getChallengeHistory(userId: string, page: number, limit: number) {
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await Promise.all([
+      this.prisma.challengeSubmission.findMany({
+        where: { userId },
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          challenge: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
+        },
+      }),
+      this.prisma.challengeSubmission.count({ where: { userId } }),
+    ]);
+
+    return { data, total };
+  }
+
+  // ============================================================================
+  // Activities
+  // ============================================================================
+
+  async getUserActivities(
+    userId: string,
+    options: { type?: string; page: number; limit: number },
+  ) {
+    const skip = (options.page - 1) * options.limit;
+    const where: any = { userId };
+
+    if (options.type) {
+      where.type = options.type;
+    }
+
+    const [data, total] = await Promise.all([
+      this.prisma.activity.findMany({
+        where,
+        skip,
+        take: options.limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.activity.count({ where }),
+    ]);
+
+    return { data, total };
+  }
 }

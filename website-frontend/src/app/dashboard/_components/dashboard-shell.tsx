@@ -47,7 +47,7 @@ const NAV_SECTIONS = [
   {
     title: "",
     items: [
-      { href: "/settings", label: "Settings", icon: Settings },
+      { href: "/dashboard/settings", label: "Settings", icon: Settings },
     ],
   },
 ];
@@ -79,8 +79,8 @@ export function DashboardShell({ children, userName = "Learner" }: DashboardShel
       {/* Logo */}
       <div className={cn("flex items-center h-14 border-b border-border/50 shrink-0", collapsed && !mobile ? "justify-center px-2" : "px-4")}>
         <Link href="/dashboard" className="flex items-center gap-2.5" onClick={() => setSidebarOpen(false)}>
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shrink-0">
-            <Code2 size={16} className="text-white" />
+          <div className="w-5 h-5 bg-primary rounded flex items-center justify-center shrink-0">
+            <Code2 size={11} className="text-white" />
           </div>
           {(!collapsed || mobile) && (
             <span className="font-semibold text-sm">Aralify</span>

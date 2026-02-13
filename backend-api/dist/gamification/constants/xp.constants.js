@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LEVEL_XP_THRESHOLDS = exports.RANK_TITLES = exports.XP_REWARDS = exports.XP_DIFFICULTY_MULTIPLIERS = exports.XP_BASE_MULTIPLIER = exports.XP_LEVEL_EXPONENT = void 0;
+exports.LEVEL_XP_THRESHOLDS = exports.RANK_TITLES = exports.XP_REWARDS = exports.XP_DECAY = exports.XP_DIFFICULTY_MULTIPLIERS = exports.XP_BASE_MULTIPLIER = exports.XP_LEVEL_EXPONENT = void 0;
 exports.calculateXpForLevel = calculateXpForLevel;
 exports.calculateLevelFromXp = calculateLevelFromXp;
 exports.getRankTitle = getRankTitle;
@@ -11,6 +11,11 @@ exports.XP_DIFFICULTY_MULTIPLIERS = {
     EASY: 1,
     MEDIUM: 2,
     HARD: 3,
+};
+exports.XP_DECAY = {
+    INACTIVE_DAYS_THRESHOLD: 7,
+    DAILY_DECAY_AMOUNT: 25,
+    MIN_XP: 0,
 };
 exports.XP_REWARDS = {
     LESSON_COMPLETE: 100,

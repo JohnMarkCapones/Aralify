@@ -2,12 +2,18 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { BookOpen, ChevronRight } from "lucide-react";
+import { BookOpen, ChevronRight, Clock, Star, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "../_components/page-header";
-import { mockEnrolledCourses } from "@/lib/data/dashboard";
+import { mockEnrolledCourses, mockDiscoverCourses } from "@/lib/data/dashboard";
 
 type Filter = "all" | "in_progress" | "completed";
+
+const difficultyColors = {
+  beginner: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+  intermediate: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+  advanced: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+};
 
 export default function CoursesPage() {
   const [filter, setFilter] = useState<Filter>("all");
@@ -112,6 +118,89 @@ export default function CoursesPage() {
           <p className="text-xs mt-1">Try changing the filter</p>
         </div>
       )}
+
+      {/* Discover Courses */}
+      <div className="pt-4 border-t border-border/30">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-base font-semibold">Discover Courses</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">Explore new skills and grow your knowledge</p>
+          </div>
+        </div>
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {mockDiscoverCourses.map((course) => (
+            <div
+              key={course.id}
+              className="bg-background rounded-xl border border-border/50 shadow-sm overflow-hidden hover:border-border transition-colors"
+            >
+              {/* Color banner */}
+              <div
+                className="h-20 relative"
+                style={{ background: `linear-gradient(135deg, ${course.color}30, ${course.color}10)` }}
+              >
+                <div
+                  className="absolute bottom-0 left-5 translate-y-1/2 w-12 h-12 rounded-xl border-2 border-background flex items-center justify-center text-xl shadow-sm"
+                  style={{ backgroundColor: course.color + "20" }}
+                >
+                  {course.icon}
+                </div>
+              </div>
+
+              <div className="p-5 pt-8">
+                {/* Title + difficulty */}
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <h3 className="text-sm font-semibold">{course.title}</h3>
+                  <span className={cn(
+                    "text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-full shrink-0",
+                    difficultyColors[course.difficulty]
+                  )}>
+                    {course.difficulty}
+                  </span>
+                </div>
+
+                <p className="text-xs text-muted-foreground mb-3 leading-relaxed">{course.description}</p>
+
+                {/* Tags */}
+                <div className="flex flex-wrap gap-1 mb-3">
+                  {course.tags.map((tag) => (
+                    <span key={tag} className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-muted/50 text-muted-foreground">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+
+                {/* Stats row */}
+                <div className="flex items-center gap-3 text-[11px] text-muted-foreground mb-4">
+                  <span className="flex items-center gap-1">
+                    <BookOpen size={11} />
+                    {course.lessonsCount} lessons
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Clock size={11} />
+                    {course.estimatedHours}h
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Star size={11} className="text-amber-500" />
+                    {course.rating}
+                  </span>
+                </div>
+
+                {/* Bottom: enrolled count + enroll button */}
+                <div className="flex items-center justify-between pt-3 border-t border-border/30">
+                  <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                    <Users size={11} />
+                    {course.enrolledCount.toLocaleString()} enrolled
+                  </span>
+                  <button className="px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary/90 transition-colors">
+                    Enroll
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

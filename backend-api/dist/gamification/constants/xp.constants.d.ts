@@ -5,6 +5,11 @@ export declare const XP_DIFFICULTY_MULTIPLIERS: {
     readonly MEDIUM: 2;
     readonly HARD: 3;
 };
+export declare const XP_DECAY: {
+    readonly INACTIVE_DAYS_THRESHOLD: 7;
+    readonly DAILY_DECAY_AMOUNT: 25;
+    readonly MIN_XP: 0;
+};
 export declare const XP_REWARDS: {
     readonly LESSON_COMPLETE: 100;
     readonly QUIZ_COMPLETE: 25;

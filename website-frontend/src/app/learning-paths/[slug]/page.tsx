@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { PageShell } from "@/components/layout/PageShell";
 import { NeoButton } from "@/components/ui/neo-button";
+import { InteractiveRoadmap } from "@/components/roadmap/InteractiveRoadmap";
 import {
   careerPathApi,
   type CareerPathDetail,
@@ -30,6 +31,15 @@ import {
   Loader2,
   Rocket,
   Lock,
+  Briefcase,
+  DollarSign,
+  GraduationCap,
+  ChevronDown,
+  FolderGit2,
+  MessageCircleQuestion,
+  Layers,
+  Compass,
+  BarChart,
 } from "lucide-react";
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -274,7 +284,7 @@ export default function LearningPathDetailPage() {
     );
   }
 
-  // ─── Static fallback view ──────────────────────────────────────────
+  // ─── Static fallback view (with Interactive Roadmap) ──────────────
 
   if (!staticPath) {
     return (
@@ -300,6 +310,15 @@ export default function LearningPathDetailPage() {
     (sum, c) => sum + c.lessons,
     0
   );
+  const totalTopics = staticPath.courses.reduce(
+    (sum, c) => sum + c.topics.length,
+    0
+  );
+  const totalProjects = staticPath.courses.filter((c) => c.project).length;
+
+  const relatedPathData = staticPath.relatedPaths
+    ? learningPaths.filter((p) => staticPath.relatedPaths?.includes(p.slug))
+    : [];
 
   return (
     <PageShell>
@@ -335,85 +354,120 @@ export default function LearningPathDetailPage() {
               >
                 {staticPath.description}
               </motion.p>
+
+              {/* Quick stats pills */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="flex flex-wrap items-center gap-2 mt-4"
+              >
+                <span className="text-xs font-bold bg-card neo-brutal-border px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                  <BookOpen size={12} /> {staticPath.courseCount} Courses
+                </span>
+                <span className="text-xs font-bold bg-card neo-brutal-border px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                  <Clock size={12} /> {staticPath.estimatedHours}h
+                </span>
+                <span className="text-xs font-bold bg-card neo-brutal-border px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                  <Zap size={12} /> {staticPath.difficulty}
+                </span>
+                <span className="text-xs font-bold bg-card neo-brutal-border px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                  <GraduationCap size={12} /> {totalLessons} Lessons
+                </span>
+                <span className="text-xs font-bold bg-card neo-brutal-border px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                  <FolderGit2 size={12} /> {totalProjects} Projects
+                </span>
+              </motion.div>
             </div>
           </div>
         </div>
       </section>
 
+      {/* Long description */}
+      {staticPath.longDescription && (
+        <section className="border-b-2 border-border">
+          <div className="container mx-auto px-4 py-8">
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="text-sm md:text-base text-muted-foreground leading-relaxed max-w-4xl"
+            >
+              {staticPath.longDescription}
+            </motion.p>
+          </div>
+        </section>
+      )}
+
       <div className="container mx-auto px-4 py-12">
         <div className="flex flex-col lg:flex-row gap-8">
-          <div className="flex-1">
-            <h2 className="text-2xl font-black uppercase tracking-tighter mb-8">
-              COURSE ROADMAP
-            </h2>
-            <div className="relative">
-              <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-border" />
+          {/* Main: Interactive Roadmap */}
+          <div className="flex-1 min-w-0">
+            <InteractiveRoadmap path={staticPath} />
 
-              <div className="space-y-6">
-                {staticPath.courses.map((course, i) => (
-                  <motion.div
-                    key={course.slug}
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.1 }}
-                    className="relative pl-16"
-                  >
-                    <div
-                      className={`absolute left-4 top-5 w-5 h-5 rounded-full neo-brutal-border z-10 ${
-                        i === 0 ? "bg-primary" : "bg-card"
-                      }`}
+            {/* FAQ Section */}
+            {staticPath.faqs && staticPath.faqs.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="mt-12"
+              >
+                <h2 className="text-2xl font-black uppercase tracking-tighter mb-6 flex items-center gap-2">
+                  <MessageCircleQuestion size={22} /> FREQUENTLY ASKED QUESTIONS
+                </h2>
+                <div className="space-y-3">
+                  {staticPath.faqs.map((faq) => (
+                    <FAQItem key={faq.question} question={faq.question} answer={faq.answer} colorHex={staticPath.colorHex} />
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Related Paths */}
+            {relatedPathData.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="mt-12"
+              >
+                <h2 className="text-2xl font-black uppercase tracking-tighter mb-6 flex items-center gap-2">
+                  <Compass size={22} /> RELATED PATHS
+                </h2>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {relatedPathData.map((rp) => (
+                    <Link
+                      key={rp.slug}
+                      href={`/learning-paths/${rp.slug}`}
+                      className="block bg-card neo-brutal-border neo-brutal-shadow rounded-2xl p-5 hover:-translate-y-1 transition-transform"
                     >
-                      {i === 0 && (
-                        <div className="absolute inset-1 rounded-full bg-white" />
-                      )}
-                    </div>
-
-                    <div className="bg-card neo-brutal-border neo-brutal-shadow rounded-2xl p-6 hover:neo-brutal-shadow-lg transition-shadow">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-xs font-black text-primary uppercase">
-                              Course {i + 1}
-                            </span>
-                          </div>
-                          <h3 className="text-xl font-black">{course.title}</h3>
-                          <div className="flex items-center gap-4 mt-2 text-xs font-bold text-muted-foreground">
-                            <span className="flex items-center gap-1">
-                              <BookOpen size={12} /> {course.lessons} lessons
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Clock size={12} /> {course.hours}h
-                            </span>
-                          </div>
+                      <div className="flex items-center gap-3 mb-2">
+                        <div
+                          className={`${rp.color} p-2 rounded-xl neo-brutal-border text-white`}
+                        >
+                          {iconMap[rp.icon] || <BookOpen size={20} />}
                         </div>
-                        <Link href={`/courses/${course.slug}`}>
-                          <NeoButton
-                            variant="outline"
-                            size="sm"
-                            className="shrink-0"
-                          >
-                            VIEW <ArrowRight size={12} className="ml-1" />
-                          </NeoButton>
-                        </Link>
-                      </div>
-
-                      {course.milestone && (
-                        <div className="mt-4 flex items-center gap-2 p-3 bg-primary/5 rounded-xl neo-brutal-border">
-                          <Star size={14} className="text-primary shrink-0" />
-                          <span className="text-xs font-black text-primary uppercase">
-                            Milestone: {course.milestone}
+                        <div>
+                          <h4 className="font-black text-sm">{rp.title}</h4>
+                          <span className="text-[10px] font-bold text-muted-foreground">
+                            {rp.courseCount} courses &middot; {rp.estimatedHours}h
                           </span>
                         </div>
-                      )}
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground line-clamp-2">
+                        {rp.description}
+                      </p>
+                    </Link>
+                  ))}
+                </div>
+              </motion.div>
+            )}
           </div>
 
+          {/* Sidebar */}
           <div className="lg:w-80 shrink-0 space-y-6">
+            {/* Path Stats */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -422,7 +476,7 @@ export default function LearningPathDetailPage() {
               <h3 className="font-black uppercase tracking-tight mb-4">
                 Path Stats
               </h3>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {[
                   {
                     label: "Courses",
@@ -432,9 +486,17 @@ export default function LearningPathDetailPage() {
                   {
                     label: "Total Lessons",
                     value: totalLessons.toString(),
-                    icon: (
-                      <CheckCircle size={16} className="text-green-500" />
-                    ),
+                    icon: <CheckCircle size={16} className="text-green-500" />,
+                  },
+                  {
+                    label: "Topics Covered",
+                    value: totalTopics.toString(),
+                    icon: <Star size={16} className="text-yellow-500" />,
+                  },
+                  {
+                    label: "Projects",
+                    value: totalProjects.toString(),
+                    icon: <FolderGit2 size={16} className="text-indigo-500" />,
                   },
                   {
                     label: "Estimated Time",
@@ -446,6 +508,27 @@ export default function LearningPathDetailPage() {
                     value: staticPath.difficulty,
                     icon: <Zap size={16} className="text-orange-500" />,
                   },
+                  ...(staticPath.industryDemand
+                    ? [{
+                        label: "Industry Demand",
+                        value: staticPath.industryDemand,
+                        icon: <TrendingUp size={16} className="text-rose-500" />,
+                      }]
+                    : []),
+                  ...(staticPath.communitySize
+                    ? [{
+                        label: "Community",
+                        value: staticPath.communitySize,
+                        icon: <Users size={16} className="text-sky-500" />,
+                      }]
+                    : []),
+                  ...(staticPath.completionRate
+                    ? [{
+                        label: "Completion Rate",
+                        value: staticPath.completionRate,
+                        icon: <BarChart size={16} className="text-emerald-500" />,
+                      }]
+                    : []),
                 ].map((stat) => (
                   <div
                     key={stat.label}
@@ -459,6 +542,58 @@ export default function LearningPathDetailPage() {
                 ))}
               </div>
 
+              {/* What You'll Achieve */}
+              {staticPath.outcomes.length > 0 && (
+                <div className="mt-6 pt-4 border-t-2 border-border">
+                  <h4 className="font-black uppercase text-xs tracking-wider mb-3">
+                    What You&apos;ll Achieve
+                  </h4>
+                  <ul className="space-y-2">
+                    {staticPath.outcomes.map((outcome) => (
+                      <li
+                        key={outcome}
+                        className="text-sm font-medium text-muted-foreground flex items-start gap-2"
+                      >
+                        <CheckCircle
+                          size={12}
+                          className="text-emerald-500 shrink-0 mt-0.5"
+                        />
+                        {outcome}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Career Roles */}
+              {staticPath.careerRoles.length > 0 && (
+                <div className="mt-6 pt-4 border-t-2 border-border">
+                  <h4 className="font-black uppercase text-xs tracking-wider mb-3 flex items-center gap-1.5">
+                    <Briefcase size={12} /> Career Roles
+                  </h4>
+                  <div className="flex flex-wrap gap-1.5">
+                    {staticPath.careerRoles.map((role) => (
+                      <span
+                        key={role}
+                        className="text-xs font-bold px-2.5 py-1 rounded-lg neo-brutal-border bg-muted/50"
+                      >
+                        {role}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="mt-3 flex items-center gap-2 text-sm">
+                    <DollarSign size={14} className="text-emerald-500" />
+                    <span className="font-bold text-muted-foreground">
+                      Avg. Salary:
+                    </span>
+                    <span className="font-black text-emerald-600 dark:text-emerald-400">
+                      {staticPath.averageSalary}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Prerequisites */}
               {staticPath.prerequisites.length > 0 && (
                 <div className="mt-6 pt-4 border-t-2 border-border">
                   <h4 className="font-black uppercase text-xs tracking-wider mb-2">
@@ -581,5 +716,58 @@ function SkillNode({ node, index }: { node: PathNodeDetail; index: number }) {
         </div>
       </div>
     </motion.div>
+  );
+}
+
+/* ─── FAQ Item Component (Static view) ─────────────────────────────── */
+
+function FAQItem({
+  question,
+  answer,
+  colorHex,
+}: {
+  question: string;
+  answer: string;
+  colorHex: string;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="bg-card neo-brutal-border rounded-xl overflow-hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between p-4 text-left hover:bg-muted/30 transition-colors"
+      >
+        <span className="font-bold text-sm pr-4">{question}</span>
+        <motion.div
+          animate={{ rotate: open ? 180 : 0 }}
+          transition={{ duration: 0.2 }}
+          className="shrink-0"
+        >
+          <ChevronDown size={16} style={{ color: colorHex }} />
+        </motion.div>
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pb-4 pt-0">
+              <div
+                className="w-8 h-0.5 rounded-full mb-2"
+                style={{ backgroundColor: colorHex }}
+              />
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {answer}
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }

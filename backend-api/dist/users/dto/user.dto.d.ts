@@ -67,3 +67,56 @@ export declare class PublicUserStatsDto {
     coursesCompleted?: number | null;
     achievementsEarned?: number | null;
 }
+export declare class UserCourseDto {
+    id: string;
+    slug: string;
+    title: string;
+    description?: string | null;
+    language: string;
+    iconUrl?: string | null;
+    color?: string | null;
+    completionPercentage: number;
+    totalXpEarned: number;
+    lastActivityAt?: string | null;
+    startedAt: string;
+    completedAt?: string | null;
+}
+export declare class XpDataPointDto {
+    date: string;
+    xp: number;
+}
+export declare class DifficultyBreakdownDto {
+    easy: number;
+    medium: number;
+    hard: number;
+}
+export declare class UserDetailedStatsDto {
+    xpOverTime: XpDataPointDto[];
+    difficultyBreakdown: DifficultyBreakdownDto;
+    averageTimePerDayMins: number;
+    totalXp: number;
+    lessonsCompleted: number;
+    currentStreak: number;
+}
+export declare class UserCertificateDto {
+    courseId: string;
+    courseSlug: string;
+    courseTitle: string;
+    completedAt: string;
+    totalXpEarned: number;
+}
+export declare class ChallengeHistoryItemDto {
+    id: string;
+    challengeId: string;
+    challengeTitle: string;
+    status: string;
+    attemptNumber: number;
+    xpAwarded: number;
+    createdAt: string;
+}
+export declare class UserActivityDto {
+    id: string;
+    type: string;
+    data?: any;
+    createdAt: string;
+}

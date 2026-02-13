@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PublicUserStatsDto = exports.UserStatsDto = exports.UserSettingsDto = exports.PrivacySettingsDto = exports.NotificationSettingsDto = exports.PublicUserProfileDto = exports.UserProfileDto = void 0;
+exports.UserActivityDto = exports.ChallengeHistoryItemDto = exports.UserCertificateDto = exports.UserDetailedStatsDto = exports.DifficultyBreakdownDto = exports.XpDataPointDto = exports.UserCourseDto = exports.PublicUserStatsDto = exports.UserStatsDto = exports.UserSettingsDto = exports.PrivacySettingsDto = exports.NotificationSettingsDto = exports.PublicUserProfileDto = exports.UserProfileDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 class UserProfileDto {
 }
@@ -252,4 +252,181 @@ __decorate([
     (0, swagger_1.ApiPropertyOptional)({ example: 5, description: 'Only visible if privacy allows' }),
     __metadata("design:type", Object)
 ], PublicUserStatsDto.prototype, "achievementsEarned", void 0);
+class UserCourseDto {
+}
+exports.UserCourseDto = UserCourseDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'clx1234567890' }),
+    __metadata("design:type", String)
+], UserCourseDto.prototype, "id", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'python-basics' }),
+    __metadata("design:type", String)
+], UserCourseDto.prototype, "slug", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'Python Basics' }),
+    __metadata("design:type", String)
+], UserCourseDto.prototype, "title", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ example: 'Learn the fundamentals of Python' }),
+    __metadata("design:type", Object)
+], UserCourseDto.prototype, "description", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'python' }),
+    __metadata("design:type", String)
+], UserCourseDto.prototype, "language", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ example: 'https://example.com/icon.png' }),
+    __metadata("design:type", Object)
+], UserCourseDto.prototype, "iconUrl", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ example: '#3B82F6' }),
+    __metadata("design:type", Object)
+], UserCourseDto.prototype, "color", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 65.5 }),
+    __metadata("design:type", Number)
+], UserCourseDto.prototype, "completionPercentage", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 1200 }),
+    __metadata("design:type", Number)
+], UserCourseDto.prototype, "totalXpEarned", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ example: '2024-01-15T00:00:00.000Z' }),
+    __metadata("design:type", Object)
+], UserCourseDto.prototype, "lastActivityAt", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: '2024-01-01T00:00:00.000Z' }),
+    __metadata("design:type", String)
+], UserCourseDto.prototype, "startedAt", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ example: '2024-02-01T00:00:00.000Z' }),
+    __metadata("design:type", Object)
+], UserCourseDto.prototype, "completedAt", void 0);
+class XpDataPointDto {
+}
+exports.XpDataPointDto = XpDataPointDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: '2024-01-15' }),
+    __metadata("design:type", String)
+], XpDataPointDto.prototype, "date", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 150 }),
+    __metadata("design:type", Number)
+], XpDataPointDto.prototype, "xp", void 0);
+class DifficultyBreakdownDto {
+}
+exports.DifficultyBreakdownDto = DifficultyBreakdownDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 10 }),
+    __metadata("design:type", Number)
+], DifficultyBreakdownDto.prototype, "easy", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 8 }),
+    __metadata("design:type", Number)
+], DifficultyBreakdownDto.prototype, "medium", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 3 }),
+    __metadata("design:type", Number)
+], DifficultyBreakdownDto.prototype, "hard", void 0);
+class UserDetailedStatsDto {
+}
+exports.UserDetailedStatsDto = UserDetailedStatsDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({ type: [XpDataPointDto] }),
+    __metadata("design:type", Array)
+], UserDetailedStatsDto.prototype, "xpOverTime", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ type: DifficultyBreakdownDto }),
+    __metadata("design:type", DifficultyBreakdownDto)
+], UserDetailedStatsDto.prototype, "difficultyBreakdown", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 45 }),
+    __metadata("design:type", Number)
+], UserDetailedStatsDto.prototype, "averageTimePerDayMins", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 2500 }),
+    __metadata("design:type", Number)
+], UserDetailedStatsDto.prototype, "totalXp", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 25 }),
+    __metadata("design:type", Number)
+], UserDetailedStatsDto.prototype, "lessonsCompleted", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 7 }),
+    __metadata("design:type", Number)
+], UserDetailedStatsDto.prototype, "currentStreak", void 0);
+class UserCertificateDto {
+}
+exports.UserCertificateDto = UserCertificateDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'clx1234567890' }),
+    __metadata("design:type", String)
+], UserCertificateDto.prototype, "courseId", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'python-basics' }),
+    __metadata("design:type", String)
+], UserCertificateDto.prototype, "courseSlug", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'Python Basics' }),
+    __metadata("design:type", String)
+], UserCertificateDto.prototype, "courseTitle", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: '2024-02-01T00:00:00.000Z' }),
+    __metadata("design:type", String)
+], UserCertificateDto.prototype, "completedAt", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 3500 }),
+    __metadata("design:type", Number)
+], UserCertificateDto.prototype, "totalXpEarned", void 0);
+class ChallengeHistoryItemDto {
+}
+exports.ChallengeHistoryItemDto = ChallengeHistoryItemDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'clx1234567890' }),
+    __metadata("design:type", String)
+], ChallengeHistoryItemDto.prototype, "id", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'clxchallenge123' }),
+    __metadata("design:type", String)
+], ChallengeHistoryItemDto.prototype, "challengeId", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'Two Sum' }),
+    __metadata("design:type", String)
+], ChallengeHistoryItemDto.prototype, "challengeTitle", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'PASSED', enum: ['SUBMITTED', 'PASSED', 'FAILED'] }),
+    __metadata("design:type", String)
+], ChallengeHistoryItemDto.prototype, "status", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 1 }),
+    __metadata("design:type", Number)
+], ChallengeHistoryItemDto.prototype, "attemptNumber", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 100 }),
+    __metadata("design:type", Number)
+], ChallengeHistoryItemDto.prototype, "xpAwarded", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: '2024-01-15T00:00:00.000Z' }),
+    __metadata("design:type", String)
+], ChallengeHistoryItemDto.prototype, "createdAt", void 0);
+class UserActivityDto {
+}
+exports.UserActivityDto = UserActivityDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'clx1234567890' }),
+    __metadata("design:type", String)
+], UserActivityDto.prototype, "id", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'LESSON_COMPLETED' }),
+    __metadata("design:type", String)
+], UserActivityDto.prototype, "type", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    __metadata("design:type", Object)
+], UserActivityDto.prototype, "data", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: '2024-01-15T00:00:00.000Z' }),
+    __metadata("design:type", String)
+], UserActivityDto.prototype, "createdAt", void 0);
 //# sourceMappingURL=user.dto.js.map

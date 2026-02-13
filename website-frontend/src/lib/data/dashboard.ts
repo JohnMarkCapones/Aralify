@@ -209,6 +209,18 @@ export interface ChartDataPoint {
   [key: string]: string | number;
 }
 
+export interface QuestMission {
+  id: string;
+  title: string;
+  description: string;
+  type: "daily" | "weekly";
+  xpReward: number;
+  progress: number;
+  maxProgress: number;
+  icon: string;
+  completed: boolean;
+}
+
 // ─── Mock Data ──────────────────────────────────────────────────────────────
 
 export const mockUserProfile: DashboardUserProfile = {
@@ -630,6 +642,15 @@ export const mockActivities: ActivityItem[] = [
   { id: "act_020", type: "challenge", title: "Solved Matrix Rotation", description: "Daily Challenge — Hard difficulty", xp: 450, timestamp: "2026-02-02T20:10:00Z", icon: "⚔️" },
 ];
 
+export const mockQuests: QuestMission[] = [
+  { id: "qst_001", title: "Complete 3 Lessons", description: "Finish any 3 lessons today", type: "daily", xpReward: 150, progress: 2, maxProgress: 3, icon: "📖", completed: false },
+  { id: "qst_002", title: "Earn 500 XP", description: "Earn a total of 500 XP today", type: "daily", xpReward: 100, progress: 350, maxProgress: 500, icon: "⚡", completed: false },
+  { id: "qst_003", title: "Solve a Challenge", description: "Complete any coding challenge", type: "daily", xpReward: 75, progress: 1, maxProgress: 1, icon: "⚔️", completed: true },
+  { id: "qst_004", title: "7-Day Streak", description: "Maintain a 7-day learning streak", type: "weekly", xpReward: 500, progress: 7, maxProgress: 7, icon: "🔥", completed: true },
+  { id: "qst_005", title: "Finish a Course Level", description: "Complete all lessons in any level", type: "weekly", xpReward: 300, progress: 4, maxProgress: 8, icon: "🏆", completed: false },
+  { id: "qst_006", title: "Help 3 Learners", description: "Answer questions in the community", type: "weekly", xpReward: 200, progress: 1, maxProgress: 3, icon: "🤝", completed: false },
+];
+
 export const mockCertificates: Certificate[] = [
   {
     id: "cert_001",
@@ -755,10 +776,33 @@ export const mockTimeSpent: ChartDataPoint[] = [
 
 // ─── Recommended Courses (not enrolled) ─────────────────────────────────────
 
+export interface DiscoverCourse {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  color: string;
+  difficulty: "beginner" | "intermediate" | "advanced";
+  lessonsCount: number;
+  enrolledCount: number;
+  rating: number;
+  estimatedHours: number;
+  tags: string[];
+}
+
 export const mockRecommendedCourses = [
   { id: "rec_001", title: "React & Next.js", icon: "⚛️", color: "#06b6d4", difficulty: "intermediate", lessonsCount: 35, enrolledCount: 845 },
   { id: "rec_002", title: "SQL & Databases", icon: "🗄️", color: "#8b5cf6", difficulty: "beginner", lessonsCount: 20, enrolledCount: 1_120 },
   { id: "rec_003", title: "TypeScript Mastery", icon: "🔷", color: "#3b82f6", difficulty: "intermediate", lessonsCount: 28, enrolledCount: 672 },
+];
+
+export const mockDiscoverCourses: DiscoverCourse[] = [
+  { id: "disc_001", title: "React & Next.js", description: "Build modern web apps with React and the Next.js framework", icon: "⚛️", color: "#06b6d4", difficulty: "intermediate", lessonsCount: 35, enrolledCount: 845, rating: 4.8, estimatedHours: 18, tags: ["Frontend", "React"] },
+  { id: "disc_002", title: "SQL & Databases", description: "Master relational databases, queries, and data modeling", icon: "🗄️", color: "#8b5cf6", difficulty: "beginner", lessonsCount: 20, enrolledCount: 1_120, rating: 4.7, estimatedHours: 10, tags: ["Backend", "Database"] },
+  { id: "disc_003", title: "TypeScript Mastery", description: "Level up your JavaScript with static typing and advanced patterns", icon: "🔷", color: "#3b82f6", difficulty: "intermediate", lessonsCount: 28, enrolledCount: 672, rating: 4.9, estimatedHours: 14, tags: ["Frontend", "TypeScript"] },
+  { id: "disc_004", title: "Intro to Machine Learning", description: "Learn the fundamentals of ML, from regression to neural networks", icon: "🧠", color: "#ec4899", difficulty: "advanced", lessonsCount: 32, enrolledCount: 410, rating: 4.6, estimatedHours: 22, tags: ["Data Science", "AI"] },
+  { id: "disc_005", title: "Git & GitHub", description: "Version control essentials every developer needs to know", icon: "🌿", color: "#22c55e", difficulty: "beginner", lessonsCount: 12, enrolledCount: 2_340, rating: 4.9, estimatedHours: 5, tags: ["Tools", "DevOps"] },
+  { id: "disc_006", title: "Node.js Backend", description: "Build scalable server-side applications with Node.js and Express", icon: "🟢", color: "#16a34a", difficulty: "intermediate", lessonsCount: 30, enrolledCount: 780, rating: 4.7, estimatedHours: 16, tags: ["Backend", "Node.js"] },
 ];
 
 // ─── Streak Data ────────────────────────────────────────────────────────────
@@ -772,6 +816,27 @@ export const mockWeekStreak = [
   { day: "Sat", completed: true },
   { day: "Sun", completed: false },
 ];
+
+// 28-day streak calendar with XP intensity levels
+export const mockStreakCalendar: { date: string; xp: number }[] = (() => {
+  const days: { date: string; xp: number }[] = [];
+  const today = new Date();
+  const xpValues = [
+    420, 310, 0, 180, 500, 250, 90,
+    0, 380, 460, 220, 150, 0, 340,
+    280, 510, 390, 0, 200, 470, 120,
+    350, 440, 300, 180, 260, 480, 0,
+  ];
+  for (let i = 27; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    days.push({
+      date: d.toISOString().slice(0, 10),
+      xp: xpValues[27 - i],
+    });
+  }
+  return days;
+})();
 
 // ─── Title System ────────────────────────────────────────────────────────────
 

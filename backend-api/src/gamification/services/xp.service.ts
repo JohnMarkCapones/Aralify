@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { XpSource } from '@prisma/client';
 import { GamificationRepository } from '../gamification.repository';
 import {
@@ -31,7 +32,10 @@ export interface XpHistoryOptions {
 export class XpService {
   private readonly logger = new Logger(XpService.name);
 
-  constructor(private readonly repository: GamificationRepository) {}
+  constructor(
+    private readonly repository: GamificationRepository,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
   /**
    * Award XP to a user with automatic level calculation
@@ -80,6 +84,14 @@ export class XpService {
         },
       });
     }
+
+    // Emit event for league weekly XP tracking
+    this.eventEmitter.emit('xp.awarded', {
+      userId,
+      amount,
+      source,
+      newTotal: updatedUser.xpTotal,
+    });
 
     return {
       xpAwarded: amount,

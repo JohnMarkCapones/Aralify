@@ -7,6 +7,7 @@ import {
   StreaksService,
   AchievementsService,
   BadgesService,
+  XpDecayService,
 } from './services';
 import { PrismaModule } from '../prisma/prisma.module';
 
@@ -19,6 +20,7 @@ import { PrismaModule } from '../prisma/prisma.module';
     StreaksService,
     AchievementsService,
     BadgesService,
+    XpDecayService,
     GamificationService,
   ],
   exports: [
@@ -27,6 +29,7 @@ import { PrismaModule } from '../prisma/prisma.module';
     StreaksService,
     AchievementsService,
     BadgesService,
+    XpDecayService,
   ],
 })
 export class GamificationModule {}

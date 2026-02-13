@@ -1,3 +1,4 @@
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { XpSource } from '@prisma/client';
 import { GamificationRepository } from '../gamification.repository';
 export interface AwardXpResult {
@@ -17,8 +18,9 @@ export interface XpHistoryOptions {
 }
 export declare class XpService {
     private readonly repository;
+    private readonly eventEmitter;
     private readonly logger;
-    constructor(repository: GamificationRepository);
+    constructor(repository: GamificationRepository, eventEmitter: EventEmitter2);
     awardXp(userId: string, amount: number, source: XpSource, sourceId?: string, description?: string): Promise<AwardXpResult>;
     getXpHistory(userId: string, options?: XpHistoryOptions): Promise<{
         transactions: {

@@ -205,6 +205,112 @@ let UsersRepository = class UsersRepository {
         });
         return !!follow;
     }
+    async getUserCourses(userId) {
+        return this.prisma.userCourseProgress.findMany({
+            where: { userId },
+            orderBy: { lastActivityAt: 'desc' },
+            include: {
+                course: {
+                    select: {
+                        id: true,
+                        slug: true,
+                        title: true,
+                        description: true,
+                        language: true,
+                        iconUrl: true,
+                        color: true,
+                    },
+                },
+            },
+        });
+    }
+    async getXpOverTime(userId, since) {
+        return this.prisma.xpTransaction.findMany({
+            where: {
+                userId,
+                createdAt: { gte: since },
+            },
+            select: {
+                amount: true,
+                createdAt: true,
+            },
+            orderBy: { createdAt: 'asc' },
+        });
+    }
+    async getDifficultyBreakdown(userId) {
+        const [easy, medium, hard] = await Promise.all([
+            this.prisma.userLessonProgress.count({
+                where: { userId, status: client_1.ProgressStatus.COMPLETED, lesson: { difficulty: 'EASY' } },
+            }),
+            this.prisma.userLessonProgress.count({
+                where: { userId, status: client_1.ProgressStatus.COMPLETED, lesson: { difficulty: 'MEDIUM' } },
+            }),
+            this.prisma.userLessonProgress.count({
+                where: { userId, status: client_1.ProgressStatus.COMPLETED, lesson: { difficulty: 'HARD' } },
+            }),
+        ]);
+        return { easy, medium, hard };
+    }
+    async getTimeSpentInRange(userId, since) {
+        const result = await this.prisma.userCourseProgress.aggregate({
+            where: { userId, lastActivityAt: { gte: since } },
+            _sum: { timeSpentSeconds: true },
+        });
+        return result._sum.timeSpentSeconds || 0;
+    }
+    async getCompletedCourses(userId) {
+        return this.prisma.userCourseProgress.findMany({
+            where: { userId, completedAt: { not: null } },
+            orderBy: { completedAt: 'desc' },
+            include: {
+                course: {
+                    select: {
+                        id: true,
+                        slug: true,
+                        title: true,
+                    },
+                },
+            },
+        });
+    }
+    async getChallengeHistory(userId, page, limit) {
+        const skip = (page - 1) * limit;
+        const [data, total] = await Promise.all([
+            this.prisma.challengeSubmission.findMany({
+                where: { userId },
+                skip,
+                take: limit,
+                orderBy: { createdAt: 'desc' },
+                include: {
+                    challenge: {
+                        select: {
+                            id: true,
+                            title: true,
+                        },
+                    },
+                },
+            }),
+            this.prisma.challengeSubmission.count({ where: { userId } }),
+        ]);
+        return { data, total };
+    }
+    async getUserActivities(userId, options) {
+        const skip = (options.page - 1) * options.limit;
+        const where = { userId };
+        if (options.type) {
+            where.type = options.type;
+        }
+        const [data, total] = await Promise.all([
+            this.prisma.activity.findMany({
+                where,
+                skip,
+                take: options.limit,
+                orderBy: { createdAt: 'desc' },
+            }),
+            this.prisma.activity.count({ where }),
+        ]);
+        return { data, total };
+    }
 };
 exports.UsersRepository = UsersRepository;
 exports.UsersRepository = UsersRepository = __decorate([

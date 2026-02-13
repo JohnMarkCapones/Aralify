@@ -8,6 +8,7 @@ import {
   RecentSignupsResponseDto,
   SystemHealthDto,
   RecentSignupDto,
+  AdminAnalyticsDto,
 } from '../dto';
 
 @Injectable()
@@ -237,6 +238,91 @@ export class AdminDashboardService {
       },
     });
     return Math.round((result._avg.streakCurrent || 0) * 10) / 10;
+  }
+
+  async getAnalytics(range: string): Promise<AdminAnalyticsDto> {
+    const days = range === '90d' ? 90 : range === '30d' ? 30 : 7;
+    const since = new Date();
+    since.setDate(since.getDate() - days);
+
+    const [dauTrend, signupsTrend, completionRate, xpDistribution] = await Promise.all([
+      this.getDauTrend(since, days),
+      this.getSignupsTrend(since, days),
+      this.getAverageCompletionRate(),
+      this.getXpDistribution(),
+    ]);
+
+    return { dauTrend, signupsTrend, completionRate, xpDistribution, range };
+  }
+
+  private async getDauTrend(since: Date, days: number) {
+    const result: { date: string; value: number }[] = [];
+    for (let i = 0; i < days; i++) {
+      const dayStart = new Date(since);
+      dayStart.setDate(dayStart.getDate() + i);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(dayStart);
+      dayEnd.setDate(dayEnd.getDate() + 1);
+
+      const count = await this.prisma.user.count({
+        where: {
+          lastActiveAt: { gte: dayStart, lt: dayEnd },
+        },
+      });
+
+      result.push({
+        date: dayStart.toISOString().split('T')[0],
+        value: count,
+      });
+    }
+    return result;
+  }
+
+  private async getSignupsTrend(since: Date, days: number) {
+    const result: { date: string; value: number }[] = [];
+    for (let i = 0; i < days; i++) {
+      const dayStart = new Date(since);
+      dayStart.setDate(dayStart.getDate() + i);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(dayStart);
+      dayEnd.setDate(dayEnd.getDate() + 1);
+
+      const count = await this.prisma.user.count({
+        where: {
+          createdAt: { gte: dayStart, lt: dayEnd },
+        },
+      });
+
+      result.push({
+        date: dayStart.toISOString().split('T')[0],
+        value: count,
+      });
+    }
+    return result;
+  }
+
+  private async getXpDistribution() {
+    const buckets = [
+      { range: '0-500', min: 0, max: 500 },
+      { range: '501-1000', min: 501, max: 1000 },
+      { range: '1001-2500', min: 1001, max: 2500 },
+      { range: '2501-5000', min: 2501, max: 5000 },
+      { range: '5001-10000', min: 5001, max: 10000 },
+      { range: '10001+', min: 10001, max: 999999999 },
+    ];
+
+    const result = await Promise.all(
+      buckets.map(async (bucket) => ({
+        range: bucket.range,
+        count: await this.prisma.user.count({
+          where: {
+            xpTotal: { gte: bucket.min, lte: bucket.max },
+          },
+        }),
+      })),
+    );
+
+    return result;
   }
 
   private async getDailyActiveUsersAverage(): Promise<number> {

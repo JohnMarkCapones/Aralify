@@ -1,9 +1,10 @@
-import { Controller, Get, Put, Param, Body } from '@nestjs/common';
+import { Controller, Get, Put, Param, Body, Query } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
   ApiParam,
+  ApiQuery,
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { User } from '@prisma/client';
@@ -19,6 +20,11 @@ import {
   UpdateSettingsDto,
   CompleteOnboardingDto,
   OnboardingStatusDto,
+  UserCourseDto,
+  UserDetailedStatsDto,
+  UserCertificateDto,
+  ChallengeHistoryItemDto,
+  UserActivityDto,
 } from './dto';
 
 @ApiTags('Users')
@@ -99,6 +105,68 @@ export class UsersController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getStats(@CurrentUser() user: User): Promise<UserStatsDto> {
     return this.usersService.getStats(user.id);
+  }
+
+  @Get('user/courses')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get enrolled courses with progress' })
+  @ApiResponse({ status: 200, description: 'Returns enrolled courses', type: [UserCourseDto] })
+  async getUserCourses(@CurrentUser() user: User): Promise<UserCourseDto[]> {
+    return this.usersService.getUserCourses(user.id);
+  }
+
+  @Get('user/stats/detailed')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get detailed stats (XP over time, difficulty breakdown)' })
+  @ApiQuery({ name: 'range', required: false, enum: ['7d', '30d'], example: '7d' })
+  @ApiResponse({ status: 200, description: 'Returns detailed statistics', type: UserDetailedStatsDto })
+  async getDetailedStats(
+    @CurrentUser() user: User,
+    @Query('range') range?: string,
+  ): Promise<UserDetailedStatsDto> {
+    return this.usersService.getDetailedStats(user.id, range || '7d');
+  }
+
+  @Get('user/certificates')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get certificates for completed courses' })
+  @ApiResponse({ status: 200, description: 'Returns certificates', type: [UserCertificateDto] })
+  async getCertificates(@CurrentUser() user: User): Promise<UserCertificateDto[]> {
+    return this.usersService.getCertificates(user.id);
+  }
+
+  @Get('user/challenge-history')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get past challenge submissions' })
+  @ApiQuery({ name: 'page', required: false, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, example: 20 })
+  @ApiResponse({ status: 200, description: 'Returns challenge history' })
+  async getChallengeHistory(
+    @CurrentUser() user: User,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ): Promise<{ data: ChallengeHistoryItemDto[]; total: number }> {
+    return this.usersService.getChallengeHistory(user.id, Number(page) || 1, Number(limit) || 20);
+  }
+
+  @Get('user/activities')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get own activity history' })
+  @ApiQuery({ name: 'type', required: false, description: 'Filter by activity type' })
+  @ApiQuery({ name: 'page', required: false, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, example: 20 })
+  @ApiResponse({ status: 200, description: 'Returns activities' })
+  async getUserActivities(
+    @CurrentUser() user: User,
+    @Query('type') type?: string,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ): Promise<{ data: UserActivityDto[]; total: number }> {
+    return this.usersService.getUserActivities(user.id, {
+      type,
+      page: Number(page) || 1,
+      limit: Number(limit) || 20,
+    });
   }
 
   // ============================================================================

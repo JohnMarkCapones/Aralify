@@ -19,4 +19,5 @@ __exportStar(require("./xp.service"), exports);
 __exportStar(require("./streaks.service"), exports);
 __exportStar(require("./achievements.service"), exports);
 __exportStar(require("./badges.service"), exports);
+__exportStar(require("./xp-decay.service"), exports);
 //# sourceMappingURL=index.js.map
