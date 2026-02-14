@@ -107,18 +107,23 @@ export const coursesApi = {
 
 export const lessonsApi = {
   findById: (id: string) => api.get<LessonDetail>(`/api/v1/lessons/${id}`),
-  start: (id: string, data: { difficulty: string }) =>
-    api.post<StartLessonResponse>(`/api/v1/lessons/${id}/start`, data),
-  complete: (id: string, data: { difficulty: string; score?: number }) =>
+  findBySlug: (slug: string, difficulty?: string) => {
+    const qs = difficulty ? `?difficulty=${difficulty}` : "";
+    return api.get<LessonDetail>(`/api/v1/lessons/by-slug/${slug}${qs}`);
+  },
+  start: (id: string) =>
+    api.post<StartLessonResponse>(`/api/v1/lessons/${id}/start`),
+  complete: (id: string, data: { score?: number; timeSpentSeconds?: number }) =>
     api.post<CompleteLessonResponse>(`/api/v1/lessons/${id}/complete`, data),
   submitQuiz: (lessonId: string, data: { answers: Record<string, string> }) =>
     api.post<QuizSubmitResponse>(`/api/v1/lessons/${lessonId}/quiz/submit`, data),
   submitChallenge: (
     lessonId: string,
-    data: { code: string; language: string; difficulty: string }
+    challengeId: string,
+    data: { code: string; languageId: number; timeSpentSeconds?: number }
   ) =>
     api.post<ChallengeSubmitResponse>(
-      `/api/v1/lessons/${lessonId}/challenge/submit`,
+      `/api/v1/lessons/${lessonId}/challenges/${challengeId}/submit`,
       data
     ),
 };
@@ -384,27 +389,65 @@ export interface CourseLevel {
 // Lesson types
 export interface LessonDetail {
   id: string;
-  title: string;
   slug: string;
-  description: string;
-  content: string;
-  instructions: string[];
-  hints: string[];
-  type: string;
-  estimatedMinutes: number;
+  title: string;
+  content: {
+    theoryCards: {
+      id: string;
+      title: string;
+      content: string;
+      codeExample?: string;
+      tip?: string;
+    }[];
+    quizQuestions: {
+      type: string;
+      id: string;
+      question: string;
+      options?: string[];
+      correctIndex?: number;
+      correctAnswer?: string | boolean;
+      codeTemplate?: string;
+      lines?: string[];
+      correctOrder?: number[];
+      explanation: string;
+      hint?: string;
+    }[];
+  };
+  difficulty: string;
+  xpReward: number;
+  estimatedTimeMinutes: number | null;
   orderIndex: number;
   courseSlug: string;
   courseTitle: string;
-  moduleTitle: string;
   language: string;
-  starterCode?: string;
-  testCases?: {
-    input: string;
-    expected: string;
-    description?: string;
+  level: { id: string; slug: string; title: string };
+  quizzes: {
+    id: string;
+    type: string;
+    question: string;
+    options?: unknown;
+    explanation?: string | null;
+    orderIndex: number;
   }[];
-  previousLesson?: { slug: string; title: string };
-  nextLesson?: { slug: string; title: string };
+  challenges: {
+    id: string;
+    title: string;
+    description: string;
+    starterCode?: string | null;
+    languageId: number;
+  }[];
+  testCases: { input: string; expectedOutput: string; description?: string }[];
+  hints: string[];
+  tiers: { difficulty: string; xpMultiplier: number; starterCode: string; description: string }[];
+  previousLesson: { id: string; slug: string; title: string } | null;
+  nextLesson: { id: string; slug: string; title: string } | null;
+  userProgress: {
+    status: string;
+    score?: number | null;
+    xpEarned: number;
+    timeSpentSeconds?: number | null;
+    completedAt?: string | null;
+  } | null;
 }
 
 export interface StartLessonResponse {

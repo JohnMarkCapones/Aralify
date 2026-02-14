@@ -108,12 +108,12 @@ export class LessonDetailDto {
   @ApiProperty({ example: 'variables-intro' })
   slug!: string;
 
-  @ApiProperty({ type: I18nTextDto })
-  title!: I18nTextDto;
+  @ApiProperty({ example: 'Variables & Data Types - EASY' })
+  title!: string;
 
   @ApiPropertyOptional({
-    description: 'Lesson content (text, code examples)',
-    example: { sections: [{ type: 'text', content: 'Welcome to...' }] },
+    description: 'Lesson content with theoryCards and quizQuestions',
+    example: { theoryCards: [], quizQuestions: [] },
   })
   content?: any;
 
@@ -123,18 +123,29 @@ export class LessonDetailDto {
   @ApiProperty({ example: 100 })
   xpReward!: number;
 
+  @ApiPropertyOptional({ example: 15 })
+  estimatedTimeMinutes?: number | null;
+
   @ApiProperty({ example: 0 })
   orderIndex!: number;
 
+  @ApiProperty({ example: 'python-fundamentals' })
+  courseSlug!: string;
+
+  @ApiProperty({ example: 'Python Fundamentals' })
+  courseTitle!: string;
+
+  @ApiProperty({ example: 'python' })
+  language!: string;
+
   @ApiProperty({
     description: 'Level information',
-    example: { id: 'clx123', slug: 'variables', title: { en: 'Variables' } },
+    example: { id: 'clx123', slug: 'variables', title: 'Variables & Data Types' },
   })
   level!: {
     id: string;
     slug: string;
-    title: I18nTextDto;
-    courseId: string;
+    title: string;
   };
 
   @ApiPropertyOptional({ type: [QuizSummaryDto] })
@@ -142,6 +153,21 @@ export class LessonDetailDto {
 
   @ApiPropertyOptional({ type: [ChallengeSummaryDto] })
   challenges?: ChallengeSummaryDto[];
+
+  @ApiPropertyOptional({ description: 'Test cases from first challenge' })
+  testCases?: any[];
+
+  @ApiPropertyOptional({ description: 'Hints from first challenge' })
+  hints?: string[];
+
+  @ApiPropertyOptional({ description: 'Difficulty tiers with starter code' })
+  tiers?: any[];
+
+  @ApiPropertyOptional({ description: 'Previous lesson in sequence' })
+  previousLesson?: { id: string; slug: string; title: string } | null;
+
+  @ApiPropertyOptional({ description: 'Next lesson in sequence' })
+  nextLesson?: { id: string; slug: string; title: string } | null;
 
   @ApiPropertyOptional({ type: UserLessonProgressDto })
   userProgress?: UserLessonProgressDto | null;

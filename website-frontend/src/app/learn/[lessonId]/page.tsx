@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { Suspense } from "react";
 import { LessonProgressBar } from "../_components/lesson-progress-bar";
@@ -12,24 +12,53 @@ import { CodeStep } from "../_components/step-code/code-step";
 import { CompletionScreen } from "../_components/step-complete/completion-screen";
 import {
   mockLessonFlowData,
+  type LessonFlowData,
   type LessonStep,
   type LessonCompletionStats,
 } from "@/lib/data/lesson-flow";
+import { lessonsApi } from "@/lib/api";
+import { mapLessonDetailToFlowData } from "@/lib/mappers/lesson-flow-mapper";
 
 function LessonPageContent() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
   const lessonId = params.lessonId as string;
-  const courseId = searchParams.get("courseId") || "crs_001";
+  const courseId = searchParams.get("courseId") || "";
 
-  const lesson = mockLessonFlowData[lessonId];
-
+  const [lesson, setLesson] = useState<LessonFlowData | null>(null);
+  const [loading, setLoading] = useState(true);
   const [currentStep, setCurrentStep] = useState<LessonStep>("intro");
   const [quizScore, setQuizScore] = useState(0);
   const [quizStats, setQuizStats] = useState<QuizStats | null>(null);
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("easy");
   const [codeTestsPassed, setCodeTestsPassed] = useState(0);
+
+  // Fetch lesson from API, fall back to mock data
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchLesson() {
+      setLoading(true);
+      try {
+        const data = await lessonsApi.findById(lessonId);
+        if (!cancelled) {
+          setLesson(mapLessonDetailToFlowData(data));
+        }
+      } catch {
+        // Fallback to mock data for development
+        if (!cancelled) {
+          const mockLesson = mockLessonFlowData[lessonId];
+          setLesson(mockLesson || null);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    fetchLesson();
+    return () => { cancelled = true; };
+  }, [lessonId]);
 
   const handleIntroComplete = useCallback(() => {
     setCurrentStep("learn");
@@ -58,15 +87,23 @@ function LessonPageContent() {
     []
   );
 
-  // Exit quiz → go back to courses page
+  // Exit quiz -> go back to courses page
   const handleQuizExit = useCallback(() => {
     router.push(`/dashboard/courses`);
   }, [router]);
 
-  // Review theory from game-over → go back to learn step
+  // Review theory from game-over -> go back to learn step
   const handleReviewTheory = useCallback(() => {
     setCurrentStep("learn");
   }, []);
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Loading lesson...</div>
+      </div>
+    );
+  }
 
   if (!lesson) {
     return (
@@ -151,7 +188,7 @@ function LessonPageContent() {
           <CompletionScreen
             stats={completionStats}
             lessonTitle={lesson.title}
-            courseId={courseId}
+            courseId={courseId || lesson.courseId}
             nextLessonId={lesson.nextLessonId}
             lessonOrder={lesson.order}
           />

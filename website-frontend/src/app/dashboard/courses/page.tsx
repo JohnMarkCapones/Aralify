@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { BookOpen, ChevronRight, Clock, Star, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "../_components/page-header";
 import { mockEnrolledCourses, mockDiscoverCourses } from "@/lib/data/dashboard";
+import { coursesApi, usersApi, type CourseListItem, type UserCourseEntry } from "@/lib/api";
 
 type Filter = "all" | "in_progress" | "completed";
 
@@ -15,18 +16,88 @@ const difficultyColors = {
   advanced: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
 };
 
+// Map API course to the shape the UI expects for enrolled courses
+function mapUserCourse(c: UserCourseEntry) {
+  return {
+    id: c.courseId,
+    title: c.title,
+    slug: c.slug,
+    description: c.description,
+    icon: c.icon || "📚",
+    color: c.color || "#3776AB",
+    progress: c.progress,
+    totalLessons: c.totalLessons,
+    completedLessons: c.completedLessons,
+    currentLesson: c.currentLesson || "Continue learning",
+    xpEarned: c.xpEarned,
+    lastStudied: c.lastStudied || new Date().toISOString(),
+    status: c.status,
+    difficulty: (c.difficulty || "beginner") as "beginner" | "intermediate" | "advanced",
+  };
+}
+
+// Map API course to discover course shape
+function mapDiscoverCourse(c: any) {
+  return {
+    id: c.id,
+    title: typeof c.title === "object" ? c.title.en || c.title.fil || "" : c.title,
+    description: typeof c.description === "object" ? c.description.en || c.description.fil || "" : c.description || "",
+    icon: c.iconUrl ? "📚" : "📚",
+    color: c.color || "#3776AB",
+    slug: c.slug,
+    language: c.language,
+    difficulty: "beginner" as const,
+    tags: [c.language],
+    lessonsCount: c.totalLessons || c.totalLevels * 3 || 12,
+    estimatedHours: c.estimatedHours || 20,
+    rating: 4.8,
+    enrolledCount: 0,
+  };
+}
+
 export default function CoursesPage() {
   const [filter, setFilter] = useState<Filter>("all");
+  const [enrolledCourses, setEnrolledCourses] = useState(mockEnrolledCourses);
+  const [discoverCourses, setDiscoverCourses] = useState(mockDiscoverCourses);
+  const [apiLoaded, setApiLoaded] = useState(false);
+
+  // Try to load from API, fallback to mock data
+  useEffect(() => {
+    async function loadCourses() {
+      try {
+        const [userCourses, allCourses] = await Promise.allSettled([
+          usersApi.getCourses(),
+          coursesApi.findAll(),
+        ]);
+
+        if (userCourses.status === "fulfilled" && userCourses.value.length > 0) {
+          setEnrolledCourses(userCourses.value.map(mapUserCourse));
+        }
+
+        if (allCourses.status === "fulfilled") {
+          const courses = allCourses.value as any[];
+          setDiscoverCourses(courses.map(mapDiscoverCourse));
+        }
+
+        setApiLoaded(true);
+      } catch {
+        // Keep mock data on error
+        setApiLoaded(true);
+      }
+    }
+
+    loadCourses();
+  }, []);
 
   const filteredCourses = filter === "all"
-    ? mockEnrolledCourses
-    : mockEnrolledCourses.filter((c) => c.status === filter);
+    ? enrolledCourses
+    : enrolledCourses.filter((c) => c.status === filter);
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="My Courses"
-        description={`${mockEnrolledCourses.length} courses enrolled`}
+        description={`${enrolledCourses.length} courses enrolled`}
         actions={
           <div className="flex gap-1 p-1 rounded-xl bg-muted/30">
             {(["all", "in_progress", "completed"] as const).map((f) => (
@@ -49,7 +120,7 @@ export default function CoursesPage() {
         {filteredCourses.map((course) => (
           <Link
             key={course.id}
-            href={`/dashboard/courses/${course.id}`}
+            href={`/dashboard/courses/${course.slug || course.id}`}
             className="bg-background rounded-xl border border-border/50 shadow-sm overflow-hidden hover:border-border transition-colors block"
           >
             <div className="h-1.5" style={{ backgroundColor: course.color }} />
@@ -129,7 +200,7 @@ export default function CoursesPage() {
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {mockDiscoverCourses.map((course) => (
+          {discoverCourses.map((course) => (
             <div
               key={course.id}
               className="bg-background rounded-xl border border-border/50 shadow-sm overflow-hidden hover:border-border transition-colors"

@@ -180,8 +180,8 @@ export declare class GamificationRepository {
         createdAt: Date;
         updatedAt: Date;
         description: string;
-        title: string;
         slug: string;
+        title: string;
         iconUrl: string | null;
         xpReward: number;
         category: string;
@@ -194,8 +194,8 @@ export declare class GamificationRepository {
             createdAt: Date;
             updatedAt: Date;
             description: string;
-            title: string;
             slug: string;
+            title: string;
             iconUrl: string | null;
             xpReward: number;
             category: string;
@@ -215,8 +215,8 @@ export declare class GamificationRepository {
             createdAt: Date;
             updatedAt: Date;
             description: string;
-            title: string;
             slug: string;
+            title: string;
             iconUrl: string | null;
             xpReward: number;
             category: string;
@@ -234,8 +234,8 @@ export declare class GamificationRepository {
         createdAt: Date;
         updatedAt: Date;
         description: string;
-        title: string;
         slug: string;
+        title: string;
         iconUrl: string | null;
         xpReward: number;
         category: string;
@@ -250,8 +250,8 @@ export declare class GamificationRepository {
             createdAt: Date;
             updatedAt: Date;
             description: string;
-            title: string;
             slug: string;
+            title: string;
             iconUrl: string | null;
             rarity: string;
         };
@@ -271,8 +271,8 @@ export declare class GamificationRepository {
             createdAt: Date;
             updatedAt: Date;
             description: string;
-            title: string;
             slug: string;
+            title: string;
             iconUrl: string | null;
             rarity: string;
         };
@@ -290,8 +290,8 @@ export declare class GamificationRepository {
             createdAt: Date;
             updatedAt: Date;
             description: string;
-            title: string;
             slug: string;
+            title: string;
             iconUrl: string | null;
             rarity: string;
         };
@@ -309,8 +309,8 @@ export declare class GamificationRepository {
             createdAt: Date;
             updatedAt: Date;
             description: string;
-            title: string;
             slug: string;
+            title: string;
             iconUrl: string | null;
             rarity: string;
         };
@@ -327,8 +327,8 @@ export declare class GamificationRepository {
         createdAt: Date;
         updatedAt: Date;
         description: string;
-        title: string;
         slug: string;
+        title: string;
         iconUrl: string | null;
         rarity: string;
     } | null>;
@@ -427,8 +427,8 @@ export declare class GamificationRepository {
     }): Promise<{
         id: string;
         createdAt: Date;
-        type: import(".prisma/client").$Enums.ActivityType;
         data: Prisma.JsonValue | null;
         userId: string;
+        type: import(".prisma/client").$Enums.ActivityType;
     }>;
 }

@@ -34,7 +34,7 @@ export class LessonsService {
       if (!result?.lesson || !result.lesson.isPublished) {
         throw new NotFoundException('Lesson not found');
       }
-      return this.formatLessonDetail(result.lesson, result.progress);
+      return this.formatLessonDetailFull(result.lesson, result.progress);
     }
 
     const lesson = await this.lessonsRepository.findById(id);
@@ -42,7 +42,72 @@ export class LessonsService {
       throw new NotFoundException('Lesson not found');
     }
 
-    return this.formatLessonDetail(lesson, null);
+    return this.formatLessonDetailFull(lesson, null);
+  }
+
+  async findBySlug(slug: string, difficulty?: string, userId?: string) {
+    const diffEnum = difficulty?.toUpperCase() as 'EASY' | 'MEDIUM' | 'HARD' | undefined;
+    const lesson = await this.lessonsRepository.findBySlug(slug, diffEnum as any);
+
+    if (!lesson) {
+      throw new NotFoundException('Lesson not found');
+    }
+
+    let progress = null;
+    if (userId) {
+      progress = await this.lessonsRepository.getUserProgress(userId, lesson.id);
+    }
+
+    return this.formatLessonDetailFull(lesson, progress);
+  }
+
+  async submitQuizBulk(lessonId: string, userId: string, answers: Record<string, string>) {
+    const lesson = await this.lessonsRepository.findById(lessonId);
+    if (!lesson || !lesson.isPublished) {
+      throw new NotFoundException('Lesson not found');
+    }
+
+    const results: { questionId: string; correct: boolean; explanation?: string; xpEarned: number }[] = [];
+    let totalCorrect = 0;
+    let totalXp = 0;
+
+    for (const [quizId, answer] of Object.entries(answers)) {
+      try {
+        const result = await this.quizService.submitQuizAnswer(
+          lessonId,
+          quizId,
+          userId,
+          answer,
+        );
+        results.push({
+          questionId: quizId,
+          correct: result.correct,
+          explanation: result.explanation ?? undefined,
+          xpEarned: result.xpAwarded,
+        });
+        if (result.correct) totalCorrect++;
+        totalXp += result.xpAwarded;
+      } catch {
+        results.push({
+          questionId: quizId,
+          correct: false,
+          explanation: 'Failed to submit answer',
+          xpEarned: 0,
+        });
+      }
+    }
+
+    const totalQuestions = Object.keys(answers).length;
+    const score = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
+
+    return {
+      score,
+      totalQuestions,
+      correctAnswers: totalCorrect,
+      passed: score >= (lesson.minQuizScore ?? 70),
+      xpAwarded: totalXp,
+      feedback: results,
+    };
   }
 
   async startLesson(lessonId: string, userId: string) {
@@ -410,26 +475,50 @@ export class LessonsService {
   }
 
   // Helper methods
-  private formatLessonDetail(lesson: any, progress: any | null) {
+  private async formatLessonDetailFull(lesson: any, progress: any | null) {
+    // Get sibling lessons for prev/next navigation
+    const siblings = await this.lessonsRepository.findSiblingLessons(
+      lesson.levelId,
+      lesson.orderIndex,
+      lesson.difficulty,
+    );
+
+    // Extract content fields
+    const content = lesson.content || {};
+    const theoryCards = content.theoryCards || [];
+    const quizQuestions = content.quizQuestions || [];
+
+    // Get test cases and hints from first challenge
+    const firstChallenge = lesson.challenges?.[0];
+    const testCases = firstChallenge?.testCases || [];
+    const hints = (firstChallenge?.hints as string[]) || [];
+
+    // Build tiers from content or challenges
+    const tiers = content.tiers || [
+      { difficulty: 'easy', xpMultiplier: 1, starterCode: firstChallenge?.starterCode || '', description: 'Easy mode' },
+      { difficulty: 'medium', xpMultiplier: 2, starterCode: firstChallenge?.starterCode || '', description: 'Medium mode' },
+      { difficulty: 'hard', xpMultiplier: 3, starterCode: firstChallenge?.starterCode || '', description: 'Hard mode' },
+    ];
+
     return {
       id: lesson.id,
       slug: lesson.slug,
-      title: {
-        en: lesson.title,
-        fil: null, // Add titleFil field to schema if needed
+      title: lesson.titleEn || lesson.title,
+      content: {
+        theoryCards,
+        quizQuestions,
       },
-      content: lesson.content,
       difficulty: lesson.difficulty.toLowerCase(),
       xpReward: lesson.xpReward,
+      estimatedTimeMinutes: lesson.estimatedTimeMinutes,
       orderIndex: lesson.orderIndex,
+      courseSlug: lesson.level?.course?.slug || '',
+      courseTitle: lesson.level?.course?.titleEn || lesson.level?.course?.title || '',
+      language: lesson.level?.course?.language || '',
       level: {
         id: lesson.level.id,
         slug: lesson.level.slug,
-        title: {
-          en: lesson.level.title,
-          fil: null,
-        },
-        courseId: lesson.level.courseId,
+        title: lesson.level.titleEn || lesson.level.title,
       },
       quizzes: lesson.quizzes?.map((quiz: any) => ({
         id: quiz.id,
@@ -438,7 +527,6 @@ export class LessonsService {
         options: quiz.options,
         explanation: quiz.explanation,
         orderIndex: quiz.orderIndex,
-        // Note: correctAnswer is intentionally excluded
       })),
       challenges: lesson.challenges?.map((challenge: any) => ({
         id: challenge.id,
@@ -446,8 +534,12 @@ export class LessonsService {
         description: challenge.description,
         starterCode: challenge.starterCode,
         languageId: challenge.languageId,
-        // Note: solutionCode and testCases are intentionally excluded
       })),
+      testCases,
+      hints,
+      tiers,
+      previousLesson: siblings.previous,
+      nextLesson: siblings.next,
       userProgress: progress ? this.formatProgress(progress) : null,
     };
   }

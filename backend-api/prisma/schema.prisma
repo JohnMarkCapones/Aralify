@@ -238,21 +238,24 @@ model PasswordResetToken {
 // ============================================
 
 model Course {
-  id           String    @id @default(cuid())
-  slug         String    @unique
-  title        String
-  titleEn      String?
-  titleFil     String?
-  description  String?
-  language     String    // python, javascript, html, css
-  iconUrl      String?
-  color        String?
-  orderIndex   Int       @default(0)
-  isPublished  Boolean   @default(false)
-  deletedAt    DateTime?
+  id              String    @id @default(cuid())
+  slug            String    @unique
+  title           String
+  titleEn         String?
+  titleFil        String?
+  description     String?
+  descriptionEn   String?
+  descriptionFil  String?
+  language        String    // python, javascript, html, css
+  iconUrl         String?
+  color           String?
+  orderIndex      Int       @default(0)
+  estimatedHours  Int?
+  isPublished     Boolean   @default(false)
+  deletedAt       DateTime?
 
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   // Relations
   levels       Level[]
@@ -263,19 +266,23 @@ model Course {
 }
 
 model Level {
-  id          String   @id @default(cuid())
-  courseId    String
-  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  id             String   @id @default(cuid())
+  courseId        String
+  course          Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
-  slug        String
-  title       String
-  description String?
-  orderIndex  Int       @default(0)
-  isPublished Boolean   @default(false)
-  deletedAt   DateTime?
+  slug            String
+  title           String
+  titleEn         String?
+  titleFil        String?
+  description     String?
+  descriptionEn   String?
+  descriptionFil  String?
+  orderIndex      Int       @default(0)
+  isPublished     Boolean   @default(false)
+  deletedAt       DateTime?
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   // Relations
   lessons     Lesson[]
@@ -286,22 +293,25 @@ model Level {
 }
 
 model Lesson {
-  id          String     @id @default(cuid())
-  levelId     String
-  level       Level      @relation(fields: [levelId], references: [id], onDelete: Cascade)
+  id                   String     @id @default(cuid())
+  levelId              String
+  level                Level      @relation(fields: [levelId], references: [id], onDelete: Cascade)
 
-  slug        String
-  title       String
-  content     Json?      // Lesson content (text, code examples)
-  difficulty  Difficulty
-  xpReward    Int        @default(100)
-  orderIndex  Int        @default(0)
-  isPublished Boolean    @default(false)
-  deletedAt   DateTime?
-  minQuizScore Int?      // Minimum quiz score (0-100) required to complete lesson
+  slug                 String
+  title                String
+  titleEn              String?
+  titleFil             String?
+  content              Json?      // Lesson content (text, code examples, theoryCards, quizQuestions)
+  difficulty           Difficulty
+  xpReward             Int        @default(100)
+  orderIndex           Int        @default(0)
+  estimatedTimeMinutes Int?
+  isPublished          Boolean    @default(false)
+  deletedAt            DateTime?
+  minQuizScore         Int?       // Minimum quiz score (0-100) required to complete lesson
 
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
 
   // Relations
   quizzes     Quiz[]
@@ -347,6 +357,7 @@ enum QuizType {
   FILL_BLANK
   CODE_COMPLETION
   TRUE_FALSE
+  REORDER
 }
 
 enum HintTargetType {
