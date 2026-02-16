@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Bookmark, ExternalLink, Trash2, BookOpen, Clock, CheckCircle2, Zap } from "lucide-react";
+import { Bookmark, ExternalLink, Trash2, BookOpen, Clock, CheckCircle2, Zap, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "../_components/page-header";
-import { mockBookmarks } from "@/lib/data/dashboard";
-import type { BookmarkedLesson } from "@/lib/data/dashboard";
+import { useBookmarks, useDeleteBookmark } from "@/hooks/api";
+import type { BookmarkItem } from "@/lib/api";
 
-type Filter = "all" | BookmarkedLesson["status"];
+type Filter = "all" | "to_review" | "in_progress" | "completed";
 
 const FILTERS: { value: Filter; label: string }[] = [
   { value: "all", label: "All" },
@@ -58,28 +58,40 @@ const cardVariants = {
 
 export default function BookmarksPage() {
   const [filter, setFilter] = useState<Filter>("all");
+  const { data: bookmarks, isLoading } = useBookmarks();
+  const deleteBookmark = useDeleteBookmark();
+
+  const allBookmarks = bookmarks ?? [];
 
   const filtered = filter === "all"
-    ? mockBookmarks
-    : mockBookmarks.filter((b) => b.status === filter);
+    ? allBookmarks
+    : allBookmarks.filter((b) => b.status === filter);
 
   // Stats
-  const toReviewCount = mockBookmarks.filter((b) => b.status === "to_review").length;
-  const inProgressCount = mockBookmarks.filter((b) => b.status === "in_progress").length;
-  const completedCount = mockBookmarks.filter((b) => b.status === "completed").length;
+  const toReviewCount = allBookmarks.filter((b) => b.status === "to_review").length;
+  const inProgressCount = allBookmarks.filter((b) => b.status === "in_progress").length;
+  const completedCount = allBookmarks.filter((b) => b.status === "completed").length;
 
   const stats = [
-    { icon: Bookmark, label: "Total", value: mockBookmarks.length, color: "text-primary", bg: "bg-primary/10" },
+    { icon: Bookmark, label: "Total", value: allBookmarks.length, color: "text-primary", bg: "bg-primary/10" },
     { icon: BookOpen, label: "To Review", value: toReviewCount, color: "text-blue-500", bg: "bg-blue-100 dark:bg-blue-950/40" },
     { icon: Clock, label: "In Progress", value: inProgressCount, color: "text-amber-500", bg: "bg-amber-100 dark:bg-amber-950/40" },
     { icon: CheckCircle2, label: "Completed", value: completedCount, color: "text-emerald-500", bg: "bg-emerald-100 dark:bg-emerald-950/40" },
   ];
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Bookmarks"
-        description={`${mockBookmarks.length} saved lessons`}
+        description={`${allBookmarks.length} saved lessons`}
         actions={
           <div className="flex gap-1 p-1 rounded-xl bg-muted/30">
             {FILTERS.map((f) => (
@@ -132,32 +144,38 @@ export default function BookmarksPage() {
             className="bg-background rounded-xl border border-border/50 shadow-sm overflow-hidden"
           >
             {/* Difficulty gradient top strip */}
-            <div className={cn("h-1 bg-gradient-to-r", DIFF_GRADIENT[bookmark.difficulty])} />
+            <div className={cn("h-1 bg-gradient-to-r", DIFF_GRADIENT[bookmark.difficulty ?? "easy"])} />
 
             <div className="p-4">
               <div className="flex items-start gap-4">
                 {/* Colored bookmark icon */}
-                <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center shrink-0", STATUS_ICON_BG[bookmark.status])}>
+                <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center shrink-0", STATUS_ICON_BG[bookmark.status ?? "to_review"])}>
                   <Bookmark size={16} />
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="text-sm font-semibold">{bookmark.title}</h3>
-                    <span className={cn("text-[9px] font-medium px-1.5 py-0.5 rounded-full capitalize", DIFF_COLORS[bookmark.difficulty])}>
-                      {bookmark.difficulty}
-                    </span>
+                    {bookmark.difficulty && (
+                      <span className={cn("text-[9px] font-medium px-1.5 py-0.5 rounded-full capitalize", DIFF_COLORS[bookmark.difficulty])}>
+                        {bookmark.difficulty}
+                      </span>
+                    )}
                   </div>
 
-                  <p className="text-xs text-muted-foreground mt-0.5">{bookmark.courseName}</p>
+                  {bookmark.courseName && (
+                    <p className="text-xs text-muted-foreground mt-0.5">{bookmark.courseName}</p>
+                  )}
 
                   {/* Status with colored dot */}
-                  <div className="flex items-center gap-1.5 mt-2">
-                    <span className={cn("w-2 h-2 rounded-full", STATUS_DOT[bookmark.status])} />
-                    <span className={cn("text-[11px] font-medium capitalize", STATUS_TEXT[bookmark.status])}>
-                      {bookmark.status.replace("_", " ")}
-                    </span>
-                  </div>
+                  {bookmark.status && (
+                    <div className="flex items-center gap-1.5 mt-2">
+                      <span className={cn("w-2 h-2 rounded-full", STATUS_DOT[bookmark.status])} />
+                      <span className={cn("text-[11px] font-medium capitalize", STATUS_TEXT[bookmark.status])}>
+                        {bookmark.status.replace("_", " ")}
+                      </span>
+                    </div>
+                  )}
 
                   {bookmark.notes && (
                     <p className="text-xs text-muted-foreground mt-1.5 italic">&ldquo;{bookmark.notes}&rdquo;</p>
@@ -172,7 +190,12 @@ export default function BookmarksPage() {
                   <button className="p-1.5 hover:bg-primary/10 rounded-lg transition-colors text-muted-foreground hover:text-primary" title="Go to lesson">
                     <ExternalLink size={14} />
                   </button>
-                  <button className="p-1.5 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors text-muted-foreground hover:text-red-500" title="Remove bookmark">
+                  <button
+                    onClick={() => deleteBookmark.mutate(bookmark.id)}
+                    disabled={deleteBookmark.isPending}
+                    className="p-1.5 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors text-muted-foreground hover:text-red-500"
+                    title="Remove bookmark"
+                  >
                     <Trash2 size={14} />
                   </button>
                 </div>

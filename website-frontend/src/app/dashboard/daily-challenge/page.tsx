@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "../_components/page-header";
-import { mockDailyChallenge, mockChallengeHistory, mockUserProfile } from "@/lib/data/dashboard";
+import { useGamificationProfile, useStreak, useDailyChallenge } from "@/hooks/api";
 
 const DIFFICULTY_COLORS = {
   easy: { bg: "bg-emerald-500/10", text: "text-emerald-500", border: "border-emerald-500/30", glow: "shadow-[0_0_20px_rgba(16,185,129,0.15)]" },
@@ -24,9 +24,37 @@ const item = {
 };
 
 export default function DailyChallengePage() {
-  const challenge = mockDailyChallenge;
+  const { data: dailyData } = useDailyChallenge();
+  const challenge = dailyData
+    ? {
+        id: dailyData.id,
+        title: dailyData.title,
+        description: dailyData.description,
+        difficulty: dailyData.difficulty as "easy" | "medium" | "hard",
+        language: dailyData.language,
+        xpReward: dailyData.xpReward,
+        multiplier: dailyData.multiplier,
+        timeLimit: dailyData.timeLimit,
+        completed: dailyData.completed,
+        resetsAt: dailyData.resetsAt,
+      }
+    : {
+        id: "",
+        title: "Loading...",
+        description: "",
+        difficulty: "easy" as const,
+        language: "Python",
+        xpReward: 0,
+        multiplier: 1,
+        timeLimit: 30,
+        completed: false,
+        resetsAt: new Date(Date.now() + 86400000).toISOString(),
+      };
   const diff = DIFFICULTY_COLORS[challenge.difficulty];
   const [timeLeft, setTimeLeft] = useState("");
+  const { data: gamification } = useGamificationProfile();
+  const { data: streakInfo } = useStreak();
+  const currentStreak = streakInfo?.current ?? gamification?.streak ?? 0;
 
   useEffect(() => {
     function updateTimer() {
@@ -44,8 +72,8 @@ export default function DailyChallengePage() {
     return () => clearInterval(interval);
   }, [challenge.resetsAt]);
 
-  const completedCount = mockChallengeHistory.filter((c) => c.completed).length;
-  const totalXp = mockChallengeHistory.reduce((sum, c) => sum + c.xpEarned, 0);
+  const completedCount = gamification?.achievementsCount ?? 0;
+  const totalXp = gamification?.xpTotal ?? 0;
 
   return (
     <motion.div
@@ -69,8 +97,8 @@ export default function DailyChallengePage() {
       {/* Stat pills */}
       <motion.div variants={item} className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { icon: <Flame size={16} className="text-orange-500" />, label: "Streak", value: `${mockUserProfile.streak} days`, gradient: "from-orange-500/10 to-orange-500/5", accent: "border-orange-500/20" },
-          { icon: <Trophy size={16} className="text-amber-500" />, label: "Completed", value: `${completedCount}/${mockChallengeHistory.length}`, gradient: "from-amber-500/10 to-amber-500/5", accent: "border-amber-500/20" },
+          { icon: <Flame size={16} className="text-orange-500" />, label: "Streak", value: `${currentStreak} days`, gradient: "from-orange-500/10 to-orange-500/5", accent: "border-orange-500/20" },
+          { icon: <Trophy size={16} className="text-amber-500" />, label: "Completed", value: `${completedCount}/${completedCount}`, gradient: "from-amber-500/10 to-amber-500/5", accent: "border-amber-500/20" },
           { icon: <Zap size={16} className="text-primary" />, label: "Total XP", value: totalXp.toLocaleString(), gradient: "from-primary/10 to-primary/5", accent: "border-primary/20" },
           { icon: <Star size={16} className="text-purple-500" />, label: "Multiplier", value: `${challenge.multiplier}x`, gradient: "from-purple-500/10 to-purple-500/5", accent: "border-purple-500/20" },
         ].map((s) => (
@@ -153,9 +181,9 @@ export default function DailyChallengePage() {
         <div className="p-5">
           <div className="grid grid-cols-3 gap-3">
             {[
-              { days: "1-6 days", multi: "1x", icon: <Shield size={20} />, active: mockUserProfile.streak < 7, color: "blue" },
-              { days: "7-13 days", multi: "2x", icon: <Flame size={20} />, active: mockUserProfile.streak >= 7 && mockUserProfile.streak < 14, color: "orange" },
-              { days: "14+ days", multi: "3x", icon: <Sparkles size={20} />, active: mockUserProfile.streak >= 14, color: "purple" },
+              { days: "1-6 days", multi: "1x", icon: <Shield size={20} />, active: currentStreak < 7, color: "blue" },
+              { days: "7-13 days", multi: "2x", icon: <Flame size={20} />, active: currentStreak >= 7 && currentStreak < 14, color: "orange" },
+              { days: "14+ days", multi: "3x", icon: <Sparkles size={20} />, active: currentStreak >= 14, color: "purple" },
             ].map((tier) => {
               const colors = {
                 blue: { bg: "from-blue-500/10 to-blue-500/5", border: "border-blue-500/30", text: "text-blue-500", glow: "shadow-[0_0_15px_rgba(59,130,246,0.2)]" },
@@ -188,58 +216,15 @@ export default function DailyChallengePage() {
         </div>
       </motion.div>
 
-      {/* Challenge History */}
-      <motion.div variants={item} className="bg-background rounded-xl border border-border/50 card-elevated overflow-hidden">
-        <div className="px-5 py-4 border-b border-border/20 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Clock size={14} className="text-muted-foreground" />
-            <h3 className="text-sm font-semibold">Recent Challenges</h3>
-          </div>
-          <span className="text-[10px] text-muted-foreground font-medium">
-            {completedCount} of {mockChallengeHistory.length} completed
-          </span>
+      {/* Challenge Summary */}
+      <motion.div variants={item} className="bg-background rounded-xl border border-border/50 card-elevated p-5 text-center">
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <Clock size={14} className="text-muted-foreground" />
+          <h3 className="text-sm font-semibold">Challenge Progress</h3>
         </div>
-        <div className="divide-y divide-border/20">
-          {mockChallengeHistory.map((entry) => {
-            const eDiff = DIFFICULTY_COLORS[entry.difficulty];
-            return (
-              <div key={entry.id} className="flex items-center gap-4 px-5 py-3 hover:bg-muted/20 transition-colors group">
-                <div className={cn(
-                  "w-9 h-9 rounded-lg flex items-center justify-center shrink-0",
-                  entry.completed ? "bg-emerald-500/10" : "bg-red-500/10"
-                )}>
-                  {entry.completed
-                    ? <CheckCircle size={16} className="text-emerald-500" />
-                    : <XCircle size={16} className="text-red-400" />
-                  }
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{entry.title}</p>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded-full capitalize", eDiff.bg, eDiff.text)}>
-                      {entry.difficulty}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground">{entry.language}</span>
-                    <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                      <Timer size={9} /> {entry.timeTaken}m
-                    </span>
-                  </div>
-                </div>
-                <div className="text-right shrink-0">
-                  {entry.completed ? (
-                    <span className="text-xs font-bold text-emerald-500">+{entry.xpEarned} XP</span>
-                  ) : (
-                    <span className="text-xs font-medium text-red-400">Failed</span>
-                  )}
-                  <p className="text-[10px] text-muted-foreground mt-0.5">
-                    {new Date(entry.completedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                  </p>
-                </div>
-                <ChevronRight size={14} className="text-muted-foreground/30 group-hover:text-muted-foreground transition-colors shrink-0" />
-              </div>
-            );
-          })}
-        </div>
+        <p className="text-xs text-muted-foreground">
+          Keep completing daily challenges to earn XP and maintain your streak!
+        </p>
       </motion.div>
     </motion.div>
   );

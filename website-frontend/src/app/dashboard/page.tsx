@@ -6,17 +6,11 @@ import { DailyChallengeBanner } from "./_components/daily-challenge-banner";
 import { QuestsMissions } from "./_components/quests-missions";
 import { LobbyActionCards } from "./_components/lobby-action-cards";
 import { ActivityTicker } from "./_components/activity-ticker";
-import {
-  mockUserProfile,
-  mockEnrolledCourses,
-  mockDailyChallenge,
-  mockQuests,
-  mockActivities,
-} from "@/lib/data/dashboard";
 import type {
   DashboardUserProfile,
   EnrolledCourse,
   ActivityItem,
+  QuestMission,
 } from "@/lib/data/dashboard";
 import {
   useUserProfile,
@@ -24,6 +18,8 @@ import {
   useUserCourses,
   useGamificationProfile,
   useActivityFeed,
+  useStreak,
+  useDailyChallenge,
 } from "@/hooks/api";
 
 function Skeleton({ className = "" }: { className?: string }) {
@@ -73,73 +69,85 @@ export default function DashboardHomePage() {
     useGamificationProfile();
   const { data: userCourses, isLoading: loadingCourses } = useUserCourses();
   const { data: feedData } = useActivityFeed({ limit: 10 });
+  const { data: dailyData } = useDailyChallenge();
+  const { data: streakInfo } = useStreak();
 
   const isLoading =
     loadingProfile || loadingStats || loadingGamification || loadingCourses;
 
-  // Map API data to DashboardUserProfile or fall back to mock
-  const user: DashboardUserProfile = userProfile
-    ? {
-        id: userProfile.id,
-        username: userProfile.username,
-        displayName: userProfile.displayName || userProfile.username,
-        email: userProfile.email,
-        avatarUrl: userProfile.avatarUrl,
-        level: gamification?.level ?? userProfile.level,
-        xp: gamification?.xpTotal ?? userProfile.xpTotal,
-        xpToNextLevel: gamification?.xpToNextLevel ?? 1000,
-        streak: gamification?.streak ?? userProfile.streakCurrent,
-        longestStreak: gamification?.longestStreak ?? 0,
-        rank: userStats?.rank ?? gamification?.rank ?? 0,
-        totalUsers: userStats?.totalUsers ?? 0,
-        dailyGoal: 30,
-        dailyProgress: 0,
-        coursesEnrolled: userStats?.coursesEnrolled ?? 0,
-        coursesCompleted: userStats?.coursesCompleted ?? 0,
-        lessonsCompleted: userStats?.lessonsCompleted ?? 0,
-        challengesCompleted: userStats?.challengesCompleted ?? 0,
-        achievementsUnlocked: userStats?.achievementsUnlocked ?? 0,
-        badgesEarned: userStats?.badgesEarned ?? 0,
-        joinedAt: userProfile.joinedAt,
-        equippedBadgeIds: [],
-        followingCount: 0,
-        followersCount: 0,
-      }
-    : mockUserProfile;
+  // Map API data to DashboardUserProfile
+  const user: DashboardUserProfile = {
+    id: userProfile?.id ?? "",
+    username: userProfile?.username ?? "learner",
+    displayName: userProfile?.displayName || userProfile?.username || "Learner",
+    email: userProfile?.email ?? "",
+    avatarUrl: userProfile?.avatarUrl ?? null,
+    level: gamification?.level ?? userProfile?.level ?? 1,
+    xp: gamification?.xpTotal ?? userProfile?.xpTotal ?? 0,
+    xpToNextLevel: gamification?.xpToNextLevel ?? 1000,
+    streak: gamification?.streak ?? userProfile?.streakCurrent ?? 0,
+    longestStreak: gamification?.longestStreak ?? 0,
+    rank: userStats?.rank ?? gamification?.rank ?? 0,
+    totalUsers: userStats?.totalUsers ?? 0,
+    dailyGoal: 30,
+    dailyProgress: 0,
+    coursesEnrolled: userStats?.coursesEnrolled ?? 0,
+    coursesCompleted: userStats?.coursesCompleted ?? 0,
+    lessonsCompleted: userStats?.lessonsCompleted ?? 0,
+    challengesCompleted: userStats?.challengesCompleted ?? 0,
+    achievementsUnlocked: userStats?.achievementsUnlocked ?? 0,
+    badgesEarned: userStats?.badgesEarned ?? 0,
+    joinedAt: userProfile?.joinedAt ?? new Date().toISOString(),
+    equippedBadgeIds: [],
+    followingCount: 0,
+    followersCount: 0,
+  };
 
-  // Map API courses to EnrolledCourse[] or fall back to mock
-  const courses: EnrolledCourse[] =
-    userCourses?.map((c) => ({
-      id: c.courseId,
-      title: c.title,
-      slug: c.slug,
-      description: c.description,
-      icon: c.icon,
-      color: c.color,
-      progress: c.progress,
-      totalLessons: c.totalLessons,
-      completedLessons: c.completedLessons,
-      currentLesson: c.currentLesson,
-      xpEarned: c.xpEarned,
-      lastStudied: c.lastStudied,
-      status: c.status,
-      difficulty: c.difficulty as "beginner" | "intermediate" | "advanced",
-    })) ?? mockEnrolledCourses;
+  // Map API courses to EnrolledCourse[]
+  const courses: EnrolledCourse[] = (userCourses ?? []).map((c) => ({
+    id: c.courseId,
+    title: c.title,
+    slug: c.slug,
+    description: c.description,
+    icon: c.icon,
+    color: c.color,
+    progress: c.progress,
+    totalLessons: c.totalLessons,
+    completedLessons: c.completedLessons,
+    currentLesson: c.currentLesson,
+    xpEarned: c.xpEarned,
+    lastStudied: c.lastStudied,
+    status: c.status,
+    difficulty: c.difficulty as "beginner" | "intermediate" | "advanced",
+  }));
 
-  // Map API activity feed to ActivityItem[] or fall back to mock
-  const activities: ActivityItem[] =
-    feedData?.activities?.map((a) => ({
-      id: a.id,
-      type: activityTypeToFrontend(a.type),
-      title: (a.data?.title as string) || a.type.replace(/_/g, " "),
-      description:
-        (a.data?.description as string) ||
-        `${a.displayName} ${a.type.replace(/_/g, " ")}`,
-      xp: (a.data?.xp as number) || null,
-      timestamp: a.createdAt,
-      icon: activityTypeToIcon(a.type),
-      relatedUrl: a.data?.url as string | undefined,
-    })) ?? mockActivities;
+  // Map API activity feed to ActivityItem[]
+  const activities: ActivityItem[] = (feedData?.activities ?? []).map((a) => ({
+    id: a.id,
+    type: activityTypeToFrontend(a.type),
+    title: (a.data?.title as string) || a.type.replace(/_/g, " "),
+    description:
+      (a.data?.description as string) ||
+      `${a.displayName} ${a.type.replace(/_/g, " ")}`,
+    xp: (a.data?.xp as number) || null,
+    timestamp: a.createdAt,
+    icon: activityTypeToIcon(a.type),
+    relatedUrl: a.data?.url as string | undefined,
+  }));
+
+  // Map daily challenge from API
+  const dailyChallenge = dailyData ? {
+    id: dailyData.id,
+    title: dailyData.title,
+    description: dailyData.description,
+    difficulty: dailyData.difficulty as "easy" | "medium" | "hard",
+    language: dailyData.language,
+    xpReward: dailyData.xpReward,
+    multiplier: dailyData.multiplier,
+    timeLimit: dailyData.timeLimit,
+    completed: dailyData.completed,
+    resetsAt: dailyData.resetsAt,
+  } : null;
 
   if (isLoading) {
     return (
@@ -161,10 +169,10 @@ export default function DashboardHomePage() {
       <QuestBoard courses={courses} user={user} />
 
       {/* Zone 3: Daily Challenge Banner */}
-      <DailyChallengeBanner challenge={mockDailyChallenge} />
+      {dailyChallenge && <DailyChallengeBanner challenge={dailyChallenge} />}
 
       {/* Zone 4: Quests & Missions */}
-      <QuestsMissions quests={mockQuests} />
+      <QuestsMissions quests={[]} />
 
       {/* Zone 5: Lobby Action Cards */}
       <LobbyActionCards user={user} />

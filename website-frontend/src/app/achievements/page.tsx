@@ -4,11 +4,12 @@ import { useState } from "react";
 import { PageShell } from "@/components/layout/PageShell";
 import { motion } from "framer-motion";
 import { GridPattern, AnimatedCounter } from "@/components/effects";
-import { Lock, Trophy } from "lucide-react";
+import { Lock, Trophy, Loader2 } from "lucide-react";
+import { useAchievements } from "@/hooks/api";
 
-type Category = "all" | "learning" | "streaks" | "social" | "mastery";
+type Category = "all" | string;
 
-const categories: { key: Category; label: string }[] = [
+const categories: { key: string; label: string }[] = [
   { key: "all", label: "All" },
   { key: "learning", label: "Learning" },
   { key: "streaks", label: "Streaks" },
@@ -16,57 +17,40 @@ const categories: { key: Category; label: string }[] = [
   { key: "mastery", label: "Mastery" },
 ];
 
-interface Achievement {
-  id: number;
-  emoji: string;
-  title: string;
-  description: string;
-  xp: number;
-  category: "learning" | "streaks" | "social" | "mastery";
-  unlocked: boolean;
-  earnedDate?: string;
-}
-
-const achievements: Achievement[] = [
-  // Learning
-  { id: 1, emoji: "\uD83D\uDE80", title: "First Launch", description: "Complete your very first lesson", xp: 50, category: "learning", unlocked: true, earnedDate: "Jan 5, 2026" },
-  { id: 2, emoji: "\uD83D\uDCDA", title: "Bookworm", description: "Complete 10 lessons in any course", xp: 200, category: "learning", unlocked: true, earnedDate: "Jan 12, 2026" },
-  { id: 3, emoji: "\uD83C\uDF93", title: "Graduate", description: "Complete an entire course", xp: 500, category: "learning", unlocked: true, earnedDate: "Jan 28, 2026" },
-  { id: 4, emoji: "\uD83E\uDDE0", title: "Polyglot", description: "Complete lessons in 3 different languages", xp: 300, category: "learning", unlocked: true, earnedDate: "Feb 2, 2026" },
-  { id: 5, emoji: "\uD83D\uDCA1", title: "Quick Learner", description: "Complete 5 lessons in a single day", xp: 150, category: "learning", unlocked: false },
-
-  // Streaks
-  { id: 6, emoji: "\uD83D\uDD25", title: "On Fire", description: "Maintain a 7-day streak", xp: 100, category: "streaks", unlocked: true, earnedDate: "Jan 15, 2026" },
-  { id: 7, emoji: "\u26A1", title: "Unstoppable", description: "Maintain a 30-day streak", xp: 500, category: "streaks", unlocked: false },
-  { id: 8, emoji: "\uD83C\uDF1F", title: "Streak Master", description: "Maintain a 100-day streak", xp: 1500, category: "streaks", unlocked: false },
-  { id: 9, emoji: "\uD83C\uDF05", title: "Early Bird", description: "Complete a lesson before 7 AM, 5 days in a row", xp: 200, category: "streaks", unlocked: true, earnedDate: "Jan 20, 2026" },
-  { id: 10, emoji: "\uD83C\uDF19", title: "Night Owl", description: "Complete a lesson after midnight, 5 days in a row", xp: 200, category: "streaks", unlocked: false },
-
-  // Social
-  { id: 11, emoji: "\uD83E\uDD1D", title: "Social Butterfly", description: "Follow 10 other learners", xp: 100, category: "social", unlocked: true, earnedDate: "Jan 22, 2026" },
-  { id: 12, emoji: "\uD83D\uDCAC", title: "Commenter", description: "Leave 20 comments on lessons", xp: 150, category: "social", unlocked: true, earnedDate: "Feb 1, 2026" },
-  { id: 13, emoji: "\u2B50", title: "Fan Favorite", description: "Receive 50 likes on your comments", xp: 300, category: "social", unlocked: false },
-  { id: 14, emoji: "\uD83C\uDFC6", title: "Leaderboard Regular", description: "Appear in the top 50 weekly leaderboard", xp: 250, category: "social", unlocked: true, earnedDate: "Feb 3, 2026" },
-  { id: 15, emoji: "\uD83D\uDC51", title: "Top 10", description: "Reach the top 10 on any leaderboard", xp: 1000, category: "social", unlocked: false },
-
-  // Mastery
-  { id: 16, emoji: "\uD83C\uDFAF", title: "Perfect Score", description: "Get 100% on a quiz without hints", xp: 200, category: "mastery", unlocked: true, earnedDate: "Jan 18, 2026" },
-  { id: 17, emoji: "\uD83D\uDCAA", title: "Hard Mode Hero", description: "Complete 10 lessons on Hard difficulty", xp: 500, category: "mastery", unlocked: true, earnedDate: "Feb 4, 2026" },
-  { id: 18, emoji: "\uD83E\uDDD9", title: "Code Wizard", description: "Solve 50 code challenges", xp: 750, category: "mastery", unlocked: false },
-  { id: 19, emoji: "\uD83D\uDC8E", title: "Diamond Hands", description: "Earn 10,000 total XP", xp: 1000, category: "mastery", unlocked: true, earnedDate: "Feb 5, 2026" },
-  { id: 20, emoji: "\uD83C\uDF0D", title: "World Class", description: "Complete all courses on Hard difficulty", xp: 5000, category: "mastery", unlocked: false },
-];
-
-const unlockedCount = achievements.filter((a) => a.unlocked).length;
-const totalCount = achievements.length;
-
 export default function AchievementsPage() {
   const [activeCategory, setActiveCategory] = useState<Category>("all");
+  const { data: apiAchievements, isLoading } = useAchievements();
+
+  const achievements = (apiAchievements ?? []).map((a) => ({
+    id: a.id,
+    emoji: a.icon,
+    title: a.name,
+    description: a.description,
+    xp: a.xpReward,
+    category: a.category,
+    unlocked: a.unlocked,
+    earnedDate: a.unlockedAt
+      ? new Date(a.unlockedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+      : undefined,
+  }));
+
+  const unlockedCount = achievements.filter((a) => a.unlocked).length;
+  const totalCount = achievements.length;
 
   const filtered =
     activeCategory === "all"
       ? achievements
       : achievements.filter((a) => a.category === activeCategory);
+
+  if (isLoading) {
+    return (
+      <PageShell>
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell>

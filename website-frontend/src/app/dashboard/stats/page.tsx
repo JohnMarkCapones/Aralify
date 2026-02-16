@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { PageHeader } from "../_components/page-header";
 import { ChartCard } from "../_components/chart-card";
 import {
-  mockUserProfile as user,
+  mockUserProfile as mockUser,
   mockXpHistory7d,
   mockXpHistory30d,
   mockWeeklyHeatmap,
@@ -20,6 +20,7 @@ import {
   mockDifficultyBreakdown,
   mockTimeSpent,
 } from "@/lib/data/dashboard";
+import { useUserStats, useGamificationProfile, useXpHistory } from "@/hooks/api";
 
 const COLORS = ["#10b981", "#f59e0b", "#ef4444"];
 
@@ -92,7 +93,16 @@ function ColoredStatCard({ icon, iconBg, label, value, trend, subtitle, accentCo
 
 export default function StatsPage() {
   const [range, setRange] = useState<Range>("7d");
+  const { data: stats } = useUserStats();
+  const { data: gamification } = useGamificationProfile();
 
+  const user = {
+    xp: gamification?.xpTotal ?? stats?.totalXp ?? mockUser.xp,
+    lessonsCompleted: stats?.lessonsCompleted ?? mockUser.lessonsCompleted,
+    challengesCompleted: stats?.challengesCompleted ?? mockUser.challengesCompleted,
+  };
+
+  // TODO: Replace with real XP history data from useXpHistory() when chart data format is available
   const xpData = range === "7d" ? mockXpHistory7d : mockXpHistory30d;
 
   return (

@@ -107,12 +107,12 @@ export declare class UsersRepository {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            userId: string;
             theme: string;
             codeEditorTheme: string;
             fontSize: number;
             dailyGoalMins: number;
             difficultyPref: import(".prisma/client").$Enums.Difficulty;
+            userId: string;
         } | null;
     } & {
         level: number;
@@ -179,12 +179,12 @@ export declare class UsersRepository {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            userId: string;
             theme: string;
             codeEditorTheme: string;
             fontSize: number;
             dailyGoalMins: number;
             difficultyPref: import(".prisma/client").$Enums.Difficulty;
+            userId: string;
         } | null;
     } & {
         level: number;
@@ -280,12 +280,12 @@ export declare class UsersRepository {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
         theme: string;
         codeEditorTheme: string;
         fontSize: number;
         dailyGoalMins: number;
         difficultyPref: import(".prisma/client").$Enums.Difficulty;
+        userId: string;
     }>;
     updateNotificationSettings(userId: string, data: {
         emailEnabled?: boolean;
@@ -435,9 +435,9 @@ export declare class UsersRepository {
         course: {
             id: string;
             description: string | null;
+            title: string;
             language: string;
             slug: string;
-            title: string;
             iconUrl: string | null;
             color: string | null;
         };
@@ -468,8 +468,8 @@ export declare class UsersRepository {
     getCompletedCourses(userId: string): Promise<({
         course: {
             id: string;
-            slug: string;
             title: string;
+            slug: string;
         };
     } & {
         id: string;
@@ -514,9 +514,9 @@ export declare class UsersRepository {
         data: {
             id: string;
             createdAt: Date;
+            type: import(".prisma/client").$Enums.ActivityType;
             data: import("@prisma/client/runtime/library").JsonValue | null;
             userId: string;
-            type: import(".prisma/client").$Enums.ActivityType;
         }[];
         total: number;
     }>;

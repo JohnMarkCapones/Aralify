@@ -26,6 +26,9 @@ let LessonsController = class LessonsController {
         this.quizService = quizService;
         this.challengeService = challengeService;
     }
+    async findBySlug(slug, difficulty, user) {
+        return this.lessonsService.findBySlug(slug, difficulty, user?.id);
+    }
     async findById(id, user) {
         return this.lessonsService.findById(id, user?.id);
     }
@@ -37,6 +40,9 @@ let LessonsController = class LessonsController {
     }
     async getQuizzes(id) {
         return this.lessonsService.getQuizzes(id);
+    }
+    async submitQuizBulk(id, user, body) {
+        return this.lessonsService.submitQuizBulk(id, user.id, body.answers);
     }
     async submitQuizAnswer(id, quizId, user, dto) {
         return this.lessonsService.submitQuizAnswer(id, quizId, user.id, dto);
@@ -64,6 +70,21 @@ let LessonsController = class LessonsController {
     }
 };
 exports.LessonsController = LessonsController;
+__decorate([
+    (0, common_1.Get)('by-slug/:slug'),
+    (0, decorators_1.Public)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Get lesson by slug and optional difficulty' }),
+    (0, swagger_1.ApiParam)({ name: 'slug', example: 'variables-data-types-lesson', description: 'Lesson slug' }),
+    (0, swagger_1.ApiQuery)({ name: 'difficulty', required: false, example: 'EASY', description: 'Difficulty filter' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Returns lesson details', type: dto_1.LessonDetailDto }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'Lesson not found' }),
+    __param(0, (0, common_1.Param)('slug')),
+    __param(1, (0, common_1.Query)('difficulty')),
+    __param(2, (0, decorators_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, Object]),
+    __metadata("design:returntype", Promise)
+], LessonsController.prototype, "findBySlug", null);
 __decorate([
     (0, common_1.Get)(':id'),
     (0, decorators_1.Public)(),
@@ -134,6 +155,20 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], LessonsController.prototype, "getQuizzes", null);
+__decorate([
+    (0, common_1.Post)(':id/quiz/submit'),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Submit all quiz answers at once for a lesson' }),
+    (0, swagger_1.ApiParam)({ name: 'id', example: 'clx1234567890', description: 'Lesson ID' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Quiz answers submitted and graded' }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'Lesson not found' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, decorators_1.CurrentUser)()),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object, Object]),
+    __metadata("design:returntype", Promise)
+], LessonsController.prototype, "submitQuizBulk", null);
 __decorate([
     (0, common_1.Post)(':id/quizzes/:quizId/answer'),
     (0, swagger_1.ApiBearerAuth)(),

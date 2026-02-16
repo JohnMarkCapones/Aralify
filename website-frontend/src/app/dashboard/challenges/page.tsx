@@ -9,13 +9,24 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "../_components/page-header";
-import {
-  mockDailyChallenge,
-  mockChallenges,
-  mockChallengeHistory,
-  mockUserProfile,
-} from "@/lib/data/dashboard";
-import type { ChallengeItem } from "@/lib/data/dashboard";
+import { useGamificationProfile, useStreak, useChallengesList, useDailyChallenge } from "@/hooks/api";
+import type { ChallengeListItem } from "@/lib/api";
+
+interface ChallengeItem {
+  id: string;
+  title: string;
+  description: string;
+  difficulty: "easy" | "medium" | "hard";
+  category: string;
+  language: string;
+  xpReward: number;
+  timeLimit: number;
+  tags: string[];
+  completions: number;
+  successRate: number;
+  isNew?: boolean;
+  isFeatured?: boolean;
+}
 
 type Category = "all" | "daily" | "weekly" | "practice";
 type Difficulty = "all" | "easy" | "medium" | "hard";
@@ -33,7 +44,7 @@ const DIFFICULTY_COLORS = {
   hard: { bg: "bg-red-500/10", text: "text-red-500", border: "border-red-500/20", ring: "ring-red-500/30" },
 };
 
-const CATEGORY_ACCENT = {
+const CATEGORY_ACCENT: Record<string, { gradient: string; border: string; icon: string }> = {
   daily: { gradient: "from-orange-500/20 to-amber-500/20", border: "border-orange-500/30", icon: "text-orange-400" },
   weekly: { gradient: "from-purple-500/20 to-indigo-500/20", border: "border-purple-500/30", icon: "text-purple-400" },
   practice: { gradient: "from-blue-500/20 to-cyan-500/20", border: "border-blue-500/30", icon: "text-blue-400" },
@@ -50,7 +61,7 @@ const cardVariants = {
 
 function ChallengeCard({ challenge, index }: { challenge: ChallengeItem; index: number }) {
   const diff = DIFFICULTY_COLORS[challenge.difficulty];
-  const catAccent = CATEGORY_ACCENT[challenge.category];
+  const catAccent = CATEGORY_ACCENT[challenge.category] ?? CATEGORY_ACCENT.practice;
 
   return (
     <motion.div
@@ -138,16 +149,36 @@ function ChallengeCard({ challenge, index }: { challenge: ChallengeItem; index: 
 export default function ChallengesPage() {
   const [category, setCategory] = useState<Category>("all");
   const [difficulty, setDifficulty] = useState<Difficulty>("all");
+  const { data: gamification } = useGamificationProfile();
+  const { data: streakInfo } = useStreak();
+  const { data: apiChallenges } = useChallengesList();
+  const { data: dailyData } = useDailyChallenge();
+  const currentStreak = streakInfo?.current ?? gamification?.streak ?? 0;
 
-  const filtered = mockChallenges.filter((c) => {
+  // Map API challenges to local shape
+  const allChallenges: ChallengeItem[] = (apiChallenges ?? []).map((c) => ({
+    id: c.id,
+    title: c.title,
+    description: c.description,
+    difficulty: c.difficulty as "easy" | "medium" | "hard",
+    category: "practice",
+    language: c.language,
+    xpReward: c.xpReward,
+    timeLimit: c.timeLimit ?? 30,
+    tags: c.tags,
+    completions: c.completions,
+    successRate: c.successRate,
+  }));
+
+  const filtered = allChallenges.filter((c) => {
     if (category !== "all" && c.category !== category) return false;
     if (difficulty !== "all" && c.difficulty !== difficulty) return false;
     return true;
   });
 
-  const completedCount = mockChallengeHistory.filter((c) => c.completed).length;
-  const totalXp = mockChallengeHistory.reduce((sum, c) => sum + c.xpEarned, 0);
-  const featured = mockChallenges.find((c) => c.isFeatured);
+  const completedCount = gamification?.achievementsCount ?? 0;
+  const totalXp = gamification?.xpTotal ?? 0;
+  const featured = allChallenges[0];
 
   return (
     <div className="space-y-6">
@@ -160,10 +191,10 @@ export default function ChallengesPage() {
       {/* Stats Strip */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { icon: <Flame size={16} className="text-orange-500" />, label: "Streak", value: `${mockUserProfile.streak} days`, gradient: "from-orange-500/10 to-orange-500/5" },
+          { icon: <Flame size={16} className="text-orange-500" />, label: "Streak", value: `${currentStreak} days`, gradient: "from-orange-500/10 to-orange-500/5" },
           { icon: <Trophy size={16} className="text-amber-500" />, label: "Completed", value: `${completedCount}`, gradient: "from-amber-500/10 to-amber-500/5" },
           { icon: <Zap size={16} className="text-primary" />, label: "XP Earned", value: totalXp.toLocaleString(), gradient: "from-primary/10 to-primary/5" },
-          { icon: <Target size={16} className="text-emerald-500" />, label: "Success Rate", value: `${mockChallengeHistory.length > 0 ? Math.round((completedCount / mockChallengeHistory.length) * 100) : 0}%`, gradient: "from-emerald-500/10 to-emerald-500/5" },
+          { icon: <Target size={16} className="text-emerald-500" />, label: "Available", value: `${allChallenges.length}`, gradient: "from-emerald-500/10 to-emerald-500/5" },
         ].map((stat) => (
           <div key={stat.label} className={cn("p-4 rounded-xl card-elevated bg-gradient-to-br border border-border/30", stat.gradient)}>
             <div className="flex items-center gap-2 mb-1.5">
@@ -209,7 +240,7 @@ export default function ChallengesPage() {
                     <span className="flex items-center gap-1"><Code2 size={12} /> {featured.language}</span>
                     <span className="flex items-center gap-1"><Timer size={12} /> {featured.timeLimit} min</span>
                     <span className="font-bold text-primary flex items-center gap-1"><Zap size={12} /> {featured.xpReward} XP</span>
-                    <span className="text-muted-foreground/50">x{mockDailyChallenge.multiplier} streak bonus</span>
+                    <span className="text-muted-foreground/50">x{dailyData?.multiplier ?? 1} streak bonus</span>
                   </div>
                 </div>
                 <div className="shrink-0 flex items-center gap-2">
@@ -277,49 +308,15 @@ export default function ChallengesPage() {
         </div>
       )}
 
-      {/* Challenge History */}
-      <div className="bg-background rounded-xl border border-border/50 card-elevated overflow-hidden">
-        <div className="px-5 py-4 border-b border-border/30 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Clock size={14} className="text-muted-foreground" />
-            <h3 className="text-sm font-semibold">Recent History</h3>
-          </div>
-          <span className="text-[10px] font-medium text-muted-foreground">
-            {completedCount} of {mockChallengeHistory.length} completed
-          </span>
+      {/* Challenge Summary */}
+      <div className="bg-background rounded-xl border border-border/50 card-elevated p-5 text-center">
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <Clock size={14} className="text-muted-foreground" />
+          <h3 className="text-sm font-semibold">Challenge Summary</h3>
         </div>
-        <div className="divide-y divide-border/20">
-          {mockChallengeHistory.slice(0, 5).map((entry) => {
-            const diff = DIFFICULTY_COLORS[entry.difficulty];
-            return (
-              <div key={entry.id} className="flex items-center gap-4 px-5 py-3 hover:bg-muted/20 transition-colors">
-                <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", entry.completed ? "bg-emerald-500/10" : "bg-red-500/10")}>
-                  {entry.completed
-                    ? <Zap size={14} className="text-emerald-500" />
-                    : <Clock size={14} className="text-red-400" />
-                  }
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{entry.title}</p>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded-full capitalize", diff.bg, diff.text)}>
-                      {entry.difficulty}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground">{entry.language}</span>
-                    <span className="text-[10px] text-muted-foreground">{entry.timeTaken}m</span>
-                  </div>
-                </div>
-                <div className="text-right shrink-0">
-                  {entry.completed ? (
-                    <span className="text-xs font-bold text-emerald-500">+{entry.xpEarned} XP</span>
-                  ) : (
-                    <span className="text-xs font-medium text-red-400">Failed</span>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <p className="text-xs text-muted-foreground">
+          {allChallenges.length} challenges available. Keep solving to earn XP!
+        </p>
       </div>
     </div>
   );

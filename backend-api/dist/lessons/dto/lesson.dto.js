@@ -126,13 +126,13 @@ __decorate([
     __metadata("design:type", String)
 ], LessonDetailDto.prototype, "slug", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ type: I18nTextDto }),
-    __metadata("design:type", I18nTextDto)
+    (0, swagger_1.ApiProperty)({ example: 'Variables & Data Types - EASY' }),
+    __metadata("design:type", String)
 ], LessonDetailDto.prototype, "title", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
-        description: 'Lesson content (text, code examples)',
-        example: { sections: [{ type: 'text', content: 'Welcome to...' }] },
+        description: 'Lesson content with theoryCards and quizQuestions',
+        example: { theoryCards: [], quizQuestions: [] },
     }),
     __metadata("design:type", Object)
 ], LessonDetailDto.prototype, "content", void 0);
@@ -145,13 +145,29 @@ __decorate([
     __metadata("design:type", Number)
 ], LessonDetailDto.prototype, "xpReward", void 0);
 __decorate([
+    (0, swagger_1.ApiPropertyOptional)({ example: 15 }),
+    __metadata("design:type", Object)
+], LessonDetailDto.prototype, "estimatedTimeMinutes", void 0);
+__decorate([
     (0, swagger_1.ApiProperty)({ example: 0 }),
     __metadata("design:type", Number)
 ], LessonDetailDto.prototype, "orderIndex", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)({ example: 'python-fundamentals' }),
+    __metadata("design:type", String)
+], LessonDetailDto.prototype, "courseSlug", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'Python Fundamentals' }),
+    __metadata("design:type", String)
+], LessonDetailDto.prototype, "courseTitle", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'python' }),
+    __metadata("design:type", String)
+], LessonDetailDto.prototype, "language", void 0);
+__decorate([
     (0, swagger_1.ApiProperty)({
         description: 'Level information',
-        example: { id: 'clx123', slug: 'variables', title: { en: 'Variables' } },
+        example: { id: 'clx123', slug: 'variables', title: 'Variables & Data Types' },
     }),
     __metadata("design:type", Object)
 ], LessonDetailDto.prototype, "level", void 0);
@@ -163,6 +179,26 @@ __decorate([
     (0, swagger_1.ApiPropertyOptional)({ type: [ChallengeSummaryDto] }),
     __metadata("design:type", Array)
 ], LessonDetailDto.prototype, "challenges", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: 'Test cases from first challenge' }),
+    __metadata("design:type", Array)
+], LessonDetailDto.prototype, "testCases", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: 'Hints from first challenge' }),
+    __metadata("design:type", Array)
+], LessonDetailDto.prototype, "hints", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: 'Difficulty tiers with starter code' }),
+    __metadata("design:type", Array)
+], LessonDetailDto.prototype, "tiers", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: 'Previous lesson in sequence' }),
+    __metadata("design:type", Object)
+], LessonDetailDto.prototype, "previousLesson", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: 'Next lesson in sequence' }),
+    __metadata("design:type", Object)
+], LessonDetailDto.prototype, "nextLesson", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({ type: UserLessonProgressDto }),
     __metadata("design:type", Object)

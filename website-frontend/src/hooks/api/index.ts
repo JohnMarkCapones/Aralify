@@ -46,4 +46,24 @@ export {
   useUserRanks,
 } from "./use-leaderboard";
 
-export { useActivityFeed, useUserActivity } from "./use-social";
+export {
+  useActivityFeed,
+  useUserActivity,
+  useFollowers,
+  useFollowing,
+  useFollow,
+  useUnfollow,
+  useSearchUsers,
+} from "./use-social";
+
+export {
+  useBookmarks,
+  useCreateBookmark,
+  useDeleteBookmark,
+} from "./use-bookmarks";
+
+export {
+  useChallengesList,
+  useDailyChallenge,
+  useChallengeDetail,
+} from "./use-challenges";

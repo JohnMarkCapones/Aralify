@@ -2,10 +2,16 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Flame, Zap } from "lucide-react";
+import { Trophy, Flame, Zap, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "../_components/page-header";
-import { mockLeaderboard, mockUserProfile } from "@/lib/data/dashboard";
+import {
+  useGlobalLeaderboard,
+  useWeeklyLeaderboard,
+  useMonthlyLeaderboard,
+  useUserRanks,
+} from "@/hooks/api";
+import type { LeaderboardEntry } from "@/lib/api";
 
 type Period = "weekly" | "monthly" | "all_time";
 
@@ -13,16 +19,35 @@ const MEDALS = ["", "bg-amber-400", "bg-zinc-300", "bg-amber-700"];
 
 // Podium order: 2nd, 1st, 3rd — stagger: 3rd rises first, then 2nd, then 1st
 const podiumDelays = [0.3, 0.5, 0.1];
-const podiumHeights = ["h-20", "h-28", "h-16"];
 
 export default function LeaderboardPage() {
   const [period, setPeriod] = useState<Period>("weekly");
 
-  const currentUser = mockLeaderboard.find((e) => e.isCurrentUser);
-  const top3 = mockLeaderboard.slice(0, 3);
-  const rest = mockLeaderboard.slice(3);
+  const { data: globalData, isLoading: loadingGlobal } = useGlobalLeaderboard({ limit: 20 });
+  const { data: weeklyData, isLoading: loadingWeekly } = useWeeklyLeaderboard();
+  const { data: monthlyData, isLoading: loadingMonthly } = useMonthlyLeaderboard();
+  const { data: ranks } = useUserRanks();
 
-  const percentile = ((1 - mockUserProfile.rank / mockUserProfile.totalUsers) * 100).toFixed(1);
+  const isLoading =
+    (period === "weekly" && loadingWeekly) ||
+    (period === "monthly" && loadingMonthly) ||
+    (period === "all_time" && loadingGlobal);
+
+  const activeData =
+    period === "weekly"
+      ? weeklyData
+      : period === "monthly"
+        ? monthlyData
+        : globalData;
+
+  const entries: LeaderboardEntry[] = activeData?.entries ?? [];
+  const currentUser = entries.find((e) => e.isCurrentUser);
+  const top3 = entries.slice(0, 3);
+  const rest = entries.slice(3);
+
+  const totalUsers = ranks?.totalUsers ?? activeData?.total ?? 1;
+  const userRank = currentUser?.rank ?? ranks?.global ?? 0;
+  const percentile = totalUsers > 0 ? ((1 - userRank / totalUsers) * 100).toFixed(1) : "0";
 
   return (
     <div className="space-y-6">
@@ -47,141 +72,157 @@ export default function LeaderboardPage() {
         }
       />
 
-      {/* User rank highlight */}
-      {currentUser && (
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-          className="bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl border border-primary/20 p-5"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">Your Rank</p>
-              <p className="text-3xl font-semibold">#{currentUser.rank}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Top {percentile}%</p>
-            </div>
-            <div className="text-right space-y-1">
-              <div className="flex items-center gap-1.5 justify-end">
-                <Zap size={14} className="text-primary" />
-                <span className="text-sm font-medium">{currentUser.xp.toLocaleString()} XP</span>
-              </div>
-              <div className="flex items-center gap-1.5 justify-end">
-                <Flame size={14} className="text-orange-500" />
-                <span className="text-sm font-medium">{currentUser.streak}-day streak</span>
-              </div>
-              <p className="text-xs text-muted-foreground">Level {currentUser.level}</p>
-            </div>
-          </div>
-        </motion.div>
-      )}
-
-      {/* Top 3 podium with staggered rise */}
-      <div className="grid grid-cols-3 gap-3 items-end">
-        {[top3[1], top3[0], top3[2]].map((entry, i) => {
-          const podiumOrder = [2, 1, 3];
-          const rank = podiumOrder[i];
-          return (
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : entries.length === 0 ? (
+        <div className="text-center py-16 text-muted-foreground">
+          <Trophy size={40} className="mx-auto mb-3 opacity-30" />
+          <p className="text-sm font-medium">No leaderboard data yet</p>
+          <p className="text-xs mt-1">Start learning to appear on the leaderboard</p>
+        </div>
+      ) : (
+        <>
+          {/* User rank highlight */}
+          {currentUser && (
             <motion.div
-              key={entry.id}
-              initial={{ opacity: 0, y: 40 }}
+              initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{
-                delay: podiumDelays[i],
-                duration: 0.5,
-                type: "spring",
-                stiffness: 200,
-                damping: 20,
-              }}
-              className={cn(
-                "bg-background rounded-xl border border-border/50 shadow-sm p-4 text-center",
-                rank === 1 && "ring-2 ring-amber-400/50"
-              )}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+              className="bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl border border-primary/20 p-5"
             >
-              {/* Medal with shine */}
-              <div className={cn(
-                "w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold mx-auto mb-2 relative overflow-hidden",
-                MEDALS[rank]
-              )}>
-                {rank}
-                {rank <= 3 && (
-                  <span className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/30 to-transparent bg-[length:200%_100%] pointer-events-none" />
-                )}
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Your Rank</p>
+                  <p className="text-3xl font-semibold">#{currentUser.rank}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Top {percentile}%</p>
+                </div>
+                <div className="text-right space-y-1">
+                  <div className="flex items-center gap-1.5 justify-end">
+                    <Zap size={14} className="text-primary" />
+                    <span className="text-sm font-medium">{currentUser.xp.toLocaleString()} XP</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 justify-end">
+                    <Flame size={14} className="text-orange-500" />
+                    <span className="text-sm font-medium">{currentUser.streak}-day streak</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Level {currentUser.level}</p>
+                </div>
               </div>
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mx-auto mb-2 text-sm font-semibold text-primary">
-                {entry.displayName.charAt(0)}
-              </div>
-              <p className="text-xs font-semibold truncate">{entry.displayName}</p>
-              <p className="text-[10px] text-muted-foreground">@{entry.username}</p>
-              <div className="mt-2 flex items-center justify-center gap-1">
-                <Zap size={10} className="text-primary" />
-                <span className="text-xs font-medium">{entry.xp.toLocaleString()}</span>
-              </div>
-              <p className="text-[10px] text-muted-foreground">Level {entry.level}</p>
             </motion.div>
-          );
-        })}
-      </div>
+          )}
 
-      {/* Full table */}
-      <div className="bg-background rounded-xl border border-border/50 shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border/30">
-                <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3 w-12">#</th>
-                <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">User</th>
-                <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3">Level</th>
-                <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3">XP</th>
-                <th className="text-right text-xs font-medium text-muted-foreground px-5 py-3">Streak</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rest.map((entry, i) => (
-                <motion.tr
-                  key={entry.id}
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.03, duration: 0.3 }}
-                  className={cn(
-                    "border-b border-border/20 last:border-b-0 transition-colors",
-                    entry.isCurrentUser
-                      ? "bg-primary/5 hover:bg-primary/10"
-                      : "hover:bg-muted/20"
-                  )}
-                >
-                  <td className="px-5 py-2.5 font-medium text-muted-foreground">{entry.rank}</td>
-                  <td className="px-4 py-2.5">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-[10px] font-semibold text-primary shrink-0">
-                        {entry.displayName.charAt(0)}
-                      </div>
-                      <div>
-                        <p className={cn("text-sm font-medium", entry.isCurrentUser && "text-primary")}>
-                          {entry.displayName}
-                          {entry.isCurrentUser && <span className="text-[10px] ml-1.5">(You)</span>}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground">@{entry.username}</p>
-                      </div>
+          {/* Top 3 podium with staggered rise */}
+          {top3.length >= 3 && (
+            <div className="grid grid-cols-3 gap-3 items-end">
+              {[top3[1], top3[0], top3[2]].map((entry, i) => {
+                const podiumOrder = [2, 1, 3];
+                const rank = podiumOrder[i];
+                return (
+                  <motion.div
+                    key={entry.id}
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{
+                      delay: podiumDelays[i],
+                      duration: 0.5,
+                      type: "spring",
+                      stiffness: 200,
+                      damping: 20,
+                    }}
+                    className={cn(
+                      "bg-background rounded-xl border border-border/50 shadow-sm p-4 text-center",
+                      rank === 1 && "ring-2 ring-amber-400/50"
+                    )}
+                  >
+                    {/* Medal with shine */}
+                    <div className={cn(
+                      "w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold mx-auto mb-2 relative overflow-hidden",
+                      MEDALS[rank]
+                    )}>
+                      {rank}
+                      {rank <= 3 && (
+                        <span className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/30 to-transparent bg-[length:200%_100%] pointer-events-none" />
+                      )}
                     </div>
-                  </td>
-                  <td className="px-4 py-2.5 text-right text-muted-foreground">{entry.level}</td>
-                  <td className="px-4 py-2.5 text-right font-medium">{entry.xp.toLocaleString()}</td>
-                  <td className="px-5 py-2.5 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <Flame size={12} className="text-orange-500" />
-                      <span className="text-muted-foreground">{entry.streak}</span>
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mx-auto mb-2 text-sm font-semibold text-primary">
+                      {entry.displayName.charAt(0)}
                     </div>
-                  </td>
-                </motion.tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                    <p className="text-xs font-semibold truncate">{entry.displayName}</p>
+                    <p className="text-[10px] text-muted-foreground">@{entry.username}</p>
+                    <div className="mt-2 flex items-center justify-center gap-1">
+                      <Zap size={10} className="text-primary" />
+                      <span className="text-xs font-medium">{entry.xp.toLocaleString()}</span>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">Level {entry.level}</p>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Full table */}
+          <div className="bg-background rounded-xl border border-border/50 shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border/30">
+                    <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3 w-12">#</th>
+                    <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">User</th>
+                    <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3">Level</th>
+                    <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3">XP</th>
+                    <th className="text-right text-xs font-medium text-muted-foreground px-5 py-3">Streak</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rest.map((entry, i) => (
+                    <motion.tr
+                      key={entry.id}
+                      initial={{ opacity: 0 }}
+                      whileInView={{ opacity: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: i * 0.03, duration: 0.3 }}
+                      className={cn(
+                        "border-b border-border/20 last:border-b-0 transition-colors",
+                        entry.isCurrentUser
+                          ? "bg-primary/5 hover:bg-primary/10"
+                          : "hover:bg-muted/20"
+                      )}
+                    >
+                      <td className="px-5 py-2.5 font-medium text-muted-foreground">{entry.rank}</td>
+                      <td className="px-4 py-2.5">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-[10px] font-semibold text-primary shrink-0">
+                            {entry.displayName.charAt(0)}
+                          </div>
+                          <div>
+                            <p className={cn("text-sm font-medium", entry.isCurrentUser && "text-primary")}>
+                              {entry.displayName}
+                              {entry.isCurrentUser && <span className="text-[10px] ml-1.5">(You)</span>}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground">@{entry.username}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-2.5 text-right text-muted-foreground">{entry.level}</td>
+                      <td className="px-4 py-2.5 text-right font-medium">{entry.xp.toLocaleString()}</td>
+                      <td className="px-5 py-2.5 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <Flame size={12} className="text-orange-500" />
+                          <span className="text-muted-foreground">{entry.streak}</span>
+                        </div>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

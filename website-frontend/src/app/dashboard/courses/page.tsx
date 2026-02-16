@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { BookOpen, ChevronRight, Clock, Star, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "../_components/page-header";
-import { mockEnrolledCourses, mockDiscoverCourses } from "@/lib/data/dashboard";
-import { coursesApi, usersApi, type CourseListItem, type UserCourseEntry } from "@/lib/api";
+import { type CourseListItem, type UserCourseEntry } from "@/lib/api";
+import { useCourses, useUserCourses } from "@/hooks/api";
 
 type Filter = "all" | "in_progress" | "completed";
 
@@ -57,37 +57,11 @@ function mapDiscoverCourse(c: any) {
 
 export default function CoursesPage() {
   const [filter, setFilter] = useState<Filter>("all");
-  const [enrolledCourses, setEnrolledCourses] = useState(mockEnrolledCourses);
-  const [discoverCourses, setDiscoverCourses] = useState(mockDiscoverCourses);
-  const [apiLoaded, setApiLoaded] = useState(false);
+  const { data: userCoursesData } = useUserCourses();
+  const { data: allCoursesData } = useCourses();
 
-  // Try to load from API, fallback to mock data
-  useEffect(() => {
-    async function loadCourses() {
-      try {
-        const [userCourses, allCourses] = await Promise.allSettled([
-          usersApi.getCourses(),
-          coursesApi.findAll(),
-        ]);
-
-        if (userCourses.status === "fulfilled" && userCourses.value.length > 0) {
-          setEnrolledCourses(userCourses.value.map(mapUserCourse));
-        }
-
-        if (allCourses.status === "fulfilled") {
-          const courses = allCourses.value as any[];
-          setDiscoverCourses(courses.map(mapDiscoverCourse));
-        }
-
-        setApiLoaded(true);
-      } catch {
-        // Keep mock data on error
-        setApiLoaded(true);
-      }
-    }
-
-    loadCourses();
-  }, []);
+  const enrolledCourses = (userCoursesData ?? []).map(mapUserCourse);
+  const discoverCourses = (allCoursesData ?? []).map(mapDiscoverCourse);
 
   const filteredCourses = filter === "all"
     ? enrolledCourses

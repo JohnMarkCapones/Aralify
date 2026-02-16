@@ -2,77 +2,60 @@
 
 import { PageShell } from "@/components/layout/PageShell";
 import { motion } from "framer-motion";
-import { Award, Lock, Star, Flame, Zap, Target, Trophy, Code2, BookOpen, Users, Clock, Shield, Sparkles } from "lucide-react";
+import { Award, Lock, Star, Flame, Zap, Target, Trophy, Code2, BookOpen, Users, Clock, Shield, Sparkles, Loader2 } from "lucide-react";
+import { useBadges } from "@/hooks/api";
 
-const badgeCategories = [
-  {
-    name: "Learning",
-    color: "bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400",
-    badges: [
-      { name: "First Steps", emoji: "👶", desc: "Complete your first lesson", earned: true, xp: 50 },
-      { name: "Quick Learner", emoji: "📚", desc: "Complete 5 lessons in one day", earned: true, xp: 100 },
-      { name: "Course Finisher", emoji: "🎓", desc: "Complete an entire course", earned: true, xp: 500 },
-      { name: "Polyglot", emoji: "🌐", desc: "Complete courses in 3 different languages", earned: false, xp: 750 },
-      { name: "Knowledge Seeker", emoji: "🧠", desc: "Complete 50 lessons total", earned: false, xp: 1000 },
-      { name: "Master Scholar", emoji: "🏛️", desc: "Complete all available courses", earned: false, xp: 5000 },
-    ],
-  },
-  {
-    name: "Streaks",
-    color: "bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400",
-    badges: [
-      { name: "3-Day Streak", emoji: "🔥", desc: "Maintain a 3-day learning streak", earned: true, xp: 50 },
-      { name: "7-Day Streak", emoji: "🔥", desc: "Maintain a 7-day learning streak", earned: true, xp: 150 },
-      { name: "30-Day Streak", emoji: "💪", desc: "Maintain a 30-day learning streak", earned: false, xp: 500 },
-      { name: "100-Day Legend", emoji: "⚡", desc: "Maintain a 100-day learning streak", earned: false, xp: 2000 },
-      { name: "365 Unstoppable", emoji: "👑", desc: "A full year without missing a day", earned: false, xp: 10000 },
-    ],
-  },
-  {
-    name: "Challenges",
-    color: "bg-green-100 text-green-600 dark:bg-green-900/40 dark:text-green-400",
-    badges: [
-      { name: "Challenger", emoji: "⚔️", desc: "Complete your first daily challenge", earned: true, xp: 100 },
-      { name: "Speed Demon", emoji: "🚀", desc: "Solve a challenge in under 2 minutes", earned: true, xp: 200 },
-      { name: "Perfect Score", emoji: "🎯", desc: "Get 100% on a Hard difficulty challenge", earned: false, xp: 500 },
-      { name: "Challenge King", emoji: "👑", desc: "Complete 50 daily challenges", earned: false, xp: 1500 },
-      { name: "Unbeatable", emoji: "🏆", desc: "Win 10 weekly challenges in a row", earned: false, xp: 3000 },
-    ],
-  },
-  {
-    name: "Social",
-    color: "bg-purple-100 text-purple-600 dark:bg-purple-900/40 dark:text-purple-400",
-    badges: [
-      { name: "Community Member", emoji: "🤝", desc: "Join the Aralify community", earned: true, xp: 25 },
-      { name: "Helpful Hand", emoji: "🙌", desc: "Get 10 upvotes on a discussion reply", earned: false, xp: 200 },
-      { name: "Mentor", emoji: "🧑‍🏫", desc: "Help 25 learners in discussions", earned: false, xp: 500 },
-      { name: "Influencer", emoji: "📢", desc: "Get 100 followers", earned: false, xp: 750 },
-      { name: "Community Hero", emoji: "🦸", desc: "Top contributor for a month", earned: false, xp: 2000 },
-    ],
-  },
-  {
-    name: "Difficulty",
-    color: "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400",
-    badges: [
-      { name: "Easy Rider", emoji: "🟢", desc: "Complete 10 Easy-tier lessons", earned: true, xp: 100 },
-      { name: "Stepping Up", emoji: "🟡", desc: "Complete 10 Medium-tier lessons", earned: false, xp: 300 },
-      { name: "Hard Mode", emoji: "🔴", desc: "Complete 10 Hard-tier lessons", earned: false, xp: 750 },
-      { name: "XP Maximizer", emoji: "💎", desc: "Earn 10,000 XP from Hard-tier alone", earned: false, xp: 2000 },
-      { name: "The Elite", emoji: "🏅", desc: "Complete every lesson on Hard", earned: false, xp: 10000 },
-    ],
-  },
-];
-
-const stats = [
-  { label: "Badges Earned", value: "7 / 26", icon: <Award size={20} /> },
-  { label: "Total Badge XP", value: "1,175", icon: <Zap size={20} /> },
-  { label: "Rarest Badge", value: "Speed Demon", icon: <Sparkles size={20} /> },
-  { label: "Next Badge", value: "30-Day Streak", icon: <Target size={20} /> },
-];
+const CATEGORY_COLORS: Record<string, string> = {
+  learning: "bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400",
+  streaks: "bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400",
+  challenges: "bg-green-100 text-green-600 dark:bg-green-900/40 dark:text-green-400",
+  social: "bg-purple-100 text-purple-600 dark:bg-purple-900/40 dark:text-purple-400",
+  difficulty: "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400",
+};
 
 export default function BadgesPage() {
-  const totalBadges = badgeCategories.reduce((a, c) => a + c.badges.length, 0);
-  const earnedBadges = badgeCategories.reduce((a, c) => a + c.badges.filter((b) => b.earned).length, 0);
+  const { data: apiBadges, isLoading } = useBadges();
+
+  const allBadges = apiBadges ?? [];
+  const totalBadges = allBadges.length;
+  const earnedBadges = allBadges.filter((b) => b.earned).length;
+
+  // Group by category
+  const categoryMap = new Map<string, typeof allBadges>();
+  allBadges.forEach((b) => {
+    const cat = b.category || "other";
+    if (!categoryMap.has(cat)) categoryMap.set(cat, []);
+    categoryMap.get(cat)!.push(b);
+  });
+
+  const badgeCategories = Array.from(categoryMap.entries()).map(([name, badges]) => ({
+    name: name.charAt(0).toUpperCase() + name.slice(1),
+    color: CATEGORY_COLORS[name] || "bg-gray-100 text-gray-600 dark:bg-gray-900/40 dark:text-gray-400",
+    badges: badges.map((b) => ({
+      name: b.name,
+      emoji: b.icon,
+      desc: b.description,
+      earned: b.earned,
+      xp: 0, // Badge XP not in API type, could be extended
+    })),
+  }));
+
+  const stats = [
+    { label: "Badges Earned", value: `${earnedBadges} / ${totalBadges}`, icon: <Award size={20} /> },
+    { label: "Total Badge XP", value: "—", icon: <Zap size={20} /> },
+    { label: "Rarest Badge", value: allBadges.filter((b) => b.earned && b.rarity === "legendary")[0]?.name || allBadges.filter((b) => b.earned && b.rarity === "epic")[0]?.name || "—", icon: <Sparkles size={20} /> },
+    { label: "Next Badge", value: allBadges.find((b) => !b.earned)?.name || "All earned!", icon: <Target size={20} /> },
+  ];
+
+  if (isLoading) {
+    return (
+      <PageShell>
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell>

@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Users, Zap, Flame, UserPlus, UserMinus, Heart, BarChart3 } from "lucide-react";
+import { Users, Zap, Flame, UserPlus, UserMinus, Heart, BarChart3, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "../_components/page-header";
-import { mockFriends } from "@/lib/data/dashboard";
+import { useFollowers, useFollowing, useFollow, useUnfollow } from "@/hooks/api";
+import type { SocialUser } from "@/lib/api";
 
-type Tab = "following" | "followers" | "discover";
+type Tab = "following" | "followers";
 
 const AVATAR_GRADIENTS = [
   "from-blue-500 to-cyan-400",
@@ -38,29 +39,43 @@ const cardVariants = {
 
 export default function SocialPage() {
   const [tab, setTab] = useState<Tab>("following");
-  const [followState, setFollowState] = useState<Record<string, boolean>>(() => {
-    const state: Record<string, boolean> = {};
-    mockFriends.forEach((f) => { state[f.id] = f.isFollowing; });
-    return state;
-  });
 
-  const following = mockFriends.filter((f) => followState[f.id]);
-  const followers = mockFriends.filter((f) => f.isFollowedBy);
-  const discover = mockFriends.filter((f) => !followState[f.id] && !f.isFollowedBy);
-  const mutuals = mockFriends.filter((f) => followState[f.id] && f.isFollowedBy);
+  const { data: followingData, isLoading: loadingFollowing } = useFollowing({ limit: 50 });
+  const { data: followersData, isLoading: loadingFollowers } = useFollowers({ limit: 50 });
+  const followMutation = useFollow();
+  const unfollowMutation = useUnfollow();
 
-  const displayed = tab === "following" ? following : tab === "followers" ? followers : discover;
+  const isLoading = loadingFollowing || loadingFollowers;
 
-  const toggleFollow = (id: string) => {
-    setFollowState((prev) => ({ ...prev, [id]: !prev[id] }));
+  const following = followingData?.users ?? [];
+  const followers = followersData?.users ?? [];
+  const mutuals = following.filter((f) =>
+    followers.some((fl) => fl.id === f.id)
+  );
+
+  const displayed = tab === "following" ? following : followers;
+
+  const toggleFollow = (user: SocialUser) => {
+    if (user.isFollowing) {
+      unfollowMutation.mutate(user.id);
+    } else {
+      followMutation.mutate(user.id);
+    }
   };
 
   const stats = [
-    { icon: UserPlus, label: "Following", value: following.length, color: "text-blue-500", bg: "bg-blue-100 dark:bg-blue-950/40" },
-    { icon: Users, label: "Followers", value: followers.length, color: "text-purple-500", bg: "bg-purple-100 dark:bg-purple-950/40" },
+    { icon: UserPlus, label: "Following", value: followingData?.total ?? following.length, color: "text-blue-500", bg: "bg-blue-100 dark:bg-blue-950/40" },
+    { icon: Users, label: "Followers", value: followersData?.total ?? followers.length, color: "text-purple-500", bg: "bg-purple-100 dark:bg-purple-950/40" },
     { icon: Heart, label: "Mutuals", value: mutuals.length, color: "text-rose-500", bg: "bg-rose-100 dark:bg-rose-950/40" },
-    { icon: BarChart3, label: "Discover", value: discover.length, color: "text-emerald-500", bg: "bg-emerald-100 dark:bg-emerald-950/40" },
   ];
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -69,7 +84,7 @@ export default function SocialPage() {
         description={`${following.length} following · ${followers.length} followers`}
         actions={
           <div className="flex gap-1 p-1 rounded-xl bg-muted/30">
-            {(["following", "followers", "discover"] as const).map((t) => (
+            {(["following", "followers"] as const).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
@@ -86,7 +101,7 @@ export default function SocialPage() {
       />
 
       {/* Stats banner */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-3 gap-3">
         {stats.map((stat, i) => (
           <motion.div
             key={stat.label}
@@ -133,8 +148,6 @@ export default function SocialPage() {
                     )}>
                       {friend.displayName.charAt(0)}
                     </div>
-                    {/* Online indicator */}
-                    <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-background" />
                   </div>
 
                   <div className="flex-1 min-w-0">
@@ -167,15 +180,16 @@ export default function SocialPage() {
                 </div>
                 <div className="mt-3 flex gap-2">
                   <button
-                    onClick={() => toggleFollow(friend.id)}
+                    onClick={() => toggleFollow(friend)}
+                    disabled={followMutation.isPending || unfollowMutation.isPending}
                     className={cn(
                       "flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
-                      followState[friend.id]
+                      friend.isFollowing
                         ? "border border-border/50 hover:bg-red-50 dark:hover:bg-red-950/20 hover:text-red-500 hover:border-red-200"
                         : "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:shadow-md"
                     )}
                   >
-                    {followState[friend.id] ? (
+                    {friend.isFollowing ? (
                       <>
                         <UserMinus size={12} />
                         Following
@@ -186,9 +200,6 @@ export default function SocialPage() {
                         Follow
                       </>
                     )}
-                  </button>
-                  <button className="px-3 py-1.5 border border-border/50 rounded-lg text-xs font-medium hover:bg-primary/5 hover:border-primary/30 hover:text-primary transition-all">
-                    Compare
                   </button>
                 </div>
               </div>
@@ -201,7 +212,7 @@ export default function SocialPage() {
         <div className="text-center py-12 text-muted-foreground">
           <Users size={40} className="mx-auto mb-3 opacity-30" />
           <p className="text-sm font-medium">
-            {tab === "following" ? "You're not following anyone yet" : tab === "followers" ? "No followers yet" : "No suggestions available"}
+            {tab === "following" ? "You're not following anyone yet" : "No followers yet"}
           </p>
         </div>
       )}

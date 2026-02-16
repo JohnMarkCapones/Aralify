@@ -237,6 +237,65 @@ export const socialApi = {
       `/api/v1/social/users/${username}/activity${qs ? `?${qs}` : ""}`
     );
   },
+  follow: (userId: string) =>
+    api.post<{ success: boolean }>(`/api/v1/social/follow/${userId}`),
+  unfollow: (userId: string) =>
+    api.delete<void>(`/api/v1/social/follow/${userId}`),
+  getFollowStatus: (userId: string) =>
+    api.get<{ isFollowing: boolean; isFollowedBy: boolean }>(
+      `/api/v1/social/follow-status/${userId}`
+    ),
+  getFollowers: (params?: { limit?: number; offset?: number }) => {
+    const query = new URLSearchParams();
+    if (params?.limit) query.set("limit", String(params.limit));
+    if (params?.offset) query.set("offset", String(params.offset));
+    const qs = query.toString();
+    return api.get<SocialUserListResponse>(
+      `/api/v1/social/followers${qs ? `?${qs}` : ""}`
+    );
+  },
+  getFollowing: (params?: { limit?: number; offset?: number }) => {
+    const query = new URLSearchParams();
+    if (params?.limit) query.set("limit", String(params.limit));
+    if (params?.offset) query.set("offset", String(params.offset));
+    const qs = query.toString();
+    return api.get<SocialUserListResponse>(
+      `/api/v1/social/following${qs ? `?${qs}` : ""}`
+    );
+  },
+  searchUsers: (query: string) =>
+    api.get<SocialUserListResponse>(
+      `/api/v1/social/search?q=${encodeURIComponent(query)}`
+    ),
+};
+
+// ─── Bookmarks API ──────────────────────────────────────────────────────────
+
+export const bookmarksApi = {
+  list: (params?: { type?: string }) => {
+    const query = new URLSearchParams();
+    if (params?.type) query.set("type", params.type);
+    const qs = query.toString();
+    return api.get<BookmarkItem[]>(`/api/v1/bookmarks${qs ? `?${qs}` : ""}`);
+  },
+  create: (data: { lessonId?: string; courseId?: string; type: string; notes?: string }) =>
+    api.post<BookmarkItem>("/api/v1/bookmarks", data),
+  remove: (id: string) => api.delete<void>(`/api/v1/bookmarks/${id}`),
+};
+
+// ─── Challenges API ─────────────────────────────────────────────────────────
+
+export const challengesApi = {
+  list: (params?: { difficulty?: string; language?: string }) => {
+    const query = new URLSearchParams();
+    if (params?.difficulty) query.set("difficulty", params.difficulty);
+    if (params?.language) query.set("language", params.language);
+    const qs = query.toString();
+    return api.get<ChallengeListItem[]>(`/api/v1/challenges${qs ? `?${qs}` : ""}`);
+  },
+  getDaily: () => api.get<DailyChallengeResponse>("/api/v1/challenges/daily"),
+  getDetail: (id: string) =>
+    api.get<ChallengeDetailResponse>(`/api/v1/challenges/${id}/detail`),
 };
 
 // ─── Recommendation API ──────────────────────────────────────────────────────
@@ -880,4 +939,79 @@ export interface ActivityFeedItem {
 export interface ActivityFeedResponse {
   activities: ActivityFeedItem[];
   total: number;
+}
+
+export interface SocialUser {
+  id: string;
+  username: string;
+  displayName: string;
+  avatarUrl: string | null;
+  level: number;
+  xp: number;
+  streak: number;
+  isFollowing: boolean;
+  isFollowedBy: boolean;
+}
+
+export interface SocialUserListResponse {
+  users: SocialUser[];
+  total: number;
+}
+
+// Bookmark types
+export interface BookmarkItem {
+  id: string;
+  lessonId?: string;
+  courseId?: string;
+  type: string;
+  title: string;
+  courseName?: string;
+  courseSlug?: string;
+  notes?: string;
+  status?: string;
+  difficulty?: string;
+  savedAt: string;
+}
+
+// Challenge types (public listing)
+export interface ChallengeListItem {
+  id: string;
+  title: string;
+  description: string;
+  difficulty: string;
+  language: string;
+  xpReward: number;
+  timeLimit?: number;
+  tags: string[];
+  completions: number;
+  successRate: number;
+}
+
+export interface DailyChallengeResponse {
+  id: string;
+  title: string;
+  description: string;
+  difficulty: string;
+  language: string;
+  xpReward: number;
+  multiplier: number;
+  timeLimit: number;
+  completed: boolean;
+  resetsAt: string;
+}
+
+export interface ChallengeDetailResponse {
+  id: string;
+  title: string;
+  description: string;
+  difficulty: string;
+  language: string;
+  xpReward: number;
+  timeLimit?: number;
+  tags: string[];
+  instructions: string;
+  starterCode: string;
+  testCases: { input: string; expectedOutput: string; description?: string }[];
+  hints: string[];
+  constraints: string[];
 }

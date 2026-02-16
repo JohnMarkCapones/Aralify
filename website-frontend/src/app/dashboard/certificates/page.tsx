@@ -5,6 +5,8 @@ import { GraduationCap, Download, Share2, BookOpen, Award, Zap, Star } from "luc
 import { cn } from "@/lib/utils";
 import { PageHeader } from "../_components/page-header";
 import { mockCertificates } from "@/lib/data/dashboard";
+// NOTE: Backend certificate generation endpoint is not yet implemented (returns stub).
+// Keeping mock data as fallback until the backend endpoint is ready.
 
 const GRADE_STYLES: Record<string, { bg: string; text: string; label: string }> = {
   "A+": { bg: "bg-amber-100 dark:bg-amber-950/40", text: "text-amber-600 dark:text-amber-400", label: "Gold" },

@@ -1,11 +1,11 @@
 "use client";
 
-import { use, useState, useCallback } from "react";
+import { use, useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ChevronLeft, Zap } from "lucide-react";
+import { ChevronLeft, Zap, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { mockLessonDetails } from "@/lib/data/dashboard";
+import { useLesson } from "@/hooks/api";
 import type { TestCase } from "@/lib/data/dashboard";
 import { LessonInstructions } from "./_components/lesson-instructions";
 import { CodeEditor } from "./_components/code-editor";
@@ -19,7 +19,34 @@ export default function LessonPage({
   params: Promise<{ courseId: string; lessonId: string }>;
 }) {
   const { courseId, lessonId } = use(params);
-  const lesson = mockLessonDetails[lessonId];
+  const { data: apiLesson, isLoading } = useLesson(lessonId);
+
+  // Map API lesson to local shape expected by sub-components
+  const lesson = apiLesson ? {
+    id: apiLesson.id,
+    title: apiLesson.title,
+    courseId: apiLesson.courseSlug,
+    courseTitle: apiLesson.courseTitle,
+    order: apiLesson.orderIndex,
+    instructions: apiLesson.content?.theoryCards?.map((c) => c.content).join("\n\n") ?? "",
+    language: apiLesson.language,
+    tiers: apiLesson.tiers?.map((t) => ({
+      difficulty: t.difficulty as "easy" | "medium" | "hard",
+      xpMultiplier: t.xpMultiplier,
+      starterCode: t.starterCode,
+      description: t.description,
+    })) ?? [],
+    testCases: (apiLesson.testCases ?? []).map((tc): { input: string; expectedOutput: string; description: string; passed: boolean } => ({
+      input: tc.input,
+      expectedOutput: tc.expectedOutput,
+      description: tc.description ?? "",
+      passed: false,
+    })),
+    hints: apiLesson.hints ?? [],
+    xpReward: apiLesson.xpReward,
+    prevLessonId: apiLesson.previousLesson?.id ?? null,
+    nextLessonId: apiLesson.nextLesson?.id ?? null,
+  } : null;
 
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("easy");
   const [code, setCode] = useState(lesson?.tiers[0]?.starterCode ?? "");
@@ -74,6 +101,14 @@ export default function LessonPage({
       setIsRunning(false);
     }, 1500);
   }, [lesson, xpDisplay]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   if (!lesson) {
     return (
