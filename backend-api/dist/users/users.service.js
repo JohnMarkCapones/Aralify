@@ -163,6 +163,91 @@ let UsersService = class UsersService {
         await this.usersRepository.skipOnboarding(userId);
         return { success: true };
     }
+    async getUserCourses(userId) {
+        const progress = await this.usersRepository.getUserCourses(userId);
+        return progress.map((p) => ({
+            id: p.course.id,
+            slug: p.course.slug,
+            title: p.course.title,
+            description: p.course.description,
+            language: p.course.language,
+            iconUrl: p.course.iconUrl,
+            color: p.course.color,
+            completionPercentage: p.completionPercentage,
+            totalXpEarned: p.totalXpEarned,
+            lastActivityAt: p.lastActivityAt?.toISOString() ?? null,
+            startedAt: p.startedAt.toISOString(),
+            completedAt: p.completedAt?.toISOString() ?? null,
+        }));
+    }
+    async getDetailedStats(userId, range) {
+        const user = await this.usersRepository.findById(userId);
+        if (!user)
+            throw new common_1.NotFoundException('User not found');
+        const days = range === '30d' ? 30 : 7;
+        const since = new Date();
+        since.setDate(since.getDate() - days);
+        const [xpTransactions, difficultyBreakdown, timeSpent, lessonsCompleted] = await Promise.all([
+            this.usersRepository.getXpOverTime(userId, since),
+            this.usersRepository.getDifficultyBreakdown(userId),
+            this.usersRepository.getTimeSpentInRange(userId, since),
+            this.usersRepository.getUserStats(userId),
+        ]);
+        const xpByDate = new Map();
+        for (const tx of xpTransactions) {
+            const dateKey = tx.createdAt.toISOString().split('T')[0];
+            xpByDate.set(dateKey, (xpByDate.get(dateKey) || 0) + tx.amount);
+        }
+        const xpOverTime = Array.from(xpByDate.entries()).map(([date, xp]) => ({
+            date,
+            xp,
+        }));
+        return {
+            xpOverTime,
+            difficultyBreakdown,
+            averageTimePerDayMins: Math.round(timeSpent / 60 / days),
+            totalXp: user.xpTotal,
+            lessonsCompleted: lessonsCompleted?.lessonsCompleted ?? 0,
+            currentStreak: user.streakCurrent,
+        };
+    }
+    async getCertificates(userId) {
+        const completed = await this.usersRepository.getCompletedCourses(userId);
+        return completed.map((p) => ({
+            courseId: p.course.id,
+            courseSlug: p.course.slug,
+            courseTitle: p.course.title,
+            completedAt: p.completedAt.toISOString(),
+            totalXpEarned: p.totalXpEarned,
+        }));
+    }
+    async getChallengeHistory(userId, page, limit) {
+        const result = await this.usersRepository.getChallengeHistory(userId, page, limit);
+        return {
+            data: result.data.map((s) => ({
+                id: s.id,
+                challengeId: s.challenge.id,
+                challengeTitle: s.challenge.title,
+                status: s.status,
+                attemptNumber: s.attemptNumber,
+                xpAwarded: s.xpAwarded,
+                createdAt: s.createdAt.toISOString(),
+            })),
+            total: result.total,
+        };
+    }
+    async getUserActivities(userId, options) {
+        const result = await this.usersRepository.getUserActivities(userId, options);
+        return {
+            data: result.data.map((a) => ({
+                id: a.id,
+                type: a.type,
+                data: a.data,
+                createdAt: a.createdAt.toISOString(),
+            })),
+            total: result.total,
+        };
+    }
     async canViewProfile(viewerId, targetUserId, privacySettings) {
         const visibility = privacySettings?.profileVisibility ?? client_1.ProfileVisibility.PUBLIC;
         if (visibility === client_1.ProfileVisibility.PUBLIC) {

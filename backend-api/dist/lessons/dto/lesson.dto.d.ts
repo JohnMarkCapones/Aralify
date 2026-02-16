@@ -32,19 +32,35 @@ export declare class UserLessonProgressDto {
 export declare class LessonDetailDto {
     id: string;
     slug: string;
-    title: I18nTextDto;
+    title: string;
     content?: any;
     difficulty: string;
     xpReward: number;
+    estimatedTimeMinutes?: number | null;
     orderIndex: number;
+    courseSlug: string;
+    courseTitle: string;
+    language: string;
     level: {
         id: string;
         slug: string;
-        title: I18nTextDto;
-        courseId: string;
+        title: string;
     };
     quizzes?: QuizSummaryDto[];
     challenges?: ChallengeSummaryDto[];
+    testCases?: any[];
+    hints?: string[];
+    tiers?: any[];
+    previousLesson?: {
+        id: string;
+        slug: string;
+        title: string;
+    } | null;
+    nextLesson?: {
+        id: string;
+        slug: string;
+        title: string;
+    } | null;
     userProgress?: UserLessonProgressDto | null;
 }
 export declare class StartLessonResponseDto {

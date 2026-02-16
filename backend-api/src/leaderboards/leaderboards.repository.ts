@@ -420,4 +420,56 @@ export class LeaderboardsRepository {
       userRank: Number(userRow.rank),
     };
   }
+
+  // ============================================================================
+  // Snapshots
+  // ============================================================================
+
+  async createSnapshot(
+    periodType: string,
+    periodStart: Date,
+    periodEnd: Date,
+    rankings: Array<{ userId: string; rank: number; xp: number; change: number }>,
+  ) {
+    return this.prisma.leaderboardSnapshot.create({
+      data: {
+        periodType,
+        periodStart,
+        periodEnd,
+        rankings: rankings as any,
+      },
+    });
+  }
+
+  async getLatestSnapshot(periodType: string) {
+    return this.prisma.leaderboardSnapshot.findFirst({
+      where: { periodType },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async getAllTimeRankings(limit: number): Promise<LeaderboardEntry[]> {
+    const users = await this.prisma.user.findMany({
+      where: { isActive: true, xpTotal: { gt: 0 } },
+      orderBy: { xpTotal: 'desc' },
+      take: limit,
+      select: {
+        id: true,
+        username: true,
+        displayName: true,
+        avatarUrl: true,
+        xpTotal: true,
+        level: true,
+      },
+    });
+
+    return users.map((u) => ({
+      userId: u.id,
+      username: u.username,
+      displayName: u.displayName,
+      avatarUrl: u.avatarUrl,
+      xp: u.xpTotal,
+      level: u.level,
+    }));
+  }
 }

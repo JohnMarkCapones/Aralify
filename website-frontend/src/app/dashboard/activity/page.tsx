@@ -2,11 +2,21 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Clock, BookOpen, Swords, Trophy, Users, Zap, Flame, Activity } from "lucide-react";
+import { Clock, BookOpen, Swords, Trophy, Users, Zap, Flame, Activity, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "../_components/page-header";
-import { mockActivities } from "@/lib/data/dashboard";
-import type { ActivityItem } from "@/lib/data/dashboard";
+import { useActivityFeed } from "@/hooks/api";
+
+interface ActivityItem {
+  id: string;
+  type: "lesson" | "challenge" | "achievement" | "social" | "badge" | "streak" | "xp";
+  title: string;
+  description: string;
+  xp: number | null;
+  timestamp: string;
+  icon: string;
+  relatedUrl?: string;
+}
 
 type TypeFilter = "all" | ActivityItem["type"];
 
@@ -73,7 +83,7 @@ const cardVariants = {
 };
 
 function groupByDate(items: ActivityItem[]): { label: string; items: ActivityItem[] }[] {
-  const now = new Date("2026-02-09T12:00:00Z");
+  const now = new Date();
   const today = now.toDateString();
   const yesterday = new Date(now.getTime() - 86_400_000).toDateString();
 
@@ -100,26 +110,60 @@ function groupByDate(items: ActivityItem[]): { label: string; items: ActivityIte
   return order.filter((l) => groups[l]).map((label) => ({ label, items: groups[label] }));
 }
 
+function mapActivityType(type: string): ActivityItem["type"] {
+  const map: Record<string, ActivityItem["type"]> = {
+    lesson_completed: "lesson",
+    achievement_unlocked: "achievement",
+    badge_earned: "badge",
+    streak_milestone: "streak",
+    challenge_completed: "challenge",
+    course_started: "lesson",
+    course_completed: "achievement",
+    level_up: "xp",
+  };
+  return map[type] || "lesson";
+}
+
 export default function ActivityPage() {
   const [filter, setFilter] = useState<TypeFilter>("all");
+  const { data: feedData, isLoading } = useActivityFeed({ limit: 50 });
+
+  const allActivities: ActivityItem[] = (feedData?.activities ?? []).map((a) => ({
+    id: a.id,
+    type: mapActivityType(a.type),
+    title: (a.data?.title as string) || a.type.replace(/_/g, " "),
+    description: (a.data?.description as string) || `${a.displayName} ${a.type.replace(/_/g, " ")}`,
+    xp: (a.data?.xp as number) || null,
+    timestamp: a.createdAt,
+    icon: a.type,
+    relatedUrl: a.data?.url as string | undefined,
+  }));
 
   const filtered = filter === "all"
-    ? mockActivities
-    : mockActivities.filter((a) => a.type === filter);
+    ? allActivities
+    : allActivities.filter((a) => a.type === filter);
 
   const groups = groupByDate(filtered);
 
   // Stats
-  const totalXp = mockActivities.reduce((sum, a) => sum + (a.xp ?? 0), 0);
-  const lessonCount = mockActivities.filter((a) => a.type === "lesson").length;
-  const challengeCount = mockActivities.filter((a) => a.type === "challenge").length;
+  const totalXp = allActivities.reduce((sum, a) => sum + (a.xp ?? 0), 0);
+  const lessonCount = allActivities.filter((a) => a.type === "lesson").length;
+  const challengeCount = allActivities.filter((a) => a.type === "challenge").length;
 
   const stats = [
-    { icon: Activity, label: "Activities", value: mockActivities.length, color: "text-blue-500", bg: "bg-blue-100 dark:bg-blue-950/40" },
+    { icon: Activity, label: "Activities", value: allActivities.length, color: "text-blue-500", bg: "bg-blue-100 dark:bg-blue-950/40" },
     { icon: Zap, label: "XP Earned", value: `+${totalXp}`, color: "text-primary", bg: "bg-primary/10" },
     { icon: BookOpen, label: "Lessons", value: lessonCount, color: "text-emerald-500", bg: "bg-emerald-100 dark:bg-emerald-950/40" },
     { icon: Swords, label: "Challenges", value: challengeCount, color: "text-orange-500", bg: "bg-orange-100 dark:bg-orange-950/40" },
   ];
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

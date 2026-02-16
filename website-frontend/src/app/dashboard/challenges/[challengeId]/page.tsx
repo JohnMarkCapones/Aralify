@@ -10,8 +10,15 @@ import {
   Code2, Timer, Trophy, AlertTriangle, Flame,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { mockChallengeDetails } from "@/lib/data/dashboard";
-import type { TestCase } from "@/lib/data/dashboard";
+import { useChallengeDetail } from "@/hooks/api";
+import type { ChallengeDetailResponse } from "@/lib/api";
+
+interface TestCase {
+  input: string;
+  expectedOutput: string;
+  description?: string;
+  passed?: boolean;
+}
 
 /* ── Difficulty colors ──────────────────────────────────────────────── */
 const DIFF = {
@@ -30,9 +37,9 @@ export default function ChallengePage({
   params: Promise<{ challengeId: string }>;
 }) {
   const { challengeId } = use(params);
-  const challenge = mockChallengeDetails[challengeId];
+  const { data: challenge, isLoading } = useChallengeDetail(challengeId);
 
-  const [code, setCode] = useState(challenge?.starterCode ?? "");
+  const [code, setCode] = useState("");
   const [output, setOutput] = useState("");
   const [testResults, setTestResults] = useState<TestCase[] | null>(null);
   const [isRunning, setIsRunning] = useState(false);
@@ -40,11 +47,21 @@ export default function ChallengePage({
   const [outputTab, setOutputTab] = useState<OutputTab>("output");
   const [outputCollapsed, setOutputCollapsed] = useState(false);
   const [revealedHints, setRevealedHints] = useState(0);
-  const [timeRemaining, setTimeRemaining] = useState((challenge?.timeLimit ?? 30) * 60);
+  const [timeRemaining, setTimeRemaining] = useState(30 * 60);
   const [started, setStarted] = useState(false);
+  const [initialized, setInitialized] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const diff = challenge ? DIFF[challenge.difficulty] : DIFF.easy;
+  // Initialize code and timer when challenge data loads
+  useEffect(() => {
+    if (challenge && !initialized) {
+      setCode(challenge.starterCode);
+      setTimeRemaining((challenge.timeLimit ?? 30) * 60);
+      setInitialized(true);
+    }
+  }, [challenge, initialized]);
+
+  const diff = challenge ? DIFF[challenge.difficulty as keyof typeof DIFF] ?? DIFF.easy : DIFF.easy;
 
   // Countdown timer
   useEffect(() => {
@@ -127,6 +144,15 @@ export default function ChallengePage({
     if (ta && gutter) gutter.scrollTop = ta.scrollTop;
   };
 
+  /* ── Loading ─────────────────────────────────────────────────────── */
+  if (isLoading) {
+    return (
+      <div className="flex-1 flex items-center justify-center py-20">
+        <Loader2 size={24} className="animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   /* ── Not found ────────────────────────────────────────────────────── */
   if (!challenge) {
     return (
@@ -163,7 +189,7 @@ export default function ChallengePage({
             {challenge.difficulty}
           </span>
           <span className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider">
-            {challenge.category}
+            {challenge.language}
           </span>
           {challenge.tags.map((tag) => (
             <span key={tag} className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-muted/40 text-muted-foreground">
@@ -177,24 +203,6 @@ export default function ChallengePage({
       {/* Body */}
       <div className="flex-1 overflow-y-auto p-4 space-y-0.5 scrollbar-thin">
         {renderMarkdown(challenge.instructions)}
-
-        {/* Examples */}
-        {challenge.examples.length > 0 && (
-          <div className="mt-4">
-            <h3 className="text-sm font-semibold mb-2">Examples</h3>
-            <div className="space-y-2">
-              {challenge.examples.map((ex, i) => (
-                <div key={i} className="bg-muted/30 border border-border/20 rounded-lg p-3">
-                  <div className="text-xs space-y-1">
-                    <p><span className="font-semibold text-foreground">Input:</span> <code className="bg-muted/60 px-1.5 py-0.5 rounded text-[11px] font-mono">{ex.input}</code></p>
-                    <p><span className="font-semibold text-foreground">Output:</span> <code className="bg-muted/60 px-1.5 py-0.5 rounded text-[11px] font-mono">{ex.output}</code></p>
-                    {ex.explanation && <p className="text-muted-foreground italic">{ex.explanation}</p>}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Constraints */}
         {challenge.constraints.length > 0 && (

@@ -1,7 +1,23 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { DashboardShellWrapper } from "./dashboard-shell-wrapper";
-import { mockUserProfile } from "@/lib/data/dashboard";
+
+interface AuthMeResponse {
+  username?: string;
+  displayName?: string;
+  avatarUrl?: string | null;
+  level?: number;
+  xpTotal?: number;
+  streakCurrent?: number;
+}
+
+interface GamificationProfileResponse {
+  xpToNextLevel?: number;
+  rank?: number;
+  level?: number;
+  xpTotal?: number;
+  streak?: number;
+}
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -14,19 +30,21 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const token = (await supabase.auth.getSession()).data.session?.access_token;
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-  let profile: { username?: string; displayName?: string } | null = null;
+  let profile: AuthMeResponse | null = null;
+  let gamification: GamificationProfileResponse | null = null;
 
   if (apiUrl && token) {
-    try {
-      const res = await fetch(`${apiUrl}/api/v1/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-        cache: "no-store",
-      });
-      if (res.ok) {
-        profile = await res.json();
-      }
-    } catch {
-      // API unavailable — dashboard will use defaults
+    const headers = { Authorization: `Bearer ${token}` };
+    const [profileRes, gamificationRes] = await Promise.allSettled([
+      fetch(`${apiUrl}/api/v1/auth/me`, { headers, cache: "no-store" }),
+      fetch(`${apiUrl}/api/v1/gamification/profile`, { headers, cache: "no-store" }),
+    ]);
+
+    if (profileRes.status === "fulfilled" && profileRes.value.ok) {
+      profile = await profileRes.value.json();
+    }
+    if (gamificationRes.status === "fulfilled" && gamificationRes.value.ok) {
+      gamification = await gamificationRes.value.json();
     }
   }
 
@@ -35,12 +53,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <DashboardShellWrapper
       userName={displayName}
-      level={mockUserProfile.level}
-      xp={mockUserProfile.xp}
-      xpToNextLevel={mockUserProfile.xpToNextLevel}
-      streak={mockUserProfile.streak}
-      rank={mockUserProfile.rank}
-      avatarUrl={mockUserProfile.avatarUrl}
+      level={gamification?.level ?? profile?.level ?? 1}
+      xp={gamification?.xpTotal ?? profile?.xpTotal ?? 0}
+      xpToNextLevel={gamification?.xpToNextLevel ?? 1000}
+      streak={gamification?.streak ?? profile?.streakCurrent ?? 0}
+      rank={gamification?.rank ?? 0}
+      avatarUrl={profile?.avatarUrl ?? null}
     >
       {children}
     </DashboardShellWrapper>

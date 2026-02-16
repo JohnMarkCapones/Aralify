@@ -7,8 +7,6 @@ export function generateStaticParams() {
 }
 
 export function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
-  // Since this is sync, we need to handle it carefully
-  // In Next.js 16 with async params, we use a different pattern
   return {
     title: "Course | Aralify",
   };
@@ -16,6 +14,9 @@ export function generateMetadata({ params }: { params: Promise<{ slug: string }>
 
 export default async function CourseDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+
+  // Use mock data as static fallback; CourseDetailClient will
+  // attempt to fetch fresh data from the API on the client side
   const course = courses.find((c) => c.slug === slug);
 
   if (!course) {

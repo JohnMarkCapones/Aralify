@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Award, Lock, ChevronRight } from "lucide-react";
+import { Award, Lock, ChevronRight, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "../_components/page-header";
-import { mockAchievements } from "@/lib/data/dashboard";
-import type { UserAchievement } from "@/lib/data/dashboard";
+import { useAchievements } from "@/hooks/api";
+import type { AchievementItem } from "@/lib/api";
 
-type Category = "all" | UserAchievement["category"];
+type Category = "all" | string;
 
 const CATEGORIES: { value: Category; label: string }[] = [
   { value: "all", label: "All" },
@@ -51,23 +51,34 @@ const cardVariants = {
 
 export default function AchievementsPage() {
   const [category, setCategory] = useState<Category>("all");
+  const { data: achievements, isLoading } = useAchievements();
+
+  const allAchievements = achievements ?? [];
 
   const filtered = category === "all"
-    ? mockAchievements
-    : mockAchievements.filter((a) => a.category === category);
+    ? allAchievements
+    : allAchievements.filter((a) => a.category === category);
 
-  const unlockedCount = mockAchievements.filter((a) => a.unlocked).length;
+  const unlockedCount = allAchievements.filter((a) => a.unlocked).length;
 
   // Next achievement to unlock
-  const nextAchievement = mockAchievements
-    .filter((a) => !a.unlocked)
+  const nextAchievement = allAchievements
+    .filter((a) => !a.unlocked && a.maxProgress > 0)
     .sort((a, b) => (b.progress / b.maxProgress) - (a.progress / a.maxProgress))[0];
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Achievements"
-        description={`${unlockedCount} of ${mockAchievements.length} unlocked`}
+        description={`${unlockedCount} of ${allAchievements.length} unlocked`}
         actions={
           <div className="flex gap-1 p-1 rounded-xl bg-muted/30">
             {CATEGORIES.map((c) => (

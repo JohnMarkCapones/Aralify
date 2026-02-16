@@ -21,9 +21,12 @@ export declare class CoursesRepository {
         slug: string;
         titleEn: string | null;
         titleFil: string | null;
+        descriptionEn: string | null;
+        descriptionFil: string | null;
         iconUrl: string | null;
         color: string | null;
         orderIndex: number;
+        estimatedHours: number | null;
         deletedAt: Date | null;
     })[]>;
     findBySlug(slug: string): Promise<({
@@ -36,11 +39,14 @@ export declare class CoursesRepository {
                 title: string;
                 isPublished: boolean;
                 slug: string;
+                titleEn: string | null;
+                titleFil: string | null;
                 orderIndex: number;
                 deletedAt: Date | null;
                 levelId: string;
                 difficulty: import(".prisma/client").$Enums.Difficulty;
                 xpReward: number;
+                estimatedTimeMinutes: number | null;
                 minQuizScore: number | null;
             }[];
         } & {
@@ -51,6 +57,10 @@ export declare class CoursesRepository {
             title: string;
             isPublished: boolean;
             slug: string;
+            titleEn: string | null;
+            titleFil: string | null;
+            descriptionEn: string | null;
+            descriptionFil: string | null;
             orderIndex: number;
             deletedAt: Date | null;
             courseId: string;
@@ -66,9 +76,12 @@ export declare class CoursesRepository {
         slug: string;
         titleEn: string | null;
         titleFil: string | null;
+        descriptionEn: string | null;
+        descriptionFil: string | null;
         iconUrl: string | null;
         color: string | null;
         orderIndex: number;
+        estimatedHours: number | null;
         deletedAt: Date | null;
     }) | null>;
     findById(id: string): Promise<{
@@ -82,9 +95,12 @@ export declare class CoursesRepository {
         slug: string;
         titleEn: string | null;
         titleFil: string | null;
+        descriptionEn: string | null;
+        descriptionFil: string | null;
         iconUrl: string | null;
         color: string | null;
         orderIndex: number;
+        estimatedHours: number | null;
         deletedAt: Date | null;
     } | null>;
     getLevels(courseId: string): Promise<({
@@ -96,11 +112,14 @@ export declare class CoursesRepository {
             title: string;
             isPublished: boolean;
             slug: string;
+            titleEn: string | null;
+            titleFil: string | null;
             orderIndex: number;
             deletedAt: Date | null;
             levelId: string;
             difficulty: import(".prisma/client").$Enums.Difficulty;
             xpReward: number;
+            estimatedTimeMinutes: number | null;
             minQuizScore: number | null;
         }[];
     } & {
@@ -111,6 +130,10 @@ export declare class CoursesRepository {
         title: string;
         isPublished: boolean;
         slug: string;
+        titleEn: string | null;
+        titleFil: string | null;
+        descriptionEn: string | null;
+        descriptionFil: string | null;
         orderIndex: number;
         deletedAt: Date | null;
         courseId: string;
@@ -144,11 +167,14 @@ export declare class CoursesRepository {
             title: string;
             isPublished: boolean;
             slug: string;
+            titleEn: string | null;
+            titleFil: string | null;
             orderIndex: number;
             deletedAt: Date | null;
             levelId: string;
             difficulty: import(".prisma/client").$Enums.Difficulty;
             xpReward: number;
+            estimatedTimeMinutes: number | null;
             minQuizScore: number | null;
         };
     } & {

@@ -35,9 +35,10 @@ export async function proxy(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   // Protected routes - redirect to login if not authenticated
-  const protectedRoutes = ['/dashboard', '/courses', '/profile', '/settings'];
+  const protectedRoutes = ['/dashboard', '/profile', '/pathfinder'];
   const isProtectedRoute = protectedRoutes.some((route) =>
-    request.nextUrl.pathname.startsWith(route)
+    request.nextUrl.pathname === route ||
+    request.nextUrl.pathname.startsWith(route + '/')
   );
 
   if (isProtectedRoute && !user) {
@@ -50,7 +51,7 @@ export async function proxy(request: NextRequest) {
   // Redirect logged in users away from auth pages
   const authRoutes = ['/login', '/signup'];
   const isAuthRoute = authRoutes.some((route) =>
-    request.nextUrl.pathname.startsWith(route)
+    request.nextUrl.pathname === route
   );
 
   if (isAuthRoute && user) {

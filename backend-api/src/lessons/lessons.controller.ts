@@ -41,6 +41,21 @@ export class LessonsController {
     private readonly challengeService: ChallengeService,
   ) {}
 
+  @Get('by-slug/:slug')
+  @Public()
+  @ApiOperation({ summary: 'Get lesson by slug and optional difficulty' })
+  @ApiParam({ name: 'slug', example: 'variables-data-types-lesson', description: 'Lesson slug' })
+  @ApiQuery({ name: 'difficulty', required: false, example: 'EASY', description: 'Difficulty filter' })
+  @ApiResponse({ status: 200, description: 'Returns lesson details', type: LessonDetailDto })
+  @ApiResponse({ status: 404, description: 'Lesson not found' })
+  async findBySlug(
+    @Param('slug') slug: string,
+    @Query('difficulty') difficulty?: string,
+    @CurrentUser() user?: User,
+  ) {
+    return this.lessonsService.findBySlug(slug, difficulty, user?.id);
+  }
+
   @Get(':id')
   @Public()
   @ApiOperation({ summary: 'Get lesson content with quizzes and challenges' })
@@ -107,6 +122,20 @@ export class LessonsController {
   @ApiResponse({ status: 404, description: 'Lesson not found' })
   async getQuizzes(@Param('id') id: string): Promise<LessonQuizzesResponseDto> {
     return this.lessonsService.getQuizzes(id);
+  }
+
+  @Post(':id/quiz/submit')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Submit all quiz answers at once for a lesson' })
+  @ApiParam({ name: 'id', example: 'clx1234567890', description: 'Lesson ID' })
+  @ApiResponse({ status: 200, description: 'Quiz answers submitted and graded' })
+  @ApiResponse({ status: 404, description: 'Lesson not found' })
+  async submitQuizBulk(
+    @Param('id') id: string,
+    @CurrentUser() user: User,
+    @Body() body: { answers: Record<string, string> },
+  ) {
+    return this.lessonsService.submitQuizBulk(id, user.id, body.answers);
   }
 
   @Post(':id/quizzes/:quizId/answer')

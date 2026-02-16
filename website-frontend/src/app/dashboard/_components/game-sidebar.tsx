@@ -121,10 +121,10 @@ export function GameSidebar({ onProfileClick }: GameSidebarProps) {
 
         {/* Bottom section */}
         <Link
-          href="/settings"
+          href="/dashboard/settings"
           className={cn(
             "flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors group",
-            pathname === "/settings" || pathname.startsWith("/settings/")
+            pathname === "/dashboard/settings" || pathname.startsWith("/dashboard/settings/")
               ? "bg-primary/10 text-primary"
               : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
           )}

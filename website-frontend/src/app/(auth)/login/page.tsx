@@ -8,6 +8,8 @@ import { createClient } from '@/lib/supabase/client';
 import { NeoButton } from '@/components/ui/neo-button';
 import { Code2, ArrowRight, Flame, Trophy, Zap, Eye, EyeOff, Terminal, Sparkles, CheckCircle } from 'lucide-react';
 import { FloatingShapes, GridPattern } from '@/components/effects';
+import { authApi } from '@/lib/api';
+import { useUserStore } from '@/stores/user-store';
 
 function LoginForm() {
   const [email, setEmail] = useState('');
@@ -18,6 +20,7 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect') || '/dashboard';
+  const { setUser } = useUserStore();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +38,24 @@ function LoginForm() {
       setError(error.message);
       setLoading(false);
       return;
+    }
+
+    // Sync with backend
+    try {
+      await authApi.registerSession().catch(() => {});
+      const me = await authApi.getMe();
+      setUser({
+        id: me.id,
+        email: me.email,
+        username: me.username,
+        displayName: me.displayName,
+        avatarUrl: me.avatarUrl,
+        xpTotal: me.xpTotal,
+        level: me.level,
+        streakCurrent: me.streakCurrent,
+      });
+    } catch {
+      // Backend sync is best-effort; session is valid via Supabase
     }
 
     router.push(redirect);

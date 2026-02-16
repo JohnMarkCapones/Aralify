@@ -15,8 +15,19 @@ export class LessonsRepository {
             id: true,
             slug: true,
             title: true,
+            titleEn: true,
+            titleFil: true,
             courseId: true,
             orderIndex: true,
+            course: {
+              select: {
+                slug: true,
+                title: true,
+                language: true,
+                titleEn: true,
+                titleFil: true,
+              },
+            },
           },
         },
         quizzes: {
@@ -36,8 +47,19 @@ export class LessonsRepository {
             id: true,
             slug: true,
             title: true,
+            titleEn: true,
+            titleFil: true,
             courseId: true,
             orderIndex: true,
+            course: {
+              select: {
+                slug: true,
+                title: true,
+                language: true,
+                titleEn: true,
+                titleFil: true,
+              },
+            },
           },
         },
         quizzes: {
@@ -554,6 +576,69 @@ export class LessonsRepository {
   async getLessonById(lessonId: string) {
     return this.prisma.lesson.findUnique({
       where: { id: lessonId },
+    });
+  }
+
+  async findSiblingLessons(levelId: string, currentOrderIndex: number, difficulty: Difficulty) {
+    const [previous, next] = await Promise.all([
+      this.prisma.lesson.findFirst({
+        where: {
+          levelId,
+          difficulty,
+          orderIndex: { lt: currentOrderIndex },
+          isPublished: true,
+        },
+        orderBy: { orderIndex: 'desc' },
+        select: { id: true, slug: true, title: true },
+      }),
+      this.prisma.lesson.findFirst({
+        where: {
+          levelId,
+          difficulty,
+          orderIndex: { gt: currentOrderIndex },
+          isPublished: true,
+        },
+        orderBy: { orderIndex: 'asc' },
+        select: { id: true, slug: true, title: true },
+      }),
+    ]);
+
+    return { previous, next };
+  }
+
+  async findBySlug(slug: string, difficulty?: Difficulty) {
+    return this.prisma.lesson.findFirst({
+      where: {
+        slug,
+        ...(difficulty ? { difficulty } : {}),
+        isPublished: true,
+      },
+      include: {
+        level: {
+          select: {
+            id: true,
+            slug: true,
+            title: true,
+            titleEn: true,
+            titleFil: true,
+            courseId: true,
+            orderIndex: true,
+            course: {
+              select: {
+                slug: true,
+                title: true,
+                language: true,
+                titleEn: true,
+                titleFil: true,
+              },
+            },
+          },
+        },
+        quizzes: {
+          orderBy: { orderIndex: 'asc' },
+        },
+        challenges: true,
+      },
     });
   }
 }

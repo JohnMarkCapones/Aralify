@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { LeaderboardsRepository, LeaderboardEntry } from './leaderboards.repository';
 import {
   LeaderboardEntryDto,
@@ -11,8 +11,14 @@ import {
   AroundUserResponseDto,
 } from './dto';
 
+export interface SnapshotResult {
+  snapshotsCreated: number;
+}
+
 @Injectable()
 export class LeaderboardsService {
+  private readonly logger = new Logger(LeaderboardsService.name);
+
   constructor(private readonly repository: LeaderboardsRepository) {}
 
   // ============================================================================
@@ -244,6 +250,91 @@ export class LeaderboardsService {
       userRank: result.userRank,
       type,
     };
+  }
+
+  // ============================================================================
+  // Snapshot Generation
+  // ============================================================================
+
+  async generateSnapshots(): Promise<SnapshotResult> {
+    let snapshotsCreated = 0;
+
+    // Weekly snapshot
+    const { start: weekStart, end: weekEnd } = this.getCurrentWeekBounds();
+    const weeklyEntries = await this.repository.getWeeklyLeaderboard(
+      weekStart,
+      weekEnd,
+      100,
+    );
+    const prevWeekly = await this.repository.getLatestSnapshot('weekly');
+    const prevWeeklyMap = this.buildPrevRankMap(prevWeekly);
+
+    const weeklyRankings = weeklyEntries.map((entry) => ({
+      userId: entry.userId,
+      rank: entry.rank,
+      xp: entry.xp,
+      change: prevWeeklyMap.get(entry.userId)
+        ? prevWeeklyMap.get(entry.userId)! - entry.rank
+        : 0,
+    }));
+
+    await this.repository.createSnapshot('weekly', weekStart, weekEnd, weeklyRankings);
+    snapshotsCreated++;
+
+    // Monthly snapshot
+    const { start: monthStart, end: monthEnd } = this.getMonthBounds();
+    const monthlyEntries = await this.repository.getMonthlyLeaderboard(
+      monthStart,
+      monthEnd,
+      100,
+    );
+    const prevMonthly = await this.repository.getLatestSnapshot('monthly');
+    const prevMonthlyMap = this.buildPrevRankMap(prevMonthly);
+
+    const monthlyRankings = monthlyEntries.map((entry) => ({
+      userId: entry.userId,
+      rank: entry.rank,
+      xp: entry.xp,
+      change: prevMonthlyMap.get(entry.userId)
+        ? prevMonthlyMap.get(entry.userId)! - entry.rank
+        : 0,
+    }));
+
+    await this.repository.createSnapshot('monthly', monthStart, monthEnd, monthlyRankings);
+    snapshotsCreated++;
+
+    // All-time snapshot
+    const allTimeEntries = await this.repository.getAllTimeRankings(100);
+    const prevAllTime = await this.repository.getLatestSnapshot('allTime');
+    const prevAllTimeMap = this.buildPrevRankMap(prevAllTime);
+
+    const allTimeRankings = allTimeEntries.map((entry, index) => ({
+      userId: entry.userId,
+      rank: index + 1,
+      xp: entry.xp,
+      change: prevAllTimeMap.get(entry.userId)
+        ? prevAllTimeMap.get(entry.userId)! - (index + 1)
+        : 0,
+    }));
+
+    const now = new Date();
+    await this.repository.createSnapshot('allTime', now, now, allTimeRankings);
+    snapshotsCreated++;
+
+    this.logger.log(`Generated ${snapshotsCreated} leaderboard snapshots`);
+    return { snapshotsCreated };
+  }
+
+  private buildPrevRankMap(
+    snapshot: { rankings: any } | null,
+  ): Map<string, number> {
+    const map = new Map<string, number>();
+    if (!snapshot?.rankings || !Array.isArray(snapshot.rankings)) return map;
+
+    for (const entry of snapshot.rankings as Array<{ userId: string; rank: number }>) {
+      map.set(entry.userId, entry.rank);
+    }
+    return map;
   }
 
   // ============================================================================

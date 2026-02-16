@@ -6,6 +6,8 @@ import { NeoButton } from "@/components/ui/neo-button";
 import { CardTilt } from "@/components/effects/CardTilt";
 import { AnimatedCounter } from "@/components/effects/AnimatedCounter";
 import type { Course, SyllabusModule, SyllabusLesson } from "@/lib/data/courses";
+import { useCourseProgress, useStartCourse } from "@/hooks/api";
+import { useUserStore } from "@/stores/user-store";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
@@ -322,6 +324,9 @@ function StarRating({ rating }: { rating: number }) {
 export function CourseDetailClient({ course }: { course: Course }) {
   const [openModule, setOpenModule] = useState<number | null>(0);
   const [expandAll, setExpandAll] = useState(false);
+  const { isAuthenticated } = useUserStore();
+  const { data: progress } = useCourseProgress(course.slug);
+  const startCourse = useStartCourse();
 
   const toggleModule = (index: number) => {
     setOpenModule(openModule === index ? null : index);
@@ -824,13 +829,28 @@ export function CourseDetailClient({ course }: { course: Course }) {
                 </div>
 
                 <div className="relative">
-                  <div className="absolute inset-0 bg-primary/20 rounded-full animate-pulse-ring" />
+                  {!progress && (
+                    <div className="absolute inset-0 bg-primary/20 rounded-full animate-pulse-ring" />
+                  )}
                   <NeoButton
                     size="lg"
                     variant="primary"
                     className="w-full text-lg h-14 group relative"
+                    onClick={() => {
+                      if (progress) {
+                        // Already started — navigate to current lesson
+                        window.location.href = `/courses/${course.slug}`;
+                      } else {
+                        startCourse.mutate(course.slug);
+                      }
+                    }}
+                    disabled={startCourse.isPending}
                   >
-                    START COURSE{" "}
+                    {progress
+                      ? `CONTINUE (${progress.completionPercentage}%)`
+                      : startCourse.isPending
+                        ? "STARTING..."
+                        : "START COURSE"}{" "}
                     <ArrowRight
                       className="ml-2 group-hover:translate-x-1 transition-transform"
                       size={18}

@@ -20,7 +20,7 @@ const NAV_LINKS = [
   { href: "/dashboard/study-plan", label: "Study Plan", icon: CalendarCheck },
   { href: "/dashboard/activity", label: "Activity", icon: Clock },
   { href: "/dashboard/social", label: "Social", icon: Users },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
 interface ProfileDrawerProps {

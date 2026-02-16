@@ -3,15 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
-import { ChevronDown, Rocket, BookOpen, Code2, Terminal, Shield, Zap, Cpu, Globe, Layers, Database, Sparkles, MessageSquare, X } from "lucide-react";
-import { useState } from "react";
+import { ChevronDown } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence, useSpring } from "framer-motion";
 import { useScrollProgress } from "@/hooks/use-scroll-progress";
 import { ThemeToggle } from "@/components/navigation/ThemeToggle";
-import { NavSearchTrigger } from "@/components/navigation/NavSearchTrigger";
-import { UserNavSection } from "@/components/navigation/UserNavSection";
-import { NotificationBell } from "@/components/navigation/NotificationBell";
-import { GridPattern } from "@/components/effects";
+import { NavToolbar } from "@/components/navigation/NavToolbar";
+import { MegaMenuPanel } from "@/components/navigation/MegaMenuPanel";
+import { MobileMenu } from "@/components/navigation/MobileMenu";
+import { megaMenus, simpleNavLinks } from "@/components/navigation/navbar-data";
 
 interface NavbarProps {
   mobileMenuOpen?: boolean;
@@ -24,7 +24,6 @@ export function Navbar({ mobileMenuOpen, setMobileMenuOpen }: NavbarProps) {
   const pathname = usePathname();
   const { scrollYProgress, isScrolled } = useScrollProgress();
 
-  // Use lifted state if available, otherwise internal
   const isOpen = mobileMenuOpen ?? internalOpen;
   const setIsOpen = setMobileMenuOpen ?? setInternalOpen;
 
@@ -34,345 +33,194 @@ export function Navbar({ mobileMenuOpen, setMobileMenuOpen }: NavbarProps) {
     restDelta: 0.001,
   });
 
-  const navLinks = [
-    { href: "/courses", label: "COURSES" },
-    { href: "/about", label: "ABOUT" },
-    { href: "/blog", label: "BLOG" },
-  ];
+  // ── Hover intent timers ──────────────────────────────────────
+  const enterTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const megaMenuItems = [
-    {
-      name: "ACADEMY",
-      icon: <BookOpen size={20} />,
-      columns: [
-        {
-          title: "LEARNING PATHS",
-          accent: "bg-primary",
-          items: [
-            { name: "Frontend Development", desc: "HTML, CSS, React, Next.js", icon: <Layers size={16} />, isNew: false },
-            { name: "Backend Development", desc: "Node.js, APIs, Databases", icon: <Database size={16} />, isNew: false },
-            { name: "Fullstack Journey", desc: "The complete learning path", icon: <Cpu size={16} />, isNew: false },
-          ],
-        },
-        {
-          title: "TOPICS",
-          accent: "bg-secondary",
-          items: [
-            { name: "AI & Machine Learning", desc: "Python, TensorFlow basics", icon: <Zap size={16} />, isNew: false },
-            { name: "Cybersecurity", desc: "Secure coding practices", icon: <Shield size={16} />, isNew: false },
-            { name: "Cloud & DevOps", desc: "AWS, Docker, CI/CD", icon: <Globe size={16} />, isNew: false },
-          ],
-        },
-        {
-          title: "NEW COURSES",
-          accent: "bg-accent",
-          items: [
-            { name: "Rust Fundamentals", desc: "Systems programming", icon: <Terminal size={16} />, isNew: true },
-            { name: "Web3 Basics", desc: "Blockchain & smart contracts", icon: <Rocket size={16} />, isNew: true },
-          ],
-        },
-      ],
-    },
-    {
-      name: "RESOURCES",
-      icon: <Layers size={20} />,
-      columns: [
-        {
-          title: "TOOLS",
-          accent: "bg-primary",
-          items: [
-            { name: "Code Playground", desc: "Write & run code in-browser", icon: <Terminal size={16} />, isNew: false },
-            { name: "API Sandbox", desc: "Test APIs in real-time", icon: <Code2 size={16} />, isNew: false },
-          ],
-        },
-        {
-          title: "COMMUNITY",
-          accent: "bg-secondary",
-          items: [
-            { name: "Success Stories", desc: "Learner achievements", icon: <Sparkles size={16} />, isNew: false },
-            { name: "Discussion Forum", desc: "Ask questions, share tips", icon: <MessageSquare size={16} />, isNew: false },
-          ],
-        },
-      ],
-    },
-  ];
+  const handleMenuEnter = useCallback((menuName: string) => {
+    if (leaveTimer.current) {
+      clearTimeout(leaveTimer.current);
+      leaveTimer.current = null;
+    }
+    enterTimer.current = setTimeout(() => setActiveMenu(menuName), 100);
+  }, []);
+
+  const handleMenuLeave = useCallback(() => {
+    if (enterTimer.current) {
+      clearTimeout(enterTimer.current);
+      enterTimer.current = null;
+    }
+    leaveTimer.current = setTimeout(() => setActiveMenu(null), 200);
+  }, []);
+
+  const closeMenu = useCallback(() => {
+    setActiveMenu(null);
+    if (enterTimer.current) clearTimeout(enterTimer.current);
+    if (leaveTimer.current) clearTimeout(leaveTimer.current);
+  }, []);
+
+  // ── Escape key ───────────────────────────────────────────────
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeMenu();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [closeMenu]);
+
+  // ── Cleanup timers ───────────────────────────────────────────
+  useEffect(() => {
+    return () => {
+      if (enterTimer.current) clearTimeout(enterTimer.current);
+      if (leaveTimer.current) clearTimeout(leaveTimer.current);
+    };
+  }, []);
 
   return (
-    <nav className="fixed left-0 right-0 z-[100] border-b-4 border-border bg-background/90 backdrop-blur-xl" style={{ top: "var(--banner-h, 0px)" }}>
-      <div
-        className={`container mx-auto px-4 flex items-center justify-between transition-all duration-300 ${
-          isScrolled ? "h-16" : "h-20"
+    <>
+      <nav
+        className={`fixed left-0 right-0 z-[100] border-b-4 border-border bg-background/90 backdrop-blur-xl transition-shadow duration-300 ${
+          isScrolled ? "neo-brutal-shadow-sm" : ""
         }`}
+        style={{ top: "var(--banner-h, 0px)" }}
       >
-        {/* Logo */}
-        <Link
-          href="/"
-          className="hover:scale-105 transition-transform cursor-pointer flex items-center"
+        <div
+          className={`container mx-auto px-4 flex items-center justify-between transition-all duration-300 ${
+            isScrolled ? "h-16" : "h-20"
+          }`}
         >
-          <Image
-            src="/logo.png"
-            alt="Aralify"
-            width={381}
-            height={154}
-            className="object-contain transition-all duration-300"
-            style={{ height: isScrolled ? "56px" : "72px", width: "auto" }}
-            unoptimized
-            priority
-          />
-        </Link>
+          {/* Logo */}
+          <Link
+            href="/"
+            className="hover:scale-105 transition-transform cursor-pointer flex items-center"
+          >
+            <Image
+              src="/logo.png"
+              alt="Aralify"
+              width={381}
+              height={154}
+              className="object-contain transition-all duration-300"
+              style={{ height: isScrolled ? "56px" : "72px", width: "auto" }}
+              unoptimized
+              priority
+            />
+          </Link>
 
-        {/* Desktop Menu */}
-        <div className="hidden lg:flex items-center gap-8 font-display font-bold text-sm h-full">
-          {navLinks.map((link) => {
-            const isActive = pathname.startsWith(link.href);
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="relative py-2 px-3 rounded-xl transition-colors"
-              >
-                {/* Sliding Active Indicator */}
-                {isActive && (
-                  <motion.div
-                    layoutId="nav-indicator"
-                    className="absolute inset-0 neo-brutal-border neo-brutal-shadow-sm bg-primary/10 rounded-xl -z-10"
-                    transition={{
-                      type: "spring",
-                      stiffness: 350,
-                      damping: 30,
-                    }}
-                  />
-                )}
-                {/* Hover micro-interaction wrapper */}
-                <motion.span
-                  whileHover={{ y: -2 }}
-                  className={`inline-block transition-colors ${
-                    isActive
-                      ? "text-primary"
-                      : "hover:text-primary"
-                  }`}
+          {/* Desktop Menu */}
+          <div className="hidden lg:flex items-center gap-1 xl:gap-2 font-display font-bold text-sm h-full">
+            {/* Mega menu triggers */}
+            {megaMenus.map((menu) => {
+              const isActive = activeMenu === menu.name;
+              return (
+                <div
+                  key={menu.name}
+                  className="relative h-full flex items-center"
+                  onMouseEnter={() => handleMenuEnter(menu.name)}
+                  onMouseLeave={handleMenuLeave}
+                  role="navigation"
+                  aria-label={menu.name}
                 >
-                  {link.label}
-                </motion.span>
-              </Link>
-            );
-          })}
-
-          {megaMenuItems.map((menu) => (
-            <div
-              key={menu.name}
-              className="relative h-full flex items-center group"
-              onMouseEnter={() => setActiveMenu(menu.name)}
-              onMouseLeave={() => setActiveMenu(null)}
-            >
-              <motion.button
-                whileHover={{ y: -2 }}
-                className="flex items-center gap-2 hover:text-primary transition-colors py-2 px-3 rounded-xl hover:bg-primary/5 cursor-pointer"
-              >
-                {menu.name}
-                <ChevronDown
-                  size={16}
-                  className={`transition-transform duration-300 ${
-                    activeMenu === menu.name ? "rotate-180" : ""
-                  }`}
-                />
-              </motion.button>
-
-              <AnimatePresence>
-                {activeMenu === menu.name && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute top-full left-1/2 -translate-x-1/2 w-[800px] bg-card neo-brutal-border neo-brutal-shadow-lg p-8 rounded-3xl z-50 grid grid-cols-3 gap-8"
+                  <motion.button
+                    whileHover={{ y: -1 }}
+                    className={`flex items-center gap-1.5 py-2 px-3 rounded-xl transition-all duration-200 cursor-pointer ${
+                      isActive
+                        ? "text-primary bg-primary/10 neo-brutal-border neo-brutal-shadow-sm"
+                        : "hover:text-primary hover:bg-primary/5"
+                    }`}
+                    aria-expanded={isActive}
+                    aria-haspopup="true"
                   >
-                    {menu.columns.map((col, colIdx) => (
-                      <motion.div
-                        key={col.title}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: colIdx * 0.05 }}
-                        className="space-y-4"
-                      >
-                        {/* Colored accent bar */}
-                        <div className={`h-1 w-12 rounded-full ${col.accent}`} />
-                        <h4 className="text-xs tracking-widest text-muted-foreground font-black border-b-2 border-primary/20 pb-2">
-                          {col.title}
-                        </h4>
-                        <div className="flex flex-col gap-2">
-                          {col.items.map((item) => (
-                            <a
-                              key={item.name}
-                              href="#"
-                              className="relative flex items-start gap-3 p-3 hover:bg-primary/5 rounded-xl transition-all group/item"
-                            >
-                              <div className="mt-1 p-2 bg-foreground text-background rounded-lg group-hover/item:bg-primary group-hover/item:text-white transition-colors">
-                                {item.icon}
-                              </div>
-                              <div>
-                                <div className="font-black text-base group-hover/item:text-primary flex items-center gap-2">
-                                  {item.name}
-                                  {item.isNew && (
-                                    <span className="bg-accent neo-brutal-border text-[9px] font-black uppercase px-1.5 py-0.5 rounded rotate-[-3deg] inline-block">
-                                      NEW
-                                    </span>
-                                  )}
-                                </div>
-                                <div className="text-sm font-medium text-muted-foreground leading-tight">
-                                  {item.desc}
-                                </div>
-                              </div>
-                            </a>
-                          ))}
-                        </div>
-                      </motion.div>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          ))}
+                    {menu.name}
+                    <ChevronDown
+                      size={14}
+                      className={`transition-transform duration-300 ${
+                        isActive ? "rotate-180" : ""
+                      }`}
+                    />
+                  </motion.button>
 
-          <div className="flex items-center gap-3 border-l-4 border-border pl-8">
-            <NavSearchTrigger />
+                  {/* Invisible bridge — prevents dead zone between trigger and panel */}
+                  {isActive && (
+                    <div className="absolute top-full left-0 right-0 h-4" />
+                  )}
+
+                  <AnimatePresence>
+                    {isActive && (
+                      <MegaMenuPanel menu={menu} onNavigate={closeMenu} />
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })}
+
+            {/* Divider dot */}
+            <div className="w-1 h-1 rounded-full bg-border mx-1 hidden xl:block" />
+
+            {/* Simple links */}
+            {simpleNavLinks.map((link) => {
+              const isLinkActive = pathname.startsWith(link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="relative py-2 px-3 rounded-xl transition-colors"
+                >
+                  {isLinkActive && (
+                    <motion.div
+                      layoutId="nav-indicator"
+                      className="absolute inset-0 neo-brutal-border neo-brutal-shadow-sm bg-primary/10 rounded-xl -z-10"
+                      transition={{
+                        type: "spring",
+                        stiffness: 350,
+                        damping: 30,
+                      }}
+                    />
+                  )}
+                  <motion.span
+                    whileHover={{ y: -1 }}
+                    className={`inline-block transition-colors ${
+                      isLinkActive ? "text-primary" : "hover:text-primary"
+                    }`}
+                  >
+                    {link.label}
+                  </motion.span>
+                </Link>
+              );
+            })}
+
+            <NavToolbar />
+          </div>
+
+          {/* Mobile Controls */}
+          <div className="lg:hidden flex items-center gap-3">
             <ThemeToggle />
-            <NotificationBell />
-            <UserNavSection />
           </div>
         </div>
 
-        {/* Mobile Controls - hidden, bottom nav takes over */}
-        <div className="lg:hidden flex items-center gap-3">
-          <ThemeToggle />
-        </div>
-      </div>
+        {/* Scroll Progress Bar */}
+        <motion.div
+          className="absolute bottom-0 left-0 right-0 h-[3px] origin-left bg-gradient-to-r from-primary via-secondary to-accent"
+          style={{ scaleX: smoothProgress }}
+        />
+      </nav>
 
-      {/* Scroll Progress Bar */}
-      <motion.div
-        className="absolute bottom-0 left-0 right-0 h-[3px] origin-left bg-gradient-to-r from-primary to-accent"
-        style={{ scaleX: smoothProgress }}
-      />
-
-      {/* Mobile Full-Screen Menu Takeover */}
+      {/* Backdrop overlay when mega menu is open */}
       <AnimatePresence>
-        {isOpen && (
+        {activeMenu && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="lg:hidden fixed inset-0 bg-background z-[200] overflow-y-auto"
-          >
-            <GridPattern />
-
-            {/* Top bar */}
-            <div className="flex items-center justify-between p-4 border-b-4 border-border">
-              <Link
-                href="/"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center"
-              >
-                <Image
-                  src="/logo.png"
-                  alt="Aralify"
-                  width={381}
-                  height={154}
-                  className="object-contain"
-                  style={{ height: "56px", width: "auto" }}
-                  unoptimized
-                />
-              </Link>
-              <button
-                onClick={() => setIsOpen(false)}
-                className="p-2.5 neo-brutal-border neo-brutal-shadow-sm bg-card cursor-pointer"
-                aria-label="Close menu"
-              >
-                <X size={24} />
-              </button>
-            </div>
-
-            <div className="p-6 flex flex-col gap-6 relative z-10">
-              {/* Nav links as brutalist cards */}
-              <div className="flex flex-col gap-3">
-                {navLinks.map((link, i) => {
-                  const colors = ["border-l-primary", "border-l-secondary", "border-l-accent"];
-                  return (
-                    <motion.div
-                      key={link.href}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.08, type: "spring", stiffness: 300 }}
-                    >
-                      <Link
-                        href={link.href}
-                        onClick={() => setIsOpen(false)}
-                        className={`block font-display font-black text-xl py-4 px-5 rounded-2xl neo-brutal-border border-l-[6px] transition-colors ${
-                          colors[i % colors.length]
-                        } ${
-                          pathname.startsWith(link.href)
-                            ? "bg-primary text-white neo-brutal-shadow-sm"
-                            : "bg-card hover:bg-primary/5"
-                        }`}
-                      >
-                        {link.label}
-                      </Link>
-                    </motion.div>
-                  );
-                })}
-              </div>
-
-              {/* Mega menu sections */}
-              {megaMenuItems.map((menu, menuIdx) => (
-                <motion.div
-                  key={menu.name}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: (navLinks.length + menuIdx) * 0.08 }}
-                  className="space-y-4"
-                >
-                  <div className="text-2xl font-black text-primary flex items-center gap-2">
-                    {menu.icon} {menu.name}
-                  </div>
-                  {menu.columns.map((col) => (
-                    <div key={col.title} className="pl-4 space-y-3">
-                      {col.items.map((item) => (
-                        <a
-                          key={item.name}
-                          onClick={() => setIsOpen(false)}
-                          className="flex flex-col p-5 bg-card neo-brutal-border neo-brutal-shadow-sm rounded-2xl cursor-pointer"
-                        >
-                          <span className="font-black text-lg flex items-center gap-2">
-                            {item.name}
-                            {item.isNew && (
-                              <span className="bg-accent neo-brutal-border text-[9px] font-black uppercase px-1.5 py-0.5 rounded rotate-[-3deg] inline-block">
-                                NEW
-                              </span>
-                            )}
-                          </span>
-                          <span className="text-sm text-muted-foreground">
-                            {item.desc}
-                          </span>
-                        </a>
-                      ))}
-                    </div>
-                  ))}
-                </motion.div>
-              ))}
-
-              {/* Auth section */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: (navLinks.length + megaMenuItems.length) * 0.08 }}
-                className="flex flex-col gap-3 pt-4 border-t-4 border-border"
-              >
-                <UserNavSection />
-              </motion.div>
-            </div>
-          </motion.div>
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 bg-black/5 backdrop-blur-[2px] z-[99]"
+            onClick={closeMenu}
+            aria-hidden="true"
+          />
         )}
       </AnimatePresence>
-    </nav>
+
+      {/* Mobile Full-Screen Menu */}
+      <MobileMenu isOpen={isOpen} onClose={() => setIsOpen(false)} />
+    </>
   );
 }

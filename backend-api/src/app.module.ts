@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
@@ -18,6 +19,14 @@ import { CommentsModule } from './comments/comments.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { CodeExecutionModule } from './code-execution/code-execution.module';
 import { RecommendationModule } from './recommendation/recommendation.module';
+import { ChallengesModule } from './challenges/challenges.module';
+import { BookmarksModule } from './bookmarks/bookmarks.module';
+import { PlannerModule } from './planner/planner.module';
+import { BlogModule } from './blog/blog.module';
+import { ShowcaseModule } from './showcase/showcase.module';
+import { SearchModule } from './search/search.module';
+import { LeaguesModule } from './leagues/leagues.module';
+import { SchedulingModule } from './scheduling/scheduling.module';
 import { JwtAuthGuard } from './auth/guards';
 
 @Module({
@@ -31,6 +40,7 @@ import { JwtAuthGuard } from './auth/guards';
       limit: 60,
     }]),
     EventEmitterModule.forRoot(),
+    ScheduleModule.forRoot(),
     PrismaModule,
     AuthModule,
     CoursesModule,
@@ -44,6 +54,14 @@ import { JwtAuthGuard } from './auth/guards';
     NotificationsModule,
     CodeExecutionModule,
     RecommendationModule,
+    ChallengesModule,
+    BookmarksModule,
+    PlannerModule,
+    BlogModule,
+    ShowcaseModule,
+    SearchModule,
+    LeaguesModule,
+    SchedulingModule,
   ],
   controllers: [AppController],
   providers: [

@@ -7,6 +7,7 @@ import {
   DashboardMetricsDto,
   RecentSignupsResponseDto,
   SystemHealthDto,
+  AdminAnalyticsDto,
 } from '../dto';
 
 @ApiTags('Admin - Dashboard')
@@ -64,5 +65,19 @@ export class AdminDashboardController {
   })
   async getHealth(): Promise<SystemHealthDto> {
     return this.adminDashboardService.getHealth();
+  }
+
+  @Get('analytics')
+  @ApiOperation({ summary: 'Get comprehensive analytics' })
+  @ApiQuery({ name: 'range', required: false, enum: ['7d', '30d', '90d'], example: '7d' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns analytics data (DAU, signups trend, completion rates, XP distribution)',
+    type: AdminAnalyticsDto,
+  })
+  async getAnalytics(
+    @Query('range') range?: string,
+  ): Promise<AdminAnalyticsDto> {
+    return this.adminDashboardService.getAnalytics(range || '7d');
   }
 }

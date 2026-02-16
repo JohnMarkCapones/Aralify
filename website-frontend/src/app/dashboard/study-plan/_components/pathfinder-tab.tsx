@@ -19,15 +19,11 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import {
   recommendationApi,
+  gamificationApi,
   type StudyPlanResponse,
   type TodayPlanResponse,
   type StudyPlanItem,
 } from "@/lib/api";
-import {
-  mockStudyGoals,
-  mockSchedule,
-  mockUserProfile,
-} from "@/lib/data/dashboard";
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   lessons: <BookOpen size={14} />,
@@ -52,15 +48,18 @@ export function PathfinderTab() {
   const [today, setToday] = useState<TodayPlanResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [completingId, setCompletingId] = useState<string | null>(null);
+  const [currentStreak, setCurrentStreak] = useState(0);
 
   useEffect(() => {
     Promise.all([
       recommendationApi.getStudyPlan().catch(() => null),
       recommendationApi.getTodayPlan().catch(() => null),
+      gamificationApi.getStreak().catch(() => null),
     ])
-      .then(([planData, todayData]) => {
+      .then(([planData, todayData, streakData]) => {
         setPlan(planData);
         setToday(todayData);
+        if (streakData) setCurrentStreak(streakData.current);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -272,125 +271,6 @@ export function PathfinderTab() {
         </div>
       )}
 
-      {/* ─── Fallback: Weekly Schedule ─── */}
-      <div className="bg-background rounded-xl border border-border/50 p-5 shadow-sm">
-        <h3 className="text-sm font-semibold mb-4">Weekly Schedule</h3>
-        <div className="grid grid-cols-7 gap-2">
-          {mockSchedule.map((day) => {
-            const pct =
-              day.planned > 0
-                ? Math.min((day.completed / day.planned) * 100, 100)
-                : 0;
-            return (
-              <div
-                key={day.day}
-                className={cn(
-                  "rounded-lg border p-3 text-center",
-                  day.isToday
-                    ? "border-primary bg-primary/5"
-                    : "border-border/30"
-                )}
-              >
-                <p
-                  className={cn(
-                    "text-[10px] font-medium mb-2",
-                    day.isToday ? "text-primary" : "text-muted-foreground"
-                  )}
-                >
-                  {day.shortDay}
-                </p>
-                <div className="relative w-10 h-10 mx-auto mb-1.5">
-                  <svg width={40} height={40} className="-rotate-90">
-                    <circle
-                      cx={20}
-                      cy={20}
-                      r={16}
-                      fill="none"
-                      stroke="hsl(var(--muted))"
-                      strokeWidth={3}
-                    />
-                    <circle
-                      cx={20}
-                      cy={20}
-                      r={16}
-                      fill="none"
-                      stroke={
-                        pct === 100 ? "#10b981" : "hsl(var(--primary))"
-                      }
-                      strokeWidth={3}
-                      strokeDasharray={100.53}
-                      strokeDashoffset={100.53 - (pct / 100) * 100.53}
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center text-[9px] font-semibold">
-                    {day.completed}/{day.planned}
-                  </div>
-                </div>
-                {day.isToday && (
-                  <p className="text-[9px] font-medium text-primary">Today</p>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Study Goals */}
-      <div className="bg-background rounded-xl border border-border/50 shadow-sm">
-        <div className="px-5 py-4 border-b border-border/30">
-          <h3 className="text-sm font-semibold">Weekly Goals</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Track your progress for this week
-          </p>
-        </div>
-        <div className="p-5 space-y-4">
-          {mockStudyGoals.map((goal) => {
-            const pct = Math.min(
-              (goal.current / goal.target) * 100,
-              100
-            );
-            const isComplete = goal.current >= goal.target;
-            return (
-              <div key={goal.id}>
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className={cn(
-                        "text-muted-foreground",
-                        isComplete && "text-emerald-500"
-                      )}
-                    >
-                      {CATEGORY_ICONS[goal.category]}
-                    </div>
-                    <span className="text-sm font-medium">{goal.title}</span>
-                  </div>
-                  <span
-                    className={cn(
-                      "text-xs font-medium",
-                      isComplete
-                        ? "text-emerald-500"
-                        : "text-muted-foreground"
-                    )}
-                  >
-                    {goal.current}/{goal.target} {goal.unit}
-                  </span>
-                </div>
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className={cn(
-                      "h-full rounded-full transition-all",
-                      isComplete ? "bg-emerald-500" : "bg-primary"
-                    )}
-                    style={{ width: `${pct}%` }}
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
       {/* Streak Reminder */}
       <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 rounded-xl border border-orange-200/50 dark:border-orange-800/30 p-5">
         <div className="flex items-center gap-3">
@@ -400,7 +280,7 @@ export function PathfinderTab() {
               Keep your streak alive!
             </h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              You&apos;re on a {mockUserProfile.streak}-day streak. Complete
+              You&apos;re on a {currentStreak}-day streak. Complete
               at least one lesson today to keep it going.
             </p>
           </div>

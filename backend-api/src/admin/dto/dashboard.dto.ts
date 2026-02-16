@@ -153,3 +153,40 @@ export class DashboardOverviewDto {
   @ApiProperty({ type: SystemHealthDto })
   health!: SystemHealthDto;
 }
+
+// ============================================================================
+// Analytics DTOs
+// ============================================================================
+
+export class DailyDataPointDto {
+  @ApiProperty({ example: '2024-01-15' })
+  date!: string;
+
+  @ApiProperty({ example: 42 })
+  value!: number;
+}
+
+export class XpDistributionBucketDto {
+  @ApiProperty({ example: '0-500' })
+  range!: string;
+
+  @ApiProperty({ example: 120 })
+  count!: number;
+}
+
+export class AdminAnalyticsDto {
+  @ApiProperty({ type: [DailyDataPointDto], description: 'Daily active users trend' })
+  dauTrend!: DailyDataPointDto[];
+
+  @ApiProperty({ type: [DailyDataPointDto], description: 'New signups per day' })
+  signupsTrend!: DailyDataPointDto[];
+
+  @ApiProperty({ example: 45.5, description: 'Overall completion rate %' })
+  completionRate!: number;
+
+  @ApiProperty({ type: [XpDistributionBucketDto], description: 'XP distribution across users' })
+  xpDistribution!: XpDistributionBucketDto[];
+
+  @ApiProperty({ example: '7d', description: 'Time range queried' })
+  range!: string;
+}

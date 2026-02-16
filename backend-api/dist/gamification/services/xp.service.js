@@ -12,11 +12,13 @@ var XpService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.XpService = void 0;
 const common_1 = require("@nestjs/common");
+const event_emitter_1 = require("@nestjs/event-emitter");
 const gamification_repository_1 = require("../gamification.repository");
 const constants_1 = require("../constants");
 let XpService = XpService_1 = class XpService {
-    constructor(repository) {
+    constructor(repository, eventEmitter) {
         this.repository = repository;
+        this.eventEmitter = eventEmitter;
         this.logger = new common_1.Logger(XpService_1.name);
     }
     async awardXp(userId, amount, source, sourceId, description) {
@@ -41,6 +43,12 @@ let XpService = XpService_1 = class XpService {
                 },
             });
         }
+        this.eventEmitter.emit('xp.awarded', {
+            userId,
+            amount,
+            source,
+            newTotal: updatedUser.xpTotal,
+        });
         return {
             xpAwarded: amount,
             newTotal: updatedUser.xpTotal,
@@ -113,6 +121,7 @@ let XpService = XpService_1 = class XpService {
 exports.XpService = XpService;
 exports.XpService = XpService = XpService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [gamification_repository_1.GamificationRepository])
+    __metadata("design:paramtypes", [gamification_repository_1.GamificationRepository,
+        event_emitter_1.EventEmitter2])
 ], XpService);
 //# sourceMappingURL=xp.service.js.map

@@ -470,6 +470,73 @@ export class GamificationRepository {
   }
 
   // ============================================
+  // XP DECAY
+  // ============================================
+
+  /**
+   * Find users who have been inactive for more than `thresholdDays` days
+   * and still have XP remaining.
+   */
+  async getInactiveUsers(thresholdDays: number) {
+    const threshold = new Date();
+    threshold.setDate(threshold.getDate() - thresholdDays);
+
+    return this.prisma.user.findMany({
+      where: {
+        isActive: true,
+        xpTotal: { gt: 0 },
+        lastActiveAt: { lt: threshold },
+      },
+      select: {
+        id: true,
+        xpTotal: true,
+        level: true,
+        lastActiveAt: true,
+      },
+    });
+  }
+
+  /**
+   * Atomically deduct XP from a user (for decay). Creates a negative XP transaction
+   * and decrements the user's xpTotal, clamping to 0. Never changes user level.
+   */
+  async deductXpAtomic(
+    userId: string,
+    amount: number,
+    source: XpSource,
+    description?: string,
+  ) {
+    // Get current XP to clamp
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { xpTotal: true },
+    });
+    if (!user) return null;
+
+    const actualDeduction = Math.min(amount, user.xpTotal);
+    if (actualDeduction <= 0) return null;
+
+    const [, updatedUser] = await this.prisma.$transaction([
+      this.prisma.xpTransaction.create({
+        data: {
+          userId,
+          amount: -actualDeduction,
+          source,
+          description,
+        },
+      }),
+      this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          xpTotal: { decrement: actualDeduction },
+        },
+      }),
+    ]);
+
+    return updatedUser;
+  }
+
+  // ============================================
   // ACTIVITY
   // ============================================
 

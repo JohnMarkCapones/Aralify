@@ -431,4 +431,93 @@ export declare class UsersRepository {
         allowMessages: import(".prisma/client").$Enums.AllowMessages;
     } | null>;
     isFollowing(followerId: string, followingId: string): Promise<boolean>;
+    getUserCourses(userId: string): Promise<({
+        course: {
+            id: string;
+            description: string | null;
+            title: string;
+            language: string;
+            slug: string;
+            iconUrl: string | null;
+            color: string | null;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
+        courseId: string;
+        completionPercentage: number;
+        masteryPercentage: number;
+        totalXpEarned: number;
+        timeSpentSeconds: number;
+        startedAt: Date;
+        lastActivityAt: Date | null;
+        completedAt: Date | null;
+    })[]>;
+    getXpOverTime(userId: string, since: Date): Promise<{
+        createdAt: Date;
+        amount: number;
+    }[]>;
+    getDifficultyBreakdown(userId: string): Promise<{
+        easy: number;
+        medium: number;
+        hard: number;
+    }>;
+    getTimeSpentInRange(userId: string, since: Date): Promise<number>;
+    getCompletedCourses(userId: string): Promise<({
+        course: {
+            id: string;
+            title: string;
+            slug: string;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
+        courseId: string;
+        completionPercentage: number;
+        masteryPercentage: number;
+        totalXpEarned: number;
+        timeSpentSeconds: number;
+        startedAt: Date;
+        lastActivityAt: Date | null;
+        completedAt: Date | null;
+    })[]>;
+    getChallengeHistory(userId: string, page: number, limit: number): Promise<{
+        data: ({
+            challenge: {
+                id: string;
+                title: string;
+            };
+        } & {
+            status: string;
+            id: string;
+            createdAt: Date;
+            userId: string;
+            timeSpentSeconds: number | null;
+            languageId: number;
+            attemptNumber: number;
+            xpAwarded: number;
+            code: string;
+            testResults: import("@prisma/client/runtime/library").JsonValue | null;
+            challengeId: string;
+        })[];
+        total: number;
+    }>;
+    getUserActivities(userId: string, options: {
+        type?: string;
+        page: number;
+        limit: number;
+    }): Promise<{
+        data: {
+            id: string;
+            createdAt: Date;
+            type: import(".prisma/client").$Enums.ActivityType;
+            data: import("@prisma/client/runtime/library").JsonValue | null;
+            userId: string;
+        }[];
+        total: number;
+    }>;
 }

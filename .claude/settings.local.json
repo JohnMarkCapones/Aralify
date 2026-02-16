@@ -34,7 +34,10 @@
       "mcp__ide__getDiagnostics",
       "Bash(findstr:*)",
       "Bash(Select-String:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(del \"C:\\\\Users\\\\John Mark\\\\Desktop\\\\Aralify\\\\website-frontend\\\\src\\\\middleware.ts\")",
+      "Bash(pnpm add:*)",
+      "Bash(npx vitest run)"
     ]
   },
   "enableAllProjectMcpServers": true,

@@ -341,6 +341,51 @@ let GamificationRepository = class GamificationRepository {
             },
         });
     }
+    async getInactiveUsers(thresholdDays) {
+        const threshold = new Date();
+        threshold.setDate(threshold.getDate() - thresholdDays);
+        return this.prisma.user.findMany({
+            where: {
+                isActive: true,
+                xpTotal: { gt: 0 },
+                lastActiveAt: { lt: threshold },
+            },
+            select: {
+                id: true,
+                xpTotal: true,
+                level: true,
+                lastActiveAt: true,
+            },
+        });
+    }
+    async deductXpAtomic(userId, amount, source, description) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            select: { xpTotal: true },
+        });
+        if (!user)
+            return null;
+        const actualDeduction = Math.min(amount, user.xpTotal);
+        if (actualDeduction <= 0)
+            return null;
+        const [, updatedUser] = await this.prisma.$transaction([
+            this.prisma.xpTransaction.create({
+                data: {
+                    userId,
+                    amount: -actualDeduction,
+                    source,
+                    description,
+                },
+            }),
+            this.prisma.user.update({
+                where: { id: userId },
+                data: {
+                    xpTotal: { decrement: actualDeduction },
+                },
+            }),
+        ]);
+        return updatedUser;
+    }
     async createActivity(activityData) {
         return this.prisma.activity.create({
             data: {

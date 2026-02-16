@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Medal } from "lucide-react";
+import { Medal, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "../_components/page-header";
-import { mockBadges } from "@/lib/data/dashboard";
-import type { UserBadge } from "@/lib/data/dashboard";
+import { useBadges } from "@/hooks/api";
+import type { BadgeItem } from "@/lib/api";
 
-type Rarity = "all" | UserBadge["rarity"];
+type Rarity = "all" | string;
 
 const RARITY_FILTERS: { value: Rarity; label: string }[] = [
   { value: "all", label: "All" },
@@ -43,25 +43,35 @@ const badgeVariants = {
 
 export default function BadgesPage() {
   const [rarity, setRarity] = useState<Rarity>("all");
+  const { data: badges, isLoading } = useBadges();
 
-  const filtered = rarity === "all" ? mockBadges : mockBadges.filter((b) => b.rarity === rarity);
-  const earnedCount = mockBadges.filter((b) => b.earned).length;
+  const allBadges = badges ?? [];
+  const filtered = rarity === "all" ? allBadges : allBadges.filter((b) => b.rarity === rarity);
+  const earnedCount = allBadges.filter((b) => b.earned).length;
 
   // Rarity distribution
   const rarityDist = ["common", "rare", "epic", "legendary"].map((r) => ({
     rarity: r,
-    total: mockBadges.filter((b) => b.rarity === r).length,
-    earned: mockBadges.filter((b) => b.rarity === r && b.earned).length,
+    total: allBadges.filter((b) => b.rarity === r).length,
+    earned: allBadges.filter((b) => b.rarity === r && b.earned).length,
   }));
 
   // Next badge
-  const nextBadge = mockBadges.find((b) => !b.earned);
+  const nextBadge = allBadges.find((b) => !b.earned);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Badges"
-        description={`${earnedCount} of ${mockBadges.length} earned`}
+        description={`${earnedCount} of ${allBadges.length} earned`}
         actions={
           <div className="flex gap-1 p-1 rounded-xl bg-muted/30">
             {RARITY_FILTERS.map((f) => (
@@ -88,7 +98,7 @@ export default function BadgesPage() {
             <div
               key={r.rarity}
               className={cn("h-full transition-all", RARITY_DOT[r.rarity])}
-              style={{ width: `${(r.earned / mockBadges.length) * 100}%` }}
+              style={{ width: `${(r.earned / allBadges.length) * 100}%` }}
               title={`${r.rarity}: ${r.earned}/${r.total}`}
             />
           ))}
@@ -112,7 +122,7 @@ export default function BadgesPage() {
             <span className="text-3xl">{nextBadge.icon}</span>
             <div>
               <h3 className="text-sm font-semibold">{nextBadge.name}</h3>
-              <p className="text-xs text-muted-foreground">{nextBadge.hint}</p>
+              <p className="text-xs text-muted-foreground">{nextBadge.description}</p>
             </div>
           </div>
         </div>
@@ -159,7 +169,7 @@ export default function BadgesPage() {
                 </p>
               )}
               {!badge.earned && (
-                <p className="text-[9px] text-muted-foreground mt-2 italic">{badge.hint}</p>
+                <p className="text-[9px] text-muted-foreground mt-2 italic">{badge.description}</p>
               )}
             </div>
           </motion.div>

@@ -5,9 +5,18 @@ export declare class LessonsRepository {
     constructor(prisma: PrismaService);
     findById(id: string): Promise<({
         level: {
+            course: {
+                title: string;
+                language: string;
+                slug: string;
+                titleEn: string | null;
+                titleFil: string | null;
+            };
             id: string;
             title: string;
             slug: string;
+            titleEn: string | null;
+            titleFil: string | null;
             orderIndex: number;
             courseId: string;
         };
@@ -46,19 +55,31 @@ export declare class LessonsRepository {
         title: string;
         isPublished: boolean;
         slug: string;
+        titleEn: string | null;
+        titleFil: string | null;
         orderIndex: number;
         deletedAt: Date | null;
         levelId: string;
         difficulty: import(".prisma/client").$Enums.Difficulty;
         xpReward: number;
+        estimatedTimeMinutes: number | null;
         minQuizScore: number | null;
     }) | null>;
     findByIdWithProgress(id: string, userId: string): Promise<{
         lesson: {
             level: {
+                course: {
+                    title: string;
+                    language: string;
+                    slug: string;
+                    titleEn: string | null;
+                    titleFil: string | null;
+                };
                 id: string;
                 title: string;
                 slug: string;
+                titleEn: string | null;
+                titleFil: string | null;
                 orderIndex: number;
                 courseId: string;
             };
@@ -97,11 +118,14 @@ export declare class LessonsRepository {
             title: string;
             isPublished: boolean;
             slug: string;
+            titleEn: string | null;
+            titleFil: string | null;
             orderIndex: number;
             deletedAt: Date | null;
             levelId: string;
             difficulty: import(".prisma/client").$Enums.Difficulty;
             xpReward: number;
+            estimatedTimeMinutes: number | null;
             minQuizScore: number | null;
         };
         progress: {
@@ -222,6 +246,10 @@ export declare class LessonsRepository {
         title: string;
         isPublished: boolean;
         slug: string;
+        titleEn: string | null;
+        titleFil: string | null;
+        descriptionEn: string | null;
+        descriptionFil: string | null;
         orderIndex: number;
         deletedAt: Date | null;
         courseId: string;
@@ -441,11 +469,88 @@ export declare class LessonsRepository {
         title: string;
         isPublished: boolean;
         slug: string;
+        titleEn: string | null;
+        titleFil: string | null;
         orderIndex: number;
         deletedAt: Date | null;
         levelId: string;
         difficulty: import(".prisma/client").$Enums.Difficulty;
         xpReward: number;
+        estimatedTimeMinutes: number | null;
         minQuizScore: number | null;
     } | null>;
+    findSiblingLessons(levelId: string, currentOrderIndex: number, difficulty: Difficulty): Promise<{
+        previous: {
+            id: string;
+            title: string;
+            slug: string;
+        } | null;
+        next: {
+            id: string;
+            title: string;
+            slug: string;
+        } | null;
+    }>;
+    findBySlug(slug: string, difficulty?: Difficulty): Promise<({
+        level: {
+            course: {
+                title: string;
+                language: string;
+                slug: string;
+                titleEn: string | null;
+                titleFil: string | null;
+            };
+            id: string;
+            title: string;
+            slug: string;
+            titleEn: string | null;
+            titleFil: string | null;
+            orderIndex: number;
+            courseId: string;
+        };
+        quizzes: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            type: import(".prisma/client").$Enums.QuizType;
+            orderIndex: number;
+            lessonId: string;
+            difficulty: import(".prisma/client").$Enums.Difficulty | null;
+            question: string;
+            options: import("@prisma/client/runtime/library").JsonValue | null;
+            correctAnswer: string;
+            explanation: string | null;
+            hints: import("@prisma/client/runtime/library").JsonValue | null;
+        }[];
+        challenges: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            description: string;
+            title: string;
+            lessonId: string;
+            hints: import("@prisma/client/runtime/library").JsonValue | null;
+            starterCode: string | null;
+            solutionCode: string | null;
+            testCases: import("@prisma/client/runtime/library").JsonValue;
+            languageId: number;
+        }[];
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        content: import("@prisma/client/runtime/library").JsonValue | null;
+        title: string;
+        isPublished: boolean;
+        slug: string;
+        titleEn: string | null;
+        titleFil: string | null;
+        orderIndex: number;
+        deletedAt: Date | null;
+        levelId: string;
+        difficulty: import(".prisma/client").$Enums.Difficulty;
+        xpReward: number;
+        estimatedTimeMinutes: number | null;
+        minQuizScore: number | null;
+    }) | null>;
 }

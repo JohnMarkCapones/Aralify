@@ -98,6 +98,16 @@ model User {
   recommendations      Recommendation[]
   studyPlans           StudyPlan[]
 
+  // Leagues
+  userLeague           UserLeague?
+  leagueHistory        LeagueHistory[]
+
+  // Bookmarks, Planner, Showcase
+  bookmarks            Bookmark[]
+  plannerGoals         PlannerGoal[]
+  plannerTasks         PlannerTask[]
+  showcaseProjects     ShowcaseProject[]
+
   @@map("users")
 }
 
@@ -228,21 +238,24 @@ model PasswordResetToken {
 // ============================================
 
 model Course {
-  id           String    @id @default(cuid())
-  slug         String    @unique
-  title        String
-  titleEn      String?
-  titleFil     String?
-  description  String?
-  language     String    // python, javascript, html, css
-  iconUrl      String?
-  color        String?
-  orderIndex   Int       @default(0)
-  isPublished  Boolean   @default(false)
-  deletedAt    DateTime?
+  id              String    @id @default(cuid())
+  slug            String    @unique
+  title           String
+  titleEn         String?
+  titleFil        String?
+  description     String?
+  descriptionEn   String?
+  descriptionFil  String?
+  language        String    // python, javascript, html, css
+  iconUrl         String?
+  color           String?
+  orderIndex      Int       @default(0)
+  estimatedHours  Int?
+  isPublished     Boolean   @default(false)
+  deletedAt       DateTime?
 
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   // Relations
   levels       Level[]
@@ -253,19 +266,23 @@ model Course {
 }
 
 model Level {
-  id          String   @id @default(cuid())
-  courseId    String
-  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  id             String   @id @default(cuid())
+  courseId        String
+  course          Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
-  slug        String
-  title       String
-  description String?
-  orderIndex  Int       @default(0)
-  isPublished Boolean   @default(false)
-  deletedAt   DateTime?
+  slug            String
+  title           String
+  titleEn         String?
+  titleFil        String?
+  description     String?
+  descriptionEn   String?
+  descriptionFil  String?
+  orderIndex      Int       @default(0)
+  isPublished     Boolean   @default(false)
+  deletedAt       DateTime?
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   // Relations
   lessons     Lesson[]
@@ -276,22 +293,25 @@ model Level {
 }
 
 model Lesson {
-  id          String     @id @default(cuid())
-  levelId     String
-  level       Level      @relation(fields: [levelId], references: [id], onDelete: Cascade)
+  id                   String     @id @default(cuid())
+  levelId              String
+  level                Level      @relation(fields: [levelId], references: [id], onDelete: Cascade)
 
-  slug        String
-  title       String
-  content     Json?      // Lesson content (text, code examples)
-  difficulty  Difficulty
-  xpReward    Int        @default(100)
-  orderIndex  Int        @default(0)
-  isPublished Boolean    @default(false)
-  deletedAt   DateTime?
-  minQuizScore Int?      // Minimum quiz score (0-100) required to complete lesson
+  slug                 String
+  title                String
+  titleEn              String?
+  titleFil             String?
+  content              Json?      // Lesson content (text, code examples, theoryCards, quizQuestions)
+  difficulty           Difficulty
+  xpReward             Int        @default(100)
+  orderIndex           Int        @default(0)
+  estimatedTimeMinutes Int?
+  isPublished          Boolean    @default(false)
+  deletedAt            DateTime?
+  minQuizScore         Int?       // Minimum quiz score (0-100) required to complete lesson
 
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
 
   // Relations
   quizzes     Quiz[]
@@ -337,6 +357,7 @@ enum QuizType {
   FILL_BLANK
   CODE_COMPLETION
   TRUE_FALSE
+  REORDER
 }
 
 enum HintTargetType {
@@ -361,7 +382,8 @@ model CodeChallenge {
   updatedAt     DateTime @updatedAt
 
   // Relations
-  submissions   ChallengeSubmission[]
+  submissions      ChallengeSubmission[]
+  dailyChallenges  DailyChallenge[]
 
   @@map("code_challenges")
 }
@@ -473,6 +495,7 @@ enum XpSource {
   ACHIEVEMENT
   DAILY_BONUS
   EVENT
+  DECAY
 }
 
 model Achievement {
@@ -552,6 +575,78 @@ model LeaderboardSnapshot {
 
   @@index([periodType, periodStart])
   @@map("leaderboard_snapshots")
+}
+
+// ============================================
+// LEAGUES
+// ============================================
+
+enum LeagueTier {
+  BRONZE
+  SILVER
+  GOLD
+  DIAMOND
+  CHAMPION
+}
+
+enum LeagueAction {
+  PROMOTED
+  DEMOTED
+  STAYED
+}
+
+model League {
+  id          String     @id @default(cuid())
+  tier        LeagueTier @unique
+  name        String
+  description String?
+  iconUrl     String?
+  minRank     Int        @default(0)
+  maxSize     Int        @default(30)
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Relations
+  userLeagues UserLeague[]
+
+  @@map("leagues")
+}
+
+model UserLeague {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  leagueId     String
+  league       League   @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+
+  weeklyXp     Int      @default(0)
+  rankInLeague Int?
+  groupId      String
+
+  joinedAt     DateTime @default(now())
+
+  @@index([leagueId, groupId, weeklyXp(sort: Desc)])
+  @@map("user_leagues")
+}
+
+model LeagueHistory {
+  id         String       @id @default(cuid())
+  userId     String
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  fromTier   LeagueTier
+  toTier     LeagueTier
+  weekStart  DateTime
+  weekEnd    DateTime
+  finalRank  Int
+  weeklyXp   Int
+  action     LeagueAction
+
+  createdAt  DateTime     @default(now())
+
+  @@index([userId, createdAt])
+  @@map("league_history")
 }
 
 // ============================================
@@ -657,6 +752,8 @@ enum ActivityType {
   BADGE_EARNED
   STREAK_MILESTONE
   LEVEL_UP
+  LEAGUE_PROMOTED
+  LEAGUE_DEMOTED
 }
 
 enum NotificationType {
@@ -1021,4 +1118,160 @@ model StudyPlanItem {
 
   @@index([studyPlanId, dayNumber])
   @@map("study_plan_items")
+}
+
+// ============================================
+// DAILY CHALLENGES
+// ============================================
+
+model DailyChallenge {
+  id           String        @id @default(cuid())
+  date         DateTime      @unique @db.Date
+  challengeId  String
+  challenge    CodeChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+
+  createdAt    DateTime      @default(now())
+
+  @@index([date])
+  @@map("daily_challenges")
+}
+
+// ============================================
+// BOOKMARKS
+// ============================================
+
+enum BookmarkTargetType {
+  LESSON
+  CHALLENGE
+  COURSE
+}
+
+model Bookmark {
+  id          String             @id @default(cuid())
+  userId      String
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  targetType  BookmarkTargetType
+  targetId    String
+  note        String?
+
+  createdAt   DateTime           @default(now())
+
+  @@unique([userId, targetType, targetId])
+  @@index([userId, targetType])
+  @@map("bookmarks")
+}
+
+// ============================================
+// PLANNER
+// ============================================
+
+enum GoalStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  SKIPPED
+}
+
+model PlannerGoal {
+  id          String     @id @default(cuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String?
+  targetDate  DateTime?
+  status      GoalStatus @default(ACTIVE)
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Relations
+  tasks       PlannerTask[]
+
+  @@index([userId, status])
+  @@map("planner_goals")
+}
+
+model PlannerTask {
+  id          String      @id @default(cuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goalId      String?
+  goal        PlannerGoal? @relation(fields: [goalId], references: [id], onDelete: SetNull)
+
+  title       String
+  description String?
+  dueDate     DateTime?
+  status      TaskStatus  @default(PENDING)
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([userId, status])
+  @@index([userId, dueDate])
+  @@map("planner_tasks")
+}
+
+// ============================================
+// BLOG
+// ============================================
+
+model BlogPost {
+  id           String    @id @default(cuid())
+  slug         String    @unique
+  title        String
+  excerpt      String?
+  content      String
+  coverImageUrl String?
+  category     String?
+  tags         Json?     // ["announcement", "tutorial"]
+  authorName   String?
+  isPublished  Boolean   @default(false)
+  publishedAt  DateTime?
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([isPublished, publishedAt])
+  @@index([category])
+  @@map("blog_posts")
+}
+
+// ============================================
+// SHOWCASE
+// ============================================
+
+enum ShowcaseStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model ShowcaseProject {
+  id            String         @id @default(cuid())
+  userId        String
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  slug          String         @unique
+  title         String
+  description   String
+  thumbnailUrl  String?
+  liveUrl       String?
+  repoUrl       String?
+  tags          Json?          // ["javascript", "react", "game"]
+  status        ShowcaseStatus @default(PENDING)
+
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([status])
+  @@index([userId])
+  @@map("showcase_projects")
 }

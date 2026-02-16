@@ -52,6 +52,16 @@ interface FastCompletionCriteria {
   max_seconds: number;
 }
 
+interface CourseStartedCriteria {
+  type: 'course_started';
+  count: number;
+}
+
+interface LanguageCountCriteria {
+  type: 'language_count';
+  count: number;
+}
+
 type AchievementCriteria =
   | LessonCountCriteria
   | LessonDifficultyCriteria
@@ -61,7 +71,9 @@ type AchievementCriteria =
   | LevelCriteria
   | XpCriteria
   | TimeOfDayCriteria
-  | FastCompletionCriteria;
+  | FastCompletionCriteria
+  | CourseStartedCriteria
+  | LanguageCountCriteria;
 
 export interface AchievementEvaluation {
   achievementId: string;
@@ -371,6 +383,20 @@ export class AchievementsService {
         );
         currentValue = hasFast ? 1 : 0;
         targetValue = 1;
+        break;
+      }
+
+      case 'course_started':
+        currentValue = stats.coursesStarted;
+        targetValue = criteria.count;
+        break;
+
+      case 'language_count': {
+        const langCount = await this.repository.getCompletedLanguageCount(
+          stats.userId,
+        );
+        currentValue = langCount;
+        targetValue = criteria.count;
         break;
       }
 

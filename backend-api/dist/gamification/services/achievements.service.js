@@ -214,6 +214,16 @@ let AchievementsService = AchievementsService_1 = class AchievementsService {
                 targetValue = 1;
                 break;
             }
+            case 'course_started':
+                currentValue = stats.coursesStarted;
+                targetValue = criteria.count;
+                break;
+            case 'language_count': {
+                const langCount = await this.repository.getCompletedLanguageCount(stats.userId);
+                currentValue = langCount;
+                targetValue = criteria.count;
+                break;
+            }
             default:
                 return { progress: 0, currentValue: 0, targetValue: 1, isMet: false };
         }

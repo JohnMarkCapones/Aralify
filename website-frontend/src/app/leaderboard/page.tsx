@@ -5,7 +5,14 @@ import { PageShell } from "@/components/layout/PageShell";
 import { motion } from "framer-motion";
 import { DotPattern } from "@/components/effects";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Award, Star, Zap, Flame, Trophy, Crown, TrendingUp } from "lucide-react";
+import { Award, Star, Zap, Flame, Trophy, Crown, TrendingUp, Loader2 } from "lucide-react";
+import {
+  useGlobalLeaderboard,
+  useWeeklyLeaderboard,
+  useMonthlyLeaderboard,
+  useUserRanks,
+} from "@/hooks/api";
+import type { LeaderboardEntry } from "@/lib/api";
 
 type TabOption = "weekly" | "monthly" | "alltime";
 
@@ -21,33 +28,39 @@ const tabHeadings: Record<TabOption, string> = {
   alltime: "ALL-TIME LEGENDS",
 };
 
-const leaderboardUsers = [
-  { rank: 1, name: "CyberNinja", xp: 15400, level: 24, streak: 42, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" },
-  { rank: 2, name: "PixelQueen", xp: 14200, level: 22, streak: 38, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka" },
-  { rank: 3, name: "CodeCrusher", xp: 12800, level: 21, streak: 29, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Bob" },
-  { rank: 4, name: "ByteWizard", xp: 11500, level: 20, streak: 35, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Charlie" },
-  { rank: 5, name: "SyntaxSamurai", xp: 10900, level: 19, streak: 21, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Dave" },
-  { rank: 6, name: "AlgoAce", xp: 10200, level: 18, streak: 17, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Eve" },
-  { rank: 7, name: "LoopLegend", xp: 9800, level: 18, streak: 25, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Fiona" },
-  { rank: 8, name: "StackOverlord", xp: 9300, level: 17, streak: 14, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=George" },
-  { rank: 9, name: "RecurseQueen", xp: 8700, level: 16, streak: 19, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Hannah" },
-  { rank: 10, name: "BinaryBoss", xp: 8200, level: 15, streak: 12, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ivan" },
-  { rank: 11, name: "NullPointer", xp: 7600, level: 15, streak: 22, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Julia" },
-  { rank: 12, name: "DevDynamo", xp: 7100, level: 14, streak: 10, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Kyle" },
-  { rank: 13, name: "GitGuru", xp: 6800, level: 13, streak: 16, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Luna" },
-  { rank: 14, name: "TypeScriptTitan", xp: 6300, level: 13, streak: 8, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Maria" },
-  { rank: 15, name: "JuanDev", xp: 5900, level: 12, streak: 12, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=JuanDev", isYou: true },
-  { rank: 16, name: "PythonPirate", xp: 5500, level: 12, streak: 7, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Nathan" },
-  { rank: 17, name: "RustRanger", xp: 5100, level: 11, streak: 15, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Oscar" },
-  { rank: 18, name: "FuncFanatic", xp: 4700, level: 10, streak: 9, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Patty" },
-  { rank: 19, name: "CSSCrafter", xp: 4200, level: 10, streak: 6, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Quinn" },
-  { rank: 20, name: "APIArchitect", xp: 3800, level: 9, streak: 11, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ruby" },
-];
-
-const top3 = leaderboardUsers.slice(0, 3);
-
 export default function LeaderboardPage() {
   const [activeTab, setActiveTab] = useState<TabOption>("weekly");
+
+  const { data: globalData, isLoading: loadingGlobal } = useGlobalLeaderboard({ limit: 20 });
+  const { data: weeklyData, isLoading: loadingWeekly } = useWeeklyLeaderboard();
+  const { data: monthlyData, isLoading: loadingMonthly } = useMonthlyLeaderboard();
+  const { data: ranks } = useUserRanks();
+
+  const isLoading =
+    (activeTab === "weekly" && loadingWeekly) ||
+    (activeTab === "monthly" && loadingMonthly) ||
+    (activeTab === "alltime" && loadingGlobal);
+
+  const activeData =
+    activeTab === "weekly"
+      ? weeklyData
+      : activeTab === "monthly"
+        ? monthlyData
+        : globalData;
+
+  const entries = activeData?.entries ?? [];
+  const leaderboardUsers = entries.map((e) => ({
+    rank: e.rank,
+    name: e.displayName || e.username,
+    xp: e.xp,
+    level: e.level,
+    streak: e.streak,
+    avatar: e.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${e.username}`,
+    isYou: e.isCurrentUser,
+  }));
+
+  const top3 = leaderboardUsers.slice(0, 3);
+  const currentUser = leaderboardUsers.find((u) => u.isYou);
 
   return (
     <PageShell>
@@ -69,6 +82,13 @@ export default function LeaderboardPage() {
           </motion.div>
         </div>
       </section>
+
+      {/* Loading state */}
+      {isLoading && (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </div>
+      )}
 
       {/* Tab Bar */}
       <section className="py-8 border-b-4 border-border bg-card">
@@ -299,17 +319,17 @@ export default function LeaderboardPage() {
                   <TrendingUp size={24} />
                 </div>
                 <div>
-                  <p className="font-black text-lg uppercase">Your Position: #15</p>
+                  <p className="font-black text-lg uppercase">Your Position: #{currentUser?.rank ?? ranks?.global ?? "—"}</p>
                   <p className="text-sm font-medium text-muted-foreground">Keep grinding to climb the ranks!</p>
                 </div>
               </div>
               <div className="flex items-center gap-6">
                 <div className="text-center">
-                  <div className="font-black text-2xl text-primary">5,900</div>
+                  <div className="font-black text-2xl text-primary">{currentUser?.xp?.toLocaleString() ?? "—"}</div>
                   <div className="text-xs font-bold text-muted-foreground uppercase">Total XP</div>
                 </div>
                 <div className="text-center">
-                  <div className="font-black text-2xl">12</div>
+                  <div className="font-black text-2xl">{currentUser?.streak ?? "—"}</div>
                   <div className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-1">
                     <Flame size={12} /> Streak
                   </div>

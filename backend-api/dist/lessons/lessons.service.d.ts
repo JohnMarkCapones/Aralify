@@ -11,25 +11,38 @@ export declare class LessonsService {
     findById(id: string, userId?: string): Promise<{
         id: any;
         slug: any;
-        title: {
-            en: any;
-            fil: null;
+        title: any;
+        content: {
+            theoryCards: any;
+            quizQuestions: any;
         };
-        content: any;
         difficulty: any;
         xpReward: any;
+        estimatedTimeMinutes: any;
         orderIndex: any;
+        courseSlug: any;
+        courseTitle: any;
+        language: any;
         level: {
             id: any;
             slug: any;
-            title: {
-                en: any;
-                fil: null;
-            };
-            courseId: any;
+            title: any;
         };
         quizzes: any;
         challenges: any;
+        testCases: any;
+        hints: string[];
+        tiers: any;
+        previousLesson: {
+            id: string;
+            title: string;
+            slug: string;
+        } | null;
+        nextLesson: {
+            id: string;
+            title: string;
+            slug: string;
+        } | null;
         userProgress: {
             status: any;
             score: any;
@@ -37,6 +50,62 @@ export declare class LessonsService {
             timeSpentSeconds: any;
             completedAt: any;
         } | null;
+    }>;
+    findBySlug(slug: string, difficulty?: string, userId?: string): Promise<{
+        id: any;
+        slug: any;
+        title: any;
+        content: {
+            theoryCards: any;
+            quizQuestions: any;
+        };
+        difficulty: any;
+        xpReward: any;
+        estimatedTimeMinutes: any;
+        orderIndex: any;
+        courseSlug: any;
+        courseTitle: any;
+        language: any;
+        level: {
+            id: any;
+            slug: any;
+            title: any;
+        };
+        quizzes: any;
+        challenges: any;
+        testCases: any;
+        hints: string[];
+        tiers: any;
+        previousLesson: {
+            id: string;
+            title: string;
+            slug: string;
+        } | null;
+        nextLesson: {
+            id: string;
+            title: string;
+            slug: string;
+        } | null;
+        userProgress: {
+            status: any;
+            score: any;
+            xpEarned: any;
+            timeSpentSeconds: any;
+            completedAt: any;
+        } | null;
+    }>;
+    submitQuizBulk(lessonId: string, userId: string, answers: Record<string, string>): Promise<{
+        score: number;
+        totalQuestions: number;
+        correctAnswers: number;
+        passed: boolean;
+        xpAwarded: number;
+        feedback: {
+            questionId: string;
+            correct: boolean;
+            explanation?: string;
+            xpEarned: number;
+        }[];
     }>;
     startLesson(lessonId: string, userId: string): Promise<{
         success: boolean;
@@ -152,6 +221,6 @@ export declare class LessonsService {
         unlockedCount: number;
         totalHints: number;
     }>;
-    private formatLessonDetail;
+    private formatLessonDetailFull;
     private formatProgress;
 }

@@ -122,7 +122,7 @@ export function UserNavSection() {
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href="/settings" className="cursor-pointer">
+              <Link href="/dashboard/settings" className="cursor-pointer">
                 <Settings size={16} />
                 <span className="font-bold">Settings</span>
               </Link>

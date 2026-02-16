@@ -14,6 +14,13 @@ export const XP_DIFFICULTY_MULTIPLIERS = {
   HARD: 3,
 } as const;
 
+// XP Decay settings
+export const XP_DECAY = {
+  INACTIVE_DAYS_THRESHOLD: 7,
+  DAILY_DECAY_AMOUNT: 25,
+  MIN_XP: 0,
+} as const;
+
 // Base XP rewards
 export const XP_REWARDS = {
   LESSON_COMPLETE: 100,

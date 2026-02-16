@@ -25,6 +25,7 @@ exports.GamificationModule = GamificationModule = __decorate([
             services_1.StreaksService,
             services_1.AchievementsService,
             services_1.BadgesService,
+            services_1.XpDecayService,
             services_1.GamificationService,
         ],
         exports: [
@@ -33,6 +34,7 @@ exports.GamificationModule = GamificationModule = __decorate([
             services_1.StreaksService,
             services_1.AchievementsService,
             services_1.BadgesService,
+            services_1.XpDecayService,
         ],
     })
 ], GamificationModule);
