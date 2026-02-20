@@ -1,0 +1,128 @@
+### ===================================
+### Piston Direct API Tests
+### ===================================
+
+### 1. Health Check - List Runtimes
+GET http://localhost:2000/api/v2/runtimes
+
+### 2. Python - Hello World
+POST http://localhost:2000/api/v2/execute
+Content-Type: application/json
+
+{
+  "language": "python",
+  "version": "3.10.0",
+  "files": [{"content": "print('Hello from Piston!')"}]
+}
+
+### 3. Python - Read stdin and add two numbers
+POST http://localhost:2000/api/v2/execute
+Content-Type: application/json
+
+{
+  "language": "python",
+  "version": "3.10.0",
+  "files": [{"content": "a = int(input())\nb = int(input())\nprint(a + b)"}],
+  "stdin": "5\n3"
+}
+
+### 4. Python - Runtime Error (division by zero)
+POST http://localhost:2000/api/v2/execute
+Content-Type: application/json
+
+{
+  "language": "python",
+  "version": "3.10.0",
+  "files": [{"content": "print(1/0)"}]
+}
+
+### 5. Python - Time Limit Exceeded (infinite loop)
+POST http://localhost:2000/api/v2/execute
+Content-Type: application/json
+
+{
+  "language": "python",
+  "version": "3.10.0",
+  "files": [{"content": "while True: pass"}],
+  "run_timeout": 2000
+}
+
+### 6. JavaScript - Hello World
+POST http://localhost:2000/api/v2/execute
+Content-Type: application/json
+
+{
+  "language": "javascript",
+  "version": "15.10.0",
+  "files": [{"content": "console.log('Hello from Node.js!')"}]
+}
+
+### 7. JavaScript - Read stdin
+POST http://localhost:2000/api/v2/execute
+Content-Type: application/json
+
+{
+  "language": "javascript",
+  "version": "15.10.0",
+  "files": [{"content": "const input = require('fs').readFileSync('/dev/stdin','utf8').trim();\nconsole.log(Number(input) * 2);"}],
+  "stdin": "21"
+}
+
+### 8. Java - Hello World
+POST http://localhost:2000/api/v2/execute
+Content-Type: application/json
+
+{
+  "language": "java",
+  "version": "15.0.2",
+  "files": [{"content": "public class Main { public static void main(String[] args) { System.out.println(\"Hello from Java!\"); } }"}]
+}
+
+
+### ===================================
+### Aralify Backend API Tests
+### Requires: backend running on localhost:3001
+### Replace {{token}} with a valid JWT
+### Replace {{challengeId}} with a seeded challenge ID
+### ===================================
+
+### 9. Test Run (no save, no XP)
+POST http://localhost:3001/api/v1/challenges/{{challengeId}}/execute
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "code": "a = int(input())\nb = int(input())\nprint(a + b)",
+  "languageId": 71
+}
+
+### 10. Submit Solution (saves + awards XP)
+POST http://localhost:3001/api/v1/challenges/{{challengeId}}/submit
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "code": "a = int(input())\nb = int(input())\nprint(a + b)",
+  "languageId": 71,
+  "timeSpentSeconds": 45
+}
+
+### 11. Submit Again (should get previouslyPassed: true, xpEarned: 0)
+POST http://localhost:3001/api/v1/challenges/{{challengeId}}/submit
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "code": "a = int(input())\nb = int(input())\nprint(a + b)",
+  "languageId": 71
+}
+
+### 12. Submit Wrong Answer
+POST http://localhost:3001/api/v1/challenges/{{challengeId}}/submit
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "code": "print('wrong')",
+  "languageId": 71
+}

@@ -13,6 +13,7 @@ exports.AppController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const app_service_1 = require("./app.service");
+const decorators_1 = require("./auth/decorators");
 let AppController = class AppController {
     constructor(appService) {
         this.appService = appService;
@@ -20,13 +21,14 @@ let AppController = class AppController {
     getHello() {
         return this.appService.getHello();
     }
-    healthCheck() {
+    async healthCheck() {
         return this.appService.healthCheck();
     }
 };
 exports.AppController = AppController;
 __decorate([
     (0, common_1.Get)(),
+    (0, decorators_1.Public)(),
     (0, swagger_1.ApiOperation)({ summary: 'Get API welcome message' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Returns welcome message' }),
     __metadata("design:type", Function),
@@ -35,11 +37,12 @@ __decorate([
 ], AppController.prototype, "getHello", null);
 __decorate([
     (0, common_1.Get)('health'),
+    (0, decorators_1.Public)(),
     (0, swagger_1.ApiOperation)({ summary: 'Health check endpoint' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Returns health status' }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
-    __metadata("design:returntype", Object)
+    __metadata("design:returntype", Promise)
 ], AppController.prototype, "healthCheck", null);
 exports.AppController = AppController = __decorate([
     (0, swagger_1.ApiTags)('App'),

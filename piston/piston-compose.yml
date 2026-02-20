@@ -1,0 +1,21 @@
+services:
+  piston:
+    image: ghcr.io/engineer-man/piston
+    container_name: piston_api
+    restart: unless-stopped
+    privileged: true
+    ports:
+      - "2000:2000"
+    volumes:
+      - piston-packages:/piston/packages
+    tmpfs:
+      - /tmp:exec
+    environment:
+      - PISTON_RUN_TIMEOUT=10000
+      - PISTON_COMPILE_TIMEOUT=10000
+      - PISTON_OUTPUT_MAX_SIZE=65536
+      - PISTON_DISABLE_NETWORKING=true
+      - PISTON_RUN_MEMORY_LIMIT=134217728
+
+volumes:
+  piston-packages:
