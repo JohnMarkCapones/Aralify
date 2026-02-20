@@ -10,7 +10,6 @@ import type {
   DashboardUserProfile,
   EnrolledCourse,
   ActivityItem,
-  QuestMission,
 } from "@/lib/data/dashboard";
 import {
   useUserProfile,
@@ -21,14 +20,6 @@ import {
   useStreak,
   useDailyChallenge,
 } from "@/hooks/api";
-
-function Skeleton({ className = "" }: { className?: string }) {
-  return (
-    <div
-      className={`animate-pulse bg-muted/60 rounded-2xl neo-brutal-border ${className}`}
-    />
-  );
-}
 
 // Map activity type from backend to frontend icon
 function activityTypeToIcon(type: string): string {
@@ -63,17 +54,13 @@ function activityTypeToFrontend(
 }
 
 export default function DashboardHomePage() {
-  const { data: userProfile, isLoading: loadingProfile } = useUserProfile();
-  const { data: userStats, isLoading: loadingStats } = useUserStats();
-  const { data: gamification, isLoading: loadingGamification } =
-    useGamificationProfile();
-  const { data: userCourses, isLoading: loadingCourses } = useUserCourses();
+  const { data: userProfile } = useUserProfile();
+  const { data: userStats } = useUserStats();
+  const { data: gamification } = useGamificationProfile();
+  const { data: userCourses } = useUserCourses();
   const { data: feedData } = useActivityFeed({ limit: 10 });
   const { data: dailyData } = useDailyChallenge();
   const { data: streakInfo } = useStreak();
-
-  const isLoading =
-    loadingProfile || loadingStats || loadingGamification || loadingCourses;
 
   // Map API data to DashboardUserProfile
   const user: DashboardUserProfile = {
@@ -82,22 +69,22 @@ export default function DashboardHomePage() {
     displayName: userProfile?.displayName || userProfile?.username || "Learner",
     email: userProfile?.email ?? "",
     avatarUrl: userProfile?.avatarUrl ?? null,
-    level: gamification?.level ?? userProfile?.level ?? 1,
-    xp: gamification?.xpTotal ?? userProfile?.xpTotal ?? 0,
-    xpToNextLevel: gamification?.xpToNextLevel ?? 1000,
-    streak: gamification?.streak ?? userProfile?.streakCurrent ?? 0,
-    longestStreak: gamification?.longestStreak ?? 0,
-    rank: userStats?.rank ?? gamification?.rank ?? 0,
-    totalUsers: userStats?.totalUsers ?? 0,
+    level: gamification?.xp?.level ?? userProfile?.level ?? 1,
+    xp: gamification?.xp?.total ?? userProfile?.xpTotal ?? 0,
+    xpToNextLevel: gamification?.xp?.progress?.nextLevelXp ?? 1000,
+    streak: gamification?.streak?.current ?? userProfile?.streakCurrent ?? 0,
+    longestStreak: gamification?.streak?.longest ?? 0,
+    rank: 0,
+    totalUsers: 0,
     dailyGoal: 30,
     dailyProgress: 0,
-    coursesEnrolled: userStats?.coursesEnrolled ?? 0,
+    coursesEnrolled: userStats?.coursesStarted ?? 0,
     coursesCompleted: userStats?.coursesCompleted ?? 0,
     lessonsCompleted: userStats?.lessonsCompleted ?? 0,
-    challengesCompleted: userStats?.challengesCompleted ?? 0,
-    achievementsUnlocked: userStats?.achievementsUnlocked ?? 0,
+    challengesCompleted: 0,
+    achievementsUnlocked: userStats?.achievementsEarned ?? 0,
     badgesEarned: userStats?.badgesEarned ?? 0,
-    joinedAt: userProfile?.joinedAt ?? new Date().toISOString(),
+    joinedAt: userProfile?.createdAt ?? new Date().toISOString(),
     equippedBadgeIds: [],
     followingCount: 0,
     followersCount: 0,
@@ -105,20 +92,20 @@ export default function DashboardHomePage() {
 
   // Map API courses to EnrolledCourse[]
   const courses: EnrolledCourse[] = (userCourses ?? []).map((c) => ({
-    id: c.courseId,
+    id: c.id,
     title: c.title,
     slug: c.slug,
     description: c.description,
-    icon: c.icon,
-    color: c.color,
-    progress: c.progress,
-    totalLessons: c.totalLessons,
-    completedLessons: c.completedLessons,
-    currentLesson: c.currentLesson,
-    xpEarned: c.xpEarned,
-    lastStudied: c.lastStudied,
-    status: c.status,
-    difficulty: c.difficulty as "beginner" | "intermediate" | "advanced",
+    icon: c.iconUrl ?? "",
+    color: c.color ?? "#3b82f6",
+    progress: c.completionPercentage,
+    totalLessons: 0,
+    completedLessons: 0,
+    currentLesson: "",
+    xpEarned: c.totalXpEarned,
+    lastStudied: c.lastActivityAt ?? c.startedAt,
+    status: c.completedAt ? "completed" : ("in_progress" as const),
+    difficulty: "beginner" as const,
   }));
 
   // Map API activity feed to ActivityItem[]
@@ -148,17 +135,6 @@ export default function DashboardHomePage() {
     completed: dailyData.completed,
     resetsAt: dailyData.resetsAt,
   } : null;
-
-  if (isLoading) {
-    return (
-      <div className="space-y-8">
-        <Skeleton className="h-64" />
-        <Skeleton className="h-48" />
-        <Skeleton className="h-32" />
-        <Skeleton className="h-40" />
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-8">

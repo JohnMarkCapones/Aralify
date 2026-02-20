@@ -153,7 +153,7 @@ export default function ChallengesPage() {
   const { data: streakInfo } = useStreak();
   const { data: apiChallenges } = useChallengesList();
   const { data: dailyData } = useDailyChallenge();
-  const currentStreak = streakInfo?.current ?? gamification?.streak ?? 0;
+  const currentStreak = streakInfo?.current ?? gamification?.streak?.current ?? 0;
 
   // Map API challenges to local shape
   const allChallenges: ChallengeItem[] = (apiChallenges ?? []).map((c) => ({
@@ -176,8 +176,8 @@ export default function ChallengesPage() {
     return true;
   });
 
-  const completedCount = gamification?.achievementsCount ?? 0;
-  const totalXp = gamification?.xpTotal ?? 0;
+  const completedCount = gamification?.achievements?.unlocked ?? 0;
+  const totalXp = gamification?.xp?.total ?? 0;
   const featured = allChallenges[0];
 
   return (

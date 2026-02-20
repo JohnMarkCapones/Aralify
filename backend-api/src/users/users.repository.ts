@@ -357,6 +357,98 @@ export class UsersRepository {
   // Certificates
   // ============================================================================
 
+  async getTimeSpentByDay(userId: string, since: Date) {
+    const lessons = await this.prisma.userLessonProgress.findMany({
+      where: {
+        userId,
+        status: ProgressStatus.COMPLETED,
+        completedAt: { gte: since },
+      },
+      select: {
+        timeSpent: true,
+        completedAt: true,
+      },
+    });
+
+    const byDate = new Map<string, number>();
+    for (const l of lessons) {
+      if (!l.completedAt || !l.timeSpent) continue;
+      const dateKey = l.completedAt.toISOString().split('T')[0];
+      byDate.set(dateKey, (byDate.get(dateKey) || 0) + Math.round(l.timeSpent / 60));
+    }
+
+    return Array.from(byDate.entries()).map(([date, minutes]) => ({ date, minutes }));
+  }
+
+  async getActivityHeatmap(userId: string, since: Date) {
+    const transactions = await this.prisma.xpTransaction.findMany({
+      where: {
+        userId,
+        createdAt: { gte: since },
+      },
+      select: {
+        createdAt: true,
+        amount: true,
+      },
+    });
+
+    // Build a 7x24 grid: day-of-week (0=Mon..6=Sun) x hour (0..23)
+    const grid = new Map<string, number>();
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+    for (const tx of transactions) {
+      const d = tx.createdAt;
+      // JS getDay(): 0=Sun, 1=Mon...6=Sat → remap to Mon=0..Sun=6
+      const jsDay = d.getDay();
+      const dayIndex = jsDay === 0 ? 6 : jsDay - 1;
+      const hour = d.getHours();
+      const key = `${dayIndex}-${hour}`;
+      grid.set(key, (grid.get(key) || 0) + tx.amount);
+    }
+
+    const result: { day: string; hour: number; value: number }[] = [];
+    for (let dayIdx = 0; dayIdx < 7; dayIdx++) {
+      for (let h = 0; h < 24; h++) {
+        result.push({
+          day: days[dayIdx],
+          hour: h,
+          value: grid.get(`${dayIdx}-${h}`) || 0,
+        });
+      }
+    }
+    return result;
+  }
+
+  async calculateCourseGrade(userId: string, courseId: string): Promise<string> {
+    const lessonProgress = await this.prisma.userLessonProgress.findMany({
+      where: {
+        userId,
+        status: ProgressStatus.COMPLETED,
+        lesson: { level: { courseId } },
+      },
+      select: { score: true },
+    });
+
+    if (lessonProgress.length === 0) return 'C';
+
+    const scores = lessonProgress
+      .map((lp) => lp.score)
+      .filter((s): s is number => s !== null && s !== undefined);
+
+    if (scores.length === 0) return 'C';
+
+    const avg = scores.reduce((sum, s) => sum + s, 0) / scores.length;
+
+    if (avg >= 97) return 'A+';
+    if (avg >= 93) return 'A';
+    if (avg >= 90) return 'A-';
+    if (avg >= 87) return 'B+';
+    if (avg >= 83) return 'B';
+    if (avg >= 80) return 'B-';
+    if (avg >= 77) return 'C+';
+    return 'C';
+  }
+
   async getCompletedCourses(userId: string) {
     return this.prisma.userCourseProgress.findMany({
       where: { userId, completedAt: { not: null } },
@@ -367,6 +459,7 @@ export class UsersRepository {
             id: true,
             slug: true,
             title: true,
+            color: true,
           },
         },
       },

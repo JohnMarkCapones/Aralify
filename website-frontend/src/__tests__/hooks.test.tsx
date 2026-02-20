@@ -194,7 +194,7 @@ describe("Gamification Hooks", () => {
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data?.xpTotal).toBe(500);
+    expect(result.current.data?.xp?.total).toBe(500);
   });
 
   it("useStreak fetches streak data", async () => {
@@ -228,7 +228,7 @@ describe("User Hooks", () => {
   });
 
   it("useUserStats fetches stats", async () => {
-    const mockStats = { coursesEnrolled: 3, lessonsCompleted: 42 };
+    const mockStats = { coursesStarted: 3, lessonsCompleted: 42 };
     vi.mocked(usersApi.getStats).mockResolvedValue(mockStats as any);
 
     const { result } = renderHook(() => useUserStats(), {
@@ -236,7 +236,7 @@ describe("User Hooks", () => {
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data?.coursesEnrolled).toBe(3);
+    expect(result.current.data?.coursesStarted).toBe(3);
   });
 
   it("useUserCourses fetches enrolled courses", async () => {

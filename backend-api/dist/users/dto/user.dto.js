@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UserActivityDto = exports.ChallengeHistoryItemDto = exports.UserCertificateDto = exports.UserDetailedStatsDto = exports.DifficultyBreakdownDto = exports.XpDataPointDto = exports.UserCourseDto = exports.PublicUserStatsDto = exports.UserStatsDto = exports.UserSettingsDto = exports.PrivacySettingsDto = exports.NotificationSettingsDto = exports.PublicUserProfileDto = exports.UserProfileDto = void 0;
+exports.UserActivityDto = exports.ChallengeHistoryItemDto = exports.UserCertificateDto = exports.UserDetailedStatsDto = exports.ActivityHeatmapPointDto = exports.TimeSpentDataPointDto = exports.DifficultyBreakdownDto = exports.XpDataPointDto = exports.UserCourseDto = exports.PublicUserStatsDto = exports.UserStatsDto = exports.UserSettingsDto = exports.PrivacySettingsDto = exports.NotificationSettingsDto = exports.PublicUserProfileDto = exports.UserProfileDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 class UserProfileDto {
 }
@@ -329,6 +329,32 @@ __decorate([
     (0, swagger_1.ApiProperty)({ example: 3 }),
     __metadata("design:type", Number)
 ], DifficultyBreakdownDto.prototype, "hard", void 0);
+class TimeSpentDataPointDto {
+}
+exports.TimeSpentDataPointDto = TimeSpentDataPointDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: '2024-01-15' }),
+    __metadata("design:type", String)
+], TimeSpentDataPointDto.prototype, "date", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 45 }),
+    __metadata("design:type", Number)
+], TimeSpentDataPointDto.prototype, "minutes", void 0);
+class ActivityHeatmapPointDto {
+}
+exports.ActivityHeatmapPointDto = ActivityHeatmapPointDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'Mon' }),
+    __metadata("design:type", String)
+], ActivityHeatmapPointDto.prototype, "day", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 14 }),
+    __metadata("design:type", Number)
+], ActivityHeatmapPointDto.prototype, "hour", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 120 }),
+    __metadata("design:type", Number)
+], ActivityHeatmapPointDto.prototype, "value", void 0);
 class UserDetailedStatsDto {
 }
 exports.UserDetailedStatsDto = UserDetailedStatsDto;
@@ -356,9 +382,21 @@ __decorate([
     (0, swagger_1.ApiProperty)({ example: 7 }),
     __metadata("design:type", Number)
 ], UserDetailedStatsDto.prototype, "currentStreak", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ type: [TimeSpentDataPointDto] }),
+    __metadata("design:type", Array)
+], UserDetailedStatsDto.prototype, "timeSpentByDay", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ type: [ActivityHeatmapPointDto] }),
+    __metadata("design:type", Array)
+], UserDetailedStatsDto.prototype, "activityHeatmap", void 0);
 class UserCertificateDto {
 }
 exports.UserCertificateDto = UserCertificateDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'clx1234567890' }),
+    __metadata("design:type", String)
+], UserCertificateDto.prototype, "id", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ example: 'clx1234567890' }),
     __metadata("design:type", String)
@@ -379,6 +417,18 @@ __decorate([
     (0, swagger_1.ApiProperty)({ example: 3500 }),
     __metadata("design:type", Number)
 ], UserCertificateDto.prototype, "totalXpEarned", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'A' }),
+    __metadata("design:type", String)
+], UserCertificateDto.prototype, "grade", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ example: '#3B82F6' }),
+    __metadata("design:type", Object)
+], UserCertificateDto.prototype, "color", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: '#' }),
+    __metadata("design:type", String)
+], UserCertificateDto.prototype, "downloadUrl", void 0);
 class ChallengeHistoryItemDto {
 }
 exports.ChallengeHistoryItemDto = ChallengeHistoryItemDto;

@@ -1,7 +1,6 @@
 import { GamificationRepository } from '../gamification.repository';
 export declare class BadgesService {
     private readonly repository;
-    private readonly logger;
     constructor(repository: GamificationRepository);
     getBadges(userId: string, options?: {
         displayedOnly?: boolean;
@@ -118,7 +117,6 @@ export declare class BadgesService {
         maxDisplay: number;
         message?: undefined;
     }>;
-    evaluateForUser(userId: string): Promise<string[]>;
     getDisplayedBadges(userId: string): Promise<{
         badges: {
             id: string;
@@ -166,5 +164,10 @@ export declare class BadgesService {
         canDisplayMore: boolean;
         count?: undefined;
     }>;
+    evaluateForUser(_userId: string): Promise<{
+        id: string;
+        slug: string;
+        title: string;
+    }[]>;
     private formatUserBadge;
 }

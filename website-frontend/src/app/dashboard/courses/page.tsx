@@ -19,20 +19,20 @@ const difficultyColors = {
 // Map API course to the shape the UI expects for enrolled courses
 function mapUserCourse(c: UserCourseEntry) {
   return {
-    id: c.courseId,
+    id: c.id,
     title: c.title,
     slug: c.slug,
     description: c.description,
-    icon: c.icon || "📚",
+    icon: c.iconUrl || "📚",
     color: c.color || "#3776AB",
-    progress: c.progress,
-    totalLessons: c.totalLessons,
-    completedLessons: c.completedLessons,
-    currentLesson: c.currentLesson || "Continue learning",
-    xpEarned: c.xpEarned,
-    lastStudied: c.lastStudied || new Date().toISOString(),
-    status: c.status,
-    difficulty: (c.difficulty || "beginner") as "beginner" | "intermediate" | "advanced",
+    progress: c.completionPercentage,
+    totalLessons: 0,
+    completedLessons: 0,
+    currentLesson: "Continue learning",
+    xpEarned: c.totalXpEarned,
+    lastStudied: c.lastActivityAt || c.startedAt || new Date().toISOString(),
+    status: c.completedAt ? "completed" : ("in_progress" as const),
+    difficulty: "beginner" as "beginner" | "intermediate" | "advanced",
   };
 }
 

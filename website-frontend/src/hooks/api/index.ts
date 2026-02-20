@@ -36,6 +36,8 @@ export {
   useUserCourses,
   useUserSettings,
   useUpdateSettings,
+  useDetailedStats,
+  useCertificates,
 } from "./use-user";
 
 export {

@@ -117,6 +117,10 @@ export declare class GamificationService {
         xp: import("./xp.service").AwardXpResult;
         streak: import("./streaks.service").UpdateStreakResult;
         newAchievements: import("./achievements.service").AchievementEvaluation[];
-        newBadges: string[];
+        newBadges: {
+            id: string;
+            slug: string;
+            title: string;
+        }[];
     }>;
 }

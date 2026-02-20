@@ -3,3 +3,4 @@ node_modules
 .env
 backend-api/dist/
 /generated/prisma
+backend-api/dist/
