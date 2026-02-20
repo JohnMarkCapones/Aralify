@@ -52,7 +52,7 @@ export function GameSidebar({ onProfileClick }: GameSidebarProps) {
 
   return (
     <aside className="hidden lg:flex flex-col w-56 shrink-0 sticky top-20 h-fit max-h-[calc(100vh-6rem)]">
-      <nav className="card-elevated rounded-2xl bg-background p-3 flex flex-col gap-1 overflow-y-auto">
+      <nav className="neo-brutal-border neo-brutal-shadow rounded-xl bg-card p-3 flex flex-col gap-1 overflow-y-auto">
         {/* Primary nav */}
         {PRIMARY_NAV.map((item) => {
           const active = isActive(item.href, item.exact);
@@ -63,8 +63,8 @@ export function GameSidebar({ onProfileClick }: GameSidebarProps) {
               className={cn(
                 "relative flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors group",
                 active
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                  ? "bg-primary text-white font-bold neo-brutal-shadow-sm"
+                  : "text-foreground hover:bg-primary/10 hover:text-primary"
               )}
             >
               {active && (
@@ -84,7 +84,7 @@ export function GameSidebar({ onProfileClick }: GameSidebarProps) {
         })}
 
         {/* Divider */}
-        <div className="h-px bg-border/20 my-2" />
+        <div className="h-px bg-border my-2" />
 
         {/* Secondary nav */}
         {SECONDARY_NAV.map((item) => {
@@ -96,8 +96,8 @@ export function GameSidebar({ onProfileClick }: GameSidebarProps) {
               className={cn(
                 "relative flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors group",
                 active
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                  ? "bg-primary text-white font-bold neo-brutal-shadow-sm"
+                  : "text-foreground hover:bg-primary/10 hover:text-primary"
               )}
             >
               {active && (
@@ -117,7 +117,7 @@ export function GameSidebar({ onProfileClick }: GameSidebarProps) {
         })}
 
         {/* Divider */}
-        <div className="h-px bg-border/20 my-2" />
+        <div className="h-px bg-border my-2" />
 
         {/* Bottom section */}
         <Link
@@ -125,8 +125,8 @@ export function GameSidebar({ onProfileClick }: GameSidebarProps) {
           className={cn(
             "flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors group",
             pathname === "/dashboard/settings" || pathname.startsWith("/dashboard/settings/")
-              ? "bg-primary/10 text-primary"
-              : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+              ? "bg-primary text-white font-bold neo-brutal-shadow-sm"
+              : "text-foreground hover:bg-primary/10 hover:text-primary"
           )}
         >
           <Settings size={18} className="group-hover:scale-110 transition-transform" />
@@ -135,7 +135,7 @@ export function GameSidebar({ onProfileClick }: GameSidebarProps) {
 
         <button
           onClick={onProfileClick}
-          className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-muted-foreground hover:bg-muted/50 hover:text-foreground group"
+          className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-foreground hover:bg-primary/10 hover:text-primary group"
         >
           <User size={18} className="group-hover:scale-110 transition-transform" />
           <span>Profile</span>

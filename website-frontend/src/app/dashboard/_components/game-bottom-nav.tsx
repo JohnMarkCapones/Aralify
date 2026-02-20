@@ -30,7 +30,7 @@ export function GameBottomNav({ onProfileClick }: GameBottomNavProps) {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40">
       {/* Mobile: full-width bottom bar */}
-      <div className="lg:hidden border-t border-border/20 bg-background/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]">
+      <div className="lg:hidden border-t-4 border-border bg-card pb-[env(safe-area-inset-bottom)]">
         <div className="flex items-center justify-around h-16">
           {TABS.map((tab) => {
             const active = isActive(tab.href, tab.exact);
@@ -41,7 +41,7 @@ export function GameBottomNav({ onProfileClick }: GameBottomNavProps) {
                 <button
                   key={tab.label}
                   onClick={onProfileClick}
-                  className="flex flex-col items-center gap-0.5 px-3 py-1.5 text-muted-foreground transition-colors"
+                  className="flex flex-col items-center gap-0.5 px-3 py-1.5 text-foreground transition-colors"
                 >
                   <tab.icon size={20} />
                   <span className="text-[11px] font-bold">{tab.label}</span>

@@ -30,14 +30,14 @@ export function GameHudBar({
   const isHub = pathname === "/dashboard";
 
   return (
-    <header className="sticky top-0 z-40 h-16 border-b border-border/20 bg-background/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 h-16 border-b-4 border-border bg-card">
       <div className="flex items-center justify-between h-full px-3 lg:px-5 max-w-[1400px] mx-auto">
         {/* Left: logo / back */}
         <div className="flex items-center gap-2">
           {!isHub && (
             <Link
               href="/dashboard"
-              className="p-1.5 hover:bg-muted rounded-lg transition-colors text-muted-foreground"
+              className="p-1.5 hover:bg-primary/10 rounded-lg transition-colors text-foreground neo-brutal-border"
             >
               <ChevronLeft size={18} />
             </Link>
@@ -65,7 +65,7 @@ export function GameHudBar({
             />
             <input
               placeholder="Search courses, lessons..."
-              className="w-full h-9 pl-9 pr-3 rounded-xl border border-border/20 bg-muted/30 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+              className="w-full h-9 pl-9 pr-3 rounded-lg border-2 border-border bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
               readOnly
             />
           </div>
@@ -77,8 +77,8 @@ export function GameHudBar({
           <div className="hidden lg:block w-36">
             <XpProgressBar current={xp} max={xpToNextLevel} size="sm" showLabel={false} shimmer />
           </div>
-          <span className="hidden lg:inline-flex text-xs font-bold text-muted-foreground">
-            {xp.toLocaleString()}/{(xpToNextLevel / 1000).toFixed(0)}K
+          <span className="hidden lg:inline-flex text-xs font-bold text-foreground">
+            {xp.toLocaleString()}/{(xpToNextLevel / 1000).toFixed(0)}K XP
           </span>
 
           {/* Streak */}
@@ -99,7 +99,7 @@ export function GameHudBar({
           </span>
 
           {/* Notification bell */}
-          <button className="relative p-2 hover:bg-muted rounded-lg transition-colors text-muted-foreground">
+          <button className="relative p-2 hover:bg-primary/10 rounded-lg transition-colors text-foreground neo-brutal-border">
             <Bell size={17} className="animate-[bounce_1s_ease-in-out_1]" />
             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
           </button>
@@ -108,8 +108,8 @@ export function GameHudBar({
           <button
             onClick={onAvatarClick}
             className={cn(
-              "w-8 h-8 rounded-full border-2 border-primary/20 flex items-center justify-center shrink-0 text-xs font-bold",
-              "bg-gradient-to-br from-primary/20 to-primary/5 text-primary hover:ring-2 hover:ring-primary/30 transition-all"
+              "w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-xs font-black",
+              "bg-primary text-white neo-brutal-shadow-sm hover:neo-brutal-shadow transition-all neo-brutal-border"
             )}
           >
             {avatarUrl ? (
