@@ -35,13 +35,13 @@ export declare class LessonsService {
         tiers: any;
         previousLesson: {
             id: string;
-            title: string;
             slug: string;
+            title: string;
         } | null;
         nextLesson: {
             id: string;
-            title: string;
             slug: string;
+            title: string;
         } | null;
         userProgress: {
             status: any;
@@ -78,13 +78,13 @@ export declare class LessonsService {
         tiers: any;
         previousLesson: {
             id: string;
-            title: string;
             slug: string;
+            title: string;
         } | null;
         nextLesson: {
             id: string;
-            title: string;
             slug: string;
+            title: string;
         } | null;
         userProgress: {
             status: any;
@@ -166,7 +166,11 @@ export declare class LessonsService {
                 title: string;
                 xpReward: number;
             }[];
-            newBadges: string[];
+            newBadges: {
+                id: string;
+                slug: string;
+                title: string;
+            }[];
         } | undefined;
     }>;
     getQuizzes(lessonId: string): Promise<{

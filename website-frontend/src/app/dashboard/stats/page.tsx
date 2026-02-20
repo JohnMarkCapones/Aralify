@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
@@ -20,11 +20,25 @@ import {
   mockDifficultyBreakdown,
   mockTimeSpent,
 } from "@/lib/data/dashboard";
-import { useUserStats, useGamificationProfile, useXpHistory } from "@/hooks/api";
+import { useUserStats, useGamificationProfile, useDetailedStats, useUserCourses } from "@/hooks/api";
 
 const COLORS = ["#10b981", "#f59e0b", "#ef4444"];
 
 type Range = "7d" | "30d";
+
+const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+function formatDateToDayName(dateStr: string): string {
+  const d = new Date(dateStr);
+  return DAY_NAMES[d.getDay()];
+}
+
+function formatDateToWeekLabel(dateStr: string, rangeStart: Date): string {
+  const d = new Date(dateStr);
+  const diffDays = Math.floor((d.getTime() - rangeStart.getTime()) / (1000 * 60 * 60 * 24));
+  const weekNum = Math.floor(diffDays / 7) + 1;
+  return `W${weekNum}`;
+}
 
 const statCardVariants = {
   hidden: { opacity: 0, y: 15 },
@@ -95,15 +109,101 @@ export default function StatsPage() {
   const [range, setRange] = useState<Range>("7d");
   const { data: stats } = useUserStats();
   const { data: gamification } = useGamificationProfile();
+  const { data: detailedStats } = useDetailedStats(range);
+  const { data: userCourses } = useUserCourses();
 
   const user = {
-    xp: gamification?.xpTotal ?? stats?.totalXp ?? mockUser.xp,
+    xp: gamification?.xp?.total ?? stats?.xpTotal ?? mockUser.xp,
     lessonsCompleted: stats?.lessonsCompleted ?? mockUser.lessonsCompleted,
-    challengesCompleted: stats?.challengesCompleted ?? mockUser.challengesCompleted,
+    challengesCompleted: mockUser.challengesCompleted,
   };
 
-  // TODO: Replace with real XP history data from useXpHistory() when chart data format is available
-  const xpData = range === "7d" ? mockXpHistory7d : mockXpHistory30d;
+  // 1. XP chart data — transform xpOverTime or fall back to mock
+  const xpData = useMemo(() => {
+    if (detailedStats?.xpOverTime && detailedStats.xpOverTime.length > 0) {
+      if (range === "7d") {
+        return detailedStats.xpOverTime.map((p) => ({
+          name: formatDateToDayName(p.date),
+          value: p.xp,
+        }));
+      } else {
+        // Group into weeks for 30d
+        const now = new Date();
+        const rangeStart = new Date(now);
+        rangeStart.setDate(rangeStart.getDate() - 30);
+        const weekMap = new Map<string, number>();
+        for (const p of detailedStats.xpOverTime) {
+          const label = formatDateToWeekLabel(p.date, rangeStart);
+          weekMap.set(label, (weekMap.get(label) || 0) + p.xp);
+        }
+        return Array.from(weekMap.entries()).map(([name, value]) => ({ name, value }));
+      }
+    }
+    return range === "7d" ? mockXpHistory7d : mockXpHistory30d;
+  }, [detailedStats?.xpOverTime, range]);
+
+  // 2. Time spent chart data
+  const timeSpentData = useMemo(() => {
+    if (detailedStats?.timeSpentByDay && detailedStats.timeSpentByDay.length > 0) {
+      return detailedStats.timeSpentByDay.map((p) => ({
+        name: formatDateToDayName(p.date),
+        value: p.minutes,
+      }));
+    }
+    return mockTimeSpent;
+  }, [detailedStats?.timeSpentByDay]);
+
+  // 3. Activity heatmap
+  const heatmapData = useMemo(() => {
+    if (detailedStats?.activityHeatmap && detailedStats.activityHeatmap.length > 0) {
+      return detailedStats.activityHeatmap;
+    }
+    return mockWeeklyHeatmap;
+  }, [detailedStats?.activityHeatmap]);
+
+  // 4. Course radar data
+  const courseRadarData = useMemo(() => {
+    if (userCourses && userCourses.length > 0) {
+      return userCourses.slice(0, 6).map((c) => ({
+        name: c.title.split(" ")[0],
+        value: Math.round(c.completionPercentage),
+      }));
+    }
+    return mockCourseRadar;
+  }, [userCourses]);
+
+  // 5. Difficulty pie data
+  const difficultyData = useMemo(() => {
+    if (detailedStats?.difficultyBreakdown) {
+      const { easy, medium, hard } = detailedStats.difficultyBreakdown;
+      const total = easy + medium + hard;
+      if (total > 0) {
+        return [
+          { name: "Easy", value: Math.round((easy / total) * 100) },
+          { name: "Medium", value: Math.round((medium / total) * 100) },
+          { name: "Hard", value: Math.round((hard / total) * 100) },
+        ];
+      }
+    }
+    return mockDifficultyBreakdown;
+  }, [detailedStats?.difficultyBreakdown]);
+
+  // 6. Study time card — total hours from averageTimePerDayMins
+  const studyTimeValue = useMemo(() => {
+    if (detailedStats?.averageTimePerDayMins !== undefined) {
+      const days = range === "7d" ? 7 : 30;
+      const totalMins = detailedStats.averageTimePerDayMins * days;
+      const hours = Math.round(totalMins / 60);
+      return `${hours}h`;
+    }
+    return "42h";
+  }, [detailedStats?.averageTimePerDayMins, range]);
+
+  // Find max heatmap value for normalization
+  const heatmapMax = useMemo(() => {
+    const maxVal = Math.max(...heatmapData.map((p) => p.value), 1);
+    return maxVal;
+  }, [heatmapData]);
 
   return (
     <div className="space-y-6">
@@ -161,8 +261,8 @@ export default function StatsPage() {
           icon={<Clock size={16} className="text-purple-500" />}
           iconBg="bg-purple-100 dark:bg-purple-950/40"
           label="Study Time"
-          value="42h"
-          subtitle="This month"
+          value={studyTimeValue}
+          subtitle="This period"
           accentColor="from-purple-400 to-fuchsia-500"
           index={3}
         />
@@ -210,7 +310,7 @@ export default function StatsPage() {
           }
         >
           <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={mockTimeSpent}>
+            <BarChart data={timeSpentData}>
               <defs>
                 <linearGradient id="d_barGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#8b5cf6" stopOpacity={1} />
@@ -251,16 +351,15 @@ export default function StatsPage() {
               <div key={day} className="flex gap-0.5 mb-0.5">
                 <div className="w-10 shrink-0 text-[10px] text-muted-foreground flex items-center font-medium">{day}</div>
                 {Array.from({ length: 24 }, (_, h) => {
-                  const point = mockWeeklyHeatmap.find((p) => p.day === day && p.hour === h);
+                  const point = heatmapData.find((p) => p.day === day && p.hour === h);
                   const val = point?.value || 0;
-                  const maxVal = 100;
-                  const opacity = Math.min(val / maxVal, 1);
+                  const opacity = Math.min(val / heatmapMax, 1);
                   return (
                     <div
                       key={h}
                       className="flex-1 h-6 rounded-sm cursor-default transition-transform hover:scale-110"
                       style={{ backgroundColor: `rgba(59, 130, 246, ${opacity * 0.7 + 0.05})` }}
-                      title={`${day} ${h}:00 — ${val} min`}
+                      title={`${day} ${h}:00 — ${val} XP`}
                     />
                   );
                 })}
@@ -291,7 +390,7 @@ export default function StatsPage() {
           }
         >
           <ResponsiveContainer width="100%" height={280}>
-            <RadarChart data={mockCourseRadar}>
+            <RadarChart data={courseRadarData}>
               <PolarGrid stroke="hsl(var(--border))" strokeOpacity={0.5} />
               <PolarAngleAxis dataKey="name" tick={{ fontSize: 10 }} />
               <PolarRadiusAxis tick={{ fontSize: 9 }} domain={[0, 100]} />
@@ -314,8 +413,8 @@ export default function StatsPage() {
         >
           <ResponsiveContainer width="100%" height={280}>
             <PieChart>
-              <Pie data={mockDifficultyBreakdown} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={3} dataKey="value">
-                {mockDifficultyBreakdown.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}
+              <Pie data={difficultyData} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={3} dataKey="value">
+                {difficultyData.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}
               </Pie>
               <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid hsl(var(--border))", fontSize: 12 }} formatter={(v) => [`${v}%`, "Share"]} />
               <Legend iconSize={8} wrapperStyle={{ fontSize: 11 }} />

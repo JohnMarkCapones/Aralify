@@ -90,6 +90,15 @@ export declare class DifficultyBreakdownDto {
     medium: number;
     hard: number;
 }
+export declare class TimeSpentDataPointDto {
+    date: string;
+    minutes: number;
+}
+export declare class ActivityHeatmapPointDto {
+    day: string;
+    hour: number;
+    value: number;
+}
 export declare class UserDetailedStatsDto {
     xpOverTime: XpDataPointDto[];
     difficultyBreakdown: DifficultyBreakdownDto;
@@ -97,13 +106,19 @@ export declare class UserDetailedStatsDto {
     totalXp: number;
     lessonsCompleted: number;
     currentStreak: number;
+    timeSpentByDay: TimeSpentDataPointDto[];
+    activityHeatmap: ActivityHeatmapPointDto[];
 }
 export declare class UserCertificateDto {
+    id: string;
     courseId: string;
     courseSlug: string;
     courseTitle: string;
     completedAt: string;
     totalXpEarned: number;
+    grade: string;
+    color?: string | null;
+    downloadUrl: string;
 }
 export declare class ChallengeHistoryItemDto {
     id: string;

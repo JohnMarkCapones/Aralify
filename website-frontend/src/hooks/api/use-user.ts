@@ -47,3 +47,19 @@ export function useUpdateSettings() {
     },
   });
 }
+
+export function useDetailedStats(range: string) {
+  return useQuery({
+    queryKey: ["user", "detailed-stats", range],
+    queryFn: () => usersApi.getDetailedStats(range),
+    retry: false,
+  });
+}
+
+export function useCertificates() {
+  return useQuery({
+    queryKey: ["user", "certificates"],
+    queryFn: () => usersApi.getCertificates(),
+    retry: false,
+  });
+}

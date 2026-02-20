@@ -1,12 +1,18 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { GraduationCap, Download, Share2, BookOpen, Award, Zap, Star } from "lucide-react";
+import { GraduationCap, Download, Share2, BookOpen, Award, Zap, Star, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "../_components/page-header";
 import { mockCertificates } from "@/lib/data/dashboard";
-// NOTE: Backend certificate generation endpoint is not yet implemented (returns stub).
-// Keeping mock data as fallback until the backend endpoint is ready.
+import { useCertificates } from "@/hooks/api";
+
+// Lower rank = better grade. Used for finding the best grade across certificates.
+const GRADE_RANK: Record<string, number> = {
+  "A+": 1, A: 2, "A-": 3,
+  "B+": 4, B: 5, "B-": 6,
+  "C+": 7, C: 8,
+};
 
 const GRADE_STYLES: Record<string, { bg: string; text: string; label: string }> = {
   "A+": { bg: "bg-amber-100 dark:bg-amber-950/40", text: "text-amber-600 dark:text-amber-400", label: "Gold" },
@@ -33,23 +39,53 @@ function isGoldGrade(grade: string): boolean {
 }
 
 export default function CertificatesPage() {
-  const totalXp = mockCertificates.reduce((sum, c) => sum + c.xpTotal, 0);
-  const bestGrade = mockCertificates.length > 0
-    ? mockCertificates.reduce((best, c) => (c.grade < best ? c.grade : best), mockCertificates[0].grade)
+  const { data: apiCertificates, isLoading } = useCertificates();
+
+  // Map API data to the shape the UI expects, or fall back to mock data
+  const certificates = apiCertificates && apiCertificates.length > 0
+    ? apiCertificates.map((c) => ({
+        id: c.id,
+        courseName: c.courseTitle,
+        courseSlug: c.courseSlug,
+        issuedAt: c.completedAt,
+        grade: c.grade,
+        xpTotal: c.totalXpEarned,
+        downloadUrl: c.downloadUrl,
+        color: c.color || "#3b82f6",
+      }))
+    : (!isLoading ? mockCertificates : []);
+
+  const totalXp = certificates.reduce((sum, c) => sum + c.xpTotal, 0);
+  const bestGrade = certificates.length > 0
+    ? certificates.reduce((best, c) =>
+        (GRADE_RANK[c.grade] ?? 99) < (GRADE_RANK[best] ?? 99) ? c.grade : best,
+        certificates[0].grade,
+      )
     : "-";
 
   const stats = [
-    { icon: GraduationCap, label: "Certificates", value: mockCertificates.length, color: "text-primary", bg: "bg-primary/10" },
+    { icon: GraduationCap, label: "Certificates", value: certificates.length, color: "text-primary", bg: "bg-primary/10" },
     { icon: Zap, label: "Total XP", value: totalXp.toLocaleString(), color: "text-amber-500", bg: "bg-amber-100 dark:bg-amber-950/40" },
     { icon: Award, label: "Best Grade", value: bestGrade, color: "text-emerald-500", bg: "bg-emerald-100 dark:bg-emerald-950/40" },
-    { icon: Star, label: "Gold Grades", value: mockCertificates.filter((c) => isGoldGrade(c.grade)).length, color: "text-amber-500", bg: "bg-amber-100 dark:bg-amber-950/40" },
+    { icon: Star, label: "Gold Grades", value: certificates.filter((c) => isGoldGrade(c.grade)).length, color: "text-amber-500", bg: "bg-amber-100 dark:bg-amber-950/40" },
   ];
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="Certificates" description="Loading..." />
+        <div className="flex items-center justify-center py-20">
+          <Loader2 size={32} className="animate-spin text-muted-foreground" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Certificates"
-        description={`${mockCertificates.length} certificate${mockCertificates.length !== 1 ? "s" : ""} earned`}
+        description={`${certificates.length} certificate${certificates.length !== 1 ? "s" : ""} earned`}
       />
 
       {/* Stats strip */}
@@ -73,9 +109,9 @@ export default function CertificatesPage() {
         ))}
       </div>
 
-      {mockCertificates.length > 0 ? (
+      {certificates.length > 0 ? (
         <div className="grid sm:grid-cols-2 gap-4">
-          {mockCertificates.map((cert, i) => {
+          {certificates.map((cert, i) => {
             const gradeStyle = GRADE_STYLES[cert.grade] || GRADE_STYLES.C;
             const isGold = isGoldGrade(cert.grade);
 

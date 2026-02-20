@@ -256,6 +256,25 @@ export class DifficultyBreakdownDto {
   hard!: number;
 }
 
+export class TimeSpentDataPointDto {
+  @ApiProperty({ example: '2024-01-15' })
+  date!: string;
+
+  @ApiProperty({ example: 45 })
+  minutes!: number;
+}
+
+export class ActivityHeatmapPointDto {
+  @ApiProperty({ example: 'Mon' })
+  day!: string;
+
+  @ApiProperty({ example: 14 })
+  hour!: number;
+
+  @ApiProperty({ example: 120 })
+  value!: number;
+}
+
 export class UserDetailedStatsDto {
   @ApiProperty({ type: [XpDataPointDto] })
   xpOverTime!: XpDataPointDto[];
@@ -274,6 +293,12 @@ export class UserDetailedStatsDto {
 
   @ApiProperty({ example: 7 })
   currentStreak!: number;
+
+  @ApiProperty({ type: [TimeSpentDataPointDto] })
+  timeSpentByDay!: TimeSpentDataPointDto[];
+
+  @ApiProperty({ type: [ActivityHeatmapPointDto] })
+  activityHeatmap!: ActivityHeatmapPointDto[];
 }
 
 // ============================================================================
@@ -281,6 +306,9 @@ export class UserDetailedStatsDto {
 // ============================================================================
 
 export class UserCertificateDto {
+  @ApiProperty({ example: 'clx1234567890' })
+  id!: string;
+
   @ApiProperty({ example: 'clx1234567890' })
   courseId!: string;
 
@@ -295,6 +323,15 @@ export class UserCertificateDto {
 
   @ApiProperty({ example: 3500 })
   totalXpEarned!: number;
+
+  @ApiProperty({ example: 'A' })
+  grade!: string;
+
+  @ApiPropertyOptional({ example: '#3B82F6' })
+  color?: string | null;
+
+  @ApiProperty({ example: '#' })
+  downloadUrl!: string;
 }
 
 // ============================================================================

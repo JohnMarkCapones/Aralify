@@ -465,11 +465,22 @@ export declare class UsersRepository {
         hard: number;
     }>;
     getTimeSpentInRange(userId: string, since: Date): Promise<number>;
+    getTimeSpentByDay(userId: string, since: Date): Promise<{
+        date: string;
+        minutes: number;
+    }[]>;
+    getActivityHeatmap(userId: string, since: Date): Promise<{
+        day: string;
+        hour: number;
+        value: number;
+    }[]>;
+    calculateCourseGrade(userId: string, courseId: string): Promise<string>;
     getCompletedCourses(userId: string): Promise<({
         course: {
             id: string;
             title: string;
             slug: string;
+            color: string | null;
         };
     } & {
         id: string;

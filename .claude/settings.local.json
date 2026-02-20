@@ -37,7 +37,16 @@
       "Bash(grep:*)",
       "Bash(del \"C:\\\\Users\\\\John Mark\\\\Desktop\\\\Aralify\\\\website-frontend\\\\src\\\\middleware.ts\")",
       "Bash(pnpm add:*)",
-      "Bash(npx vitest run)"
+      "Bash(npx vitest run)",
+      "Bash(git -C \"C:\\\\Users\\\\John Mark\\\\Desktop\\\\Aralify\" status)",
+      "Bash(git -C \"C:\\\\Users\\\\John Mark\\\\Desktop\\\\Aralify\" ls-tree:*)",
+      "Bash(git -C \"C:\\\\Users\\\\John Mark\\\\Desktop\\\\Aralify\" show HEAD:backend-api/src)",
+      "Bash(git -C \"C:\\\\Users\\\\John Mark\\\\Desktop\\\\Aralify\" ls-files:*)",
+      "Bash(git -C \"C:\\\\Users\\\\John Mark\\\\Desktop\\\\Aralify\" diff --stat HEAD)",
+      "Bash(git -C \"C:\\\\Users\\\\John Mark\\\\Desktop\\\\Aralify\" show --stat HEAD)",
+      "Bash(git -C \"C:\\\\Users\\\\John Mark\\\\Desktop\\\\Aralify\" diff backend-api/src/gamification/services/badges.service.ts)",
+      "Bash(netstat:*)",
+      "Bash(curl:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

@@ -24,17 +24,34 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const token = await getAuthToken();
+  const token = await Promise.race([
+    getAuthToken(),
+    new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
+  ]);
   const headers: HeadersInit = {
     "Content-Type": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
   };
 
-  const res = await fetch(`${API_URL}${path}`, {
-    ...options,
-    headers,
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}${path}`, {
+      ...options,
+      headers,
+      signal: controller.signal,
+    });
+  } catch (err) {
+    clearTimeout(timeoutId);
+    if ((err as Error).name === "AbortError") {
+      throw new ApiError(408, "Request timed out");
+    }
+    throw err;
+  }
+  clearTimeout(timeoutId);
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({
@@ -163,16 +180,20 @@ export const gamificationApi = {
 // ─── Users API ────────────────────────────────────────────────────────────────
 
 export const usersApi = {
-  getProfile: () => api.get<UserProfile>("/api/v1/users/me/profile"),
-  getStats: () => api.get<UserStats>("/api/v1/users/me/stats"),
-  getSettings: () => api.get<UserSettings>("/api/v1/users/me/settings"),
+  getProfile: () => api.get<UserProfile>("/api/v1/user/profile"),
+  getStats: () => api.get<UserStats>("/api/v1/user/stats"),
+  getSettings: () => api.get<UserSettings>("/api/v1/user/settings"),
   updateSettings: (data: Partial<UserSettings>) =>
-    api.patch<UserSettings>("/api/v1/users/me/settings", data),
+    api.put<UserSettings>("/api/v1/user/settings", data),
   updateProfile: (data: Partial<UserProfile>) =>
-    api.patch<UserProfile>("/api/v1/users/me/profile", data),
-  getCourses: () => api.get<UserCourseEntry[]>("/api/v1/users/me/courses"),
+    api.put<UserProfile>("/api/v1/user/profile", data),
+  getCourses: () => api.get<UserCourseEntry[]>("/api/v1/user/courses"),
   completeOnboarding: (data: Record<string, unknown>) =>
-    api.post("/api/v1/users/me/onboarding", data),
+    api.put("/api/v1/users/onboarding/complete", data),
+  getDetailedStats: (range: string) =>
+    api.get<UserDetailedStats>(`/api/v1/user/stats/detailed?range=${range}`),
+  getCertificates: () =>
+    api.get<CertificateEntry[]>("/api/v1/user/certificates"),
 };
 
 // ─── Leaderboard API ──────────────────────────────────────────────────────────
@@ -547,15 +568,41 @@ export interface ChallengeSubmitResponse {
 
 // Gamification types
 export interface GamificationProfile {
-  xpTotal: number;
-  level: number;
-  xpToNextLevel: number;
-  xpProgress: number;
-  streak: number;
-  longestStreak: number;
-  rank: number;
-  achievementsCount: number;
-  badgesCount: number;
+  user: { id: string; createdAt: string };
+  xp: {
+    total: number;
+    level: number;
+    rankTitle: string;
+    progress: {
+      currentLevelXp: number;
+      nextLevelXp: number;
+      progressXp: number;
+      progressPercentage: number;
+    };
+  };
+  streak: {
+    current: number;
+    longest: number;
+    freezesAvailable: number;
+    maxFreezes: number;
+    isActive: boolean;
+    atRisk: boolean;
+    lastActivityDate: string | null;
+    nextMilestone: unknown;
+    dailyBonus: unknown;
+  };
+  achievements: {
+    unlocked: number;
+    total: number;
+    progress: number;
+    totalXpEarned: number;
+    recent: unknown[];
+  };
+  badges: {
+    total: number;
+    displayed: unknown[];
+    maxDisplay: number;
+  };
 }
 
 export interface StreakInfo {
@@ -627,22 +674,30 @@ export interface UserProfile {
   displayName: string | null;
   avatarUrl: string | null;
   bio: string | null;
+  locale: string;
+  timezone: string | null;
   xpTotal: number;
   level: number;
   streakCurrent: number;
-  joinedAt: string;
+  streakLongest: number;
+  role: string;
+  isVerified: boolean;
+  onboardingCompleted: boolean;
+  createdAt: string;
+  lastActiveAt: string | null;
 }
 
 export interface UserStats {
-  coursesEnrolled: number;
+  xpTotal: number;
+  level: number;
+  streakCurrent: number;
+  streakLongest: number;
+  coursesStarted: number;
   coursesCompleted: number;
   lessonsCompleted: number;
-  challengesCompleted: number;
-  totalXp: number;
-  achievementsUnlocked: number;
+  totalTimeSpentMinutes: number;
+  achievementsEarned: number;
   badgesEarned: number;
-  rank: number;
-  totalUsers: number;
 }
 
 export interface UserSettings {
@@ -656,20 +711,42 @@ export interface UserSettings {
 
 export interface UserCourseEntry {
   id: string;
-  courseId: string;
-  title: string;
   slug: string;
+  title: string;
   description: string;
-  icon: string;
-  color: string;
-  progress: number;
-  totalLessons: number;
-  completedLessons: number;
-  currentLesson: string;
-  xpEarned: number;
-  lastStudied: string;
-  status: "in_progress" | "completed" | "not_started";
-  difficulty: string;
+  language: string;
+  iconUrl: string | null;
+  color: string | null;
+  completionPercentage: number;
+  totalXpEarned: number;
+  lastActivityAt: string | null;
+  startedAt: string;
+  completedAt: string | null;
+}
+
+// Detailed Stats types
+export interface UserDetailedStats {
+  xpOverTime: { date: string; xp: number }[];
+  difficultyBreakdown: { easy: number; medium: number; hard: number };
+  averageTimePerDayMins: number;
+  totalXp: number;
+  lessonsCompleted: number;
+  currentStreak: number;
+  timeSpentByDay: { date: string; minutes: number }[];
+  activityHeatmap: { day: string; hour: number; value: number }[];
+}
+
+// Certificate types
+export interface CertificateEntry {
+  id: string;
+  courseId: string;
+  courseSlug: string;
+  courseTitle: string;
+  completedAt: string;
+  totalXpEarned: number;
+  grade: string;
+  color: string | null;
+  downloadUrl: string;
 }
 
 // Leaderboard types

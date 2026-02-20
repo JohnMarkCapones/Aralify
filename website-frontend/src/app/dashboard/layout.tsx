@@ -12,11 +12,8 @@ interface AuthMeResponse {
 }
 
 interface GamificationProfileResponse {
-  xpToNextLevel?: number;
-  rank?: number;
-  level?: number;
-  xpTotal?: number;
-  streak?: number;
+  xp?: { total?: number; level?: number; progress?: { nextLevelXp?: number } };
+  streak?: { current?: number };
 }
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -53,11 +50,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <DashboardShellWrapper
       userName={displayName}
-      level={gamification?.level ?? profile?.level ?? 1}
-      xp={gamification?.xpTotal ?? profile?.xpTotal ?? 0}
-      xpToNextLevel={gamification?.xpToNextLevel ?? 1000}
-      streak={gamification?.streak ?? profile?.streakCurrent ?? 0}
-      rank={gamification?.rank ?? 0}
+      level={gamification?.xp?.level ?? profile?.level ?? 1}
+      xp={gamification?.xp?.total ?? profile?.xpTotal ?? 0}
+      xpToNextLevel={gamification?.xp?.progress?.nextLevelXp ?? 1000}
+      streak={gamification?.streak?.current ?? profile?.streakCurrent ?? 0}
+      rank={0}
       avatarUrl={profile?.avatarUrl ?? null}
     >
       {children}

@@ -35,13 +35,13 @@ export declare class LessonsController {
         tiers: any;
         previousLesson: {
             id: string;
-            title: string;
             slug: string;
+            title: string;
         } | null;
         nextLesson: {
             id: string;
-            title: string;
             slug: string;
+            title: string;
         } | null;
         userProgress: {
             status: any;

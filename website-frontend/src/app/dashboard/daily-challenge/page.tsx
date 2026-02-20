@@ -54,7 +54,7 @@ export default function DailyChallengePage() {
   const [timeLeft, setTimeLeft] = useState("");
   const { data: gamification } = useGamificationProfile();
   const { data: streakInfo } = useStreak();
-  const currentStreak = streakInfo?.current ?? gamification?.streak ?? 0;
+  const currentStreak = streakInfo?.current ?? gamification?.streak?.current ?? 0;
 
   useEffect(() => {
     function updateTimer() {
@@ -72,8 +72,8 @@ export default function DailyChallengePage() {
     return () => clearInterval(interval);
   }, [challenge.resetsAt]);
 
-  const completedCount = gamification?.achievementsCount ?? 0;
-  const totalXp = gamification?.xpTotal ?? 0;
+  const completedCount = gamification?.achievements?.unlocked ?? 0;
+  const totalXp = gamification?.xp?.total ?? 0;
 
   return (
     <motion.div

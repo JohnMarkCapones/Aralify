@@ -187,11 +187,13 @@ let UsersService = class UsersService {
         const days = range === '30d' ? 30 : 7;
         const since = new Date();
         since.setDate(since.getDate() - days);
-        const [xpTransactions, difficultyBreakdown, timeSpent, lessonsCompleted] = await Promise.all([
+        const [xpTransactions, difficultyBreakdown, timeSpent, lessonsCompleted, timeSpentByDay, activityHeatmap] = await Promise.all([
             this.usersRepository.getXpOverTime(userId, since),
             this.usersRepository.getDifficultyBreakdown(userId),
             this.usersRepository.getTimeSpentInRange(userId, since),
             this.usersRepository.getUserStats(userId),
+            this.usersRepository.getTimeSpentByDay(userId, since),
+            this.usersRepository.getActivityHeatmap(userId, since),
         ]);
         const xpByDate = new Map();
         for (const tx of xpTransactions) {
@@ -209,17 +211,27 @@ let UsersService = class UsersService {
             totalXp: user.xpTotal,
             lessonsCompleted: lessonsCompleted?.lessonsCompleted ?? 0,
             currentStreak: user.streakCurrent,
+            timeSpentByDay,
+            activityHeatmap,
         };
     }
     async getCertificates(userId) {
         const completed = await this.usersRepository.getCompletedCourses(userId);
-        return completed.map((p) => ({
-            courseId: p.course.id,
-            courseSlug: p.course.slug,
-            courseTitle: p.course.title,
-            completedAt: p.completedAt.toISOString(),
-            totalXpEarned: p.totalXpEarned,
+        const certificates = await Promise.all(completed.map(async (p) => {
+            const grade = await this.usersRepository.calculateCourseGrade(userId, p.course.id);
+            return {
+                id: p.id,
+                courseId: p.course.id,
+                courseSlug: p.course.slug,
+                courseTitle: p.course.title,
+                completedAt: p.completedAt.toISOString(),
+                totalXpEarned: p.totalXpEarned,
+                grade,
+                color: p.course.color,
+                downloadUrl: '#',
+            };
         }));
+        return certificates;
     }
     async getChallengeHistory(userId, page, limit) {
         const result = await this.usersRepository.getChallengeHistory(userId, page, limit);
